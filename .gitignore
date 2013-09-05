@@ -34,3 +34,12 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Rope
+.ropeproject/*
+
+# iPython notebook
+.ipynb_checkpoints/*
+
+# Unused files that I keep in the directory
+unused/*
