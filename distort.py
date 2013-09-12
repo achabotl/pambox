@@ -32,3 +32,14 @@ def mix_noise(clean, noise, snr=None):
 
     return clean, mix, noise
 
+
+def phase_jitter(x, a):
+    """Apply phase jitter to a signal
+
+    :x: ndarray, signal.
+    :a: float, phase jitter parameter, between 0 and 1.
+    :returns: ndarray, processed signal
+
+    """
+    N = len(x)
+    return x * np.cos(2 * np.pi * a * np.random.random_sample(N))
