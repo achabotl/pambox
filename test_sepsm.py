@@ -36,6 +36,10 @@ def midfreq():
                      1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
                      6300, 8000])
 
+@pytest.fixture
+def mat_snr_env():
+    return sio.loadmat('./test_files/test_snr_env.mat')
+
 
 def test_select_bands_above_threshold(midfreq):
     mat = sio.loadmat("./test_files/test_bands_above_threshold.mat")
@@ -48,3 +52,22 @@ def test_select_bands_above_threshold(midfreq):
     bands_above_thres_idx = np.where(bands_above_thres)[0] + 1
     assert np.array_equal(bands_above_thres_idx, target)
 
+
+def test_snr_env(mat_snr_env):
+    """@todo: Docstring for test_snr_env_for_simple_signals.
+    :returns: @todo
+
+    """
+
+    clean = mat_snr_env['clean'].squeeze()
+    noise = mat_snr_env['noise'].squeeze()
+    mix = mat_snr_env['mix'].squeeze()
+    fs_env = mat_snr_env['fsNew'].squeeze()
+    target_snr_env = mat_snr_env['snr_env'].squeeze()
+    target_excitation_patterns = mat_snr_env['env_excitation_patterns'].squeeze().T
+
+    signals = (clean, mix, noise)
+    snrenv, excitation_patterns = sepsm.srn_env(signals, fs_env)
+    np.testing.assert_allclose(snrenv, target_snr_env, rtol=1e-3)
+    np.testing.assert_allclose(excitation_patterns,
+                               target_excitation_patterns, rtol=1e-2)
