@@ -34,6 +34,13 @@ def test_set_level(noise_raw, noise_65dB):
     np.testing.assert_allclose(x65, noise_65dB, atol=1e-4)
 
 
+def test_mix_speech_and_noise_0dB(speech_raw, noise_raw, mix_0dB):
+    speech65 = general.setdbspl(speech_raw, 65)
+    noise65 = general.setdbspl(noise_raw, 65)
+    mixed = speech65 + noise65
+    np.testing.assert_allclose(mixed, mix_0dB, atol=1e-4)
+
+
 def test_envelope_extraction():
     mat = sio.loadmat("./test_files/test_envelope.mat")
     x = mat['signal'][0]
