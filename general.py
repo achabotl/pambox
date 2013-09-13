@@ -54,3 +54,18 @@ def setdbspl(x, lvl, ac=False):
 
     """
     return x / rms(x, ac) * 10. ** ((lvl - 100.) / 20.)
+
+
+def rms(x, ac=True):
+    """RMS value of a signal
+
+    :x: signal
+    :ac: bool, default: True
+        consider only the AC component of the signal
+    :rms: rms value
+
+    """
+    if ac:
+        return np.std(x, axis=-1)
+    else:
+        return np.std(x, axis=-1) + np.mean(x, axis=-1)
