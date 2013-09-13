@@ -165,7 +165,7 @@ def noctave_filtering(x, center_f, fs, width=3, return_time=True):
         time_sig = [np.fft.irfft(spec, N) for spec in pos_spec]
     else:
         pass
-    return time_sig, pos_spec
+    return np.array(time_sig), pos_spec
 
 
 def noctave_center_freq(lowf, highf, width=3):
