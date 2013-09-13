@@ -21,3 +21,9 @@ def auditory_processing(signal, center_f=MIDFREQ, fs=FS):
     y = auditory.gammatone_apply(signal, b, a)
     return general.hilbert_envelope(y)
 
+
+def bands_above_thres(x, c, fs):
+    noise_rms_db = general.dbspl(x)
+    # Convert to spectrum level according to ANSI 1997
+    noise_spec_level_corr = noise_rms_db - 10.0 * sp.log10(sp.array(c) * 0.231)
+    return noise_spec_level_corr > HT_DIFFUSE[0:len(noise_spec_level_corr)]
