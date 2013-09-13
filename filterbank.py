@@ -128,3 +128,41 @@ def impz(b, a=1):
     plt.xlabel(r'n (samples)')
     plt.title(r'Step response')
     plt.subplots_adjust(hspace=0.5)
+
+
+def noctave_filtering(x, center_f, fs, width=3, return_time=True):
+    """Rectangular nth-octave filtering.
+
+    :x: signal
+    :center_f: ndarray, center frequencies, in Hz
+    :width: width of the filters, default 3 for 1/3-octave
+
+    Returns:
+    :time_sig: array of the filtered signal
+    :spec: nth-octave spectrumt
+
+    """
+    # Use numpy's FFT because SciPy's version of rfft (2 real results per
+    # frequency bin) behaves differently from numpy's (1 complex result per
+    # frequency bin)
+    N = len(x)
+    X = np.fft.rfft(x)  # Has only positive frequencies
+    # Calculate center frequencies and cutoff frequencies
+    #center_f = noctave_center_freq(lowf, highf, width=width)
+    bound_f = np.zeros(len(center_f) + 1)
+    bound_f[0] = center_f[0] / 2 ** (1 / 2 / width)
+    bound_f[1:] = center_f * 2 ** (1 / 2 / width)
+    bound_f = bound_f[bound_f < fs / 2]
+    # Convert from frequencies to vector indexes. Factor of two is because
+    # we consider positive frequencies only.
+    bound_idx = np.around(bound_f * 2 / fs * len(X))
+    # Initialize arrays
+    pos_spec = np.zeros((len(center_f), len(X)), dtype=np.complex)
+    time_sig = np.zeros((len(center_f), len(x)))
+    for idx, (l, f) in enumerate(zip(bound_idx[0:], bound_idx[1:])):
+        pos_spec[idx, l:f] = X[l:f]
+    if return_time:
+        time_sig = [np.fft.irfft(spec, N) for spec in pos_spec]
+    else:
+        pass
+    return time_sig, pos_spec
