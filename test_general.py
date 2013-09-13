@@ -32,3 +32,11 @@ def noise_65dB():
 def test_set_level(noise_raw, noise_65dB):
     x65 = general.setdbspl(noise_raw, 65)
     np.testing.assert_allclose(x65, noise_65dB, atol=1e-4)
+
+
+def test_envelope_extraction():
+    mat = sio.loadmat("./test_files/test_envelope.mat")
+    x = mat['signal'][0]
+    target = mat['envelope'][0]
+    envelope = general.hilbert_envelope(x)
+    np.testing.assert_allclose(envelope, target, atol=1e-4)

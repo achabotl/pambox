@@ -14,8 +14,7 @@ def dbspl(x, ac=False):
     DBSPL(x, ac=True) does the same, but considers only the AC component of the
     signal (i.e. the mean is removed).
 
-    See also: setdbspl
-
+    See also: setdbspl 
     References:
       Auditory Modeling Toolbox, Peter L. Soendergaard
       B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
@@ -69,3 +68,7 @@ def rms(x, ac=True):
         return np.std(x, axis=-1)
     else:
         return np.std(x, axis=-1) + np.mean(x, axis=-1)
+
+
+def hilbert_envelope(signal):
+    return np.abs(hilbert(signal))
