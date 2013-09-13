@@ -14,7 +14,8 @@ def dbspl(x, ac=False):
     DBSPL(x, ac=True) does the same, but considers only the AC component of the
     signal (i.e. the mean is removed).
 
-    See also: setdbspl 
+    See also: setdbspl
+
     References:
       Auditory Modeling Toolbox, Peter L. Soendergaard
       B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
@@ -26,7 +27,7 @@ def dbspl(x, ac=False):
     :returns: @todo
 
     """
-    return 20. * np.log10(rms(x, ac=False)) + 100.
+    return 20. * np.log10(rms(x, ac)) + 100.
 
 
 def setdbspl(x, lvl, ac=False):
