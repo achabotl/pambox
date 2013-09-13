@@ -47,3 +47,17 @@ def test_envelope_extraction():
     target = mat['envelope'][0]
     envelope = general.hilbert_envelope(x)
     np.testing.assert_allclose(envelope, target, atol=1e-4)
+
+
+# Can't be done programmatically, because the exact third-octave spacing is not
+# exactly the same as the one commonly used.
+@pytest.mark.xfail
+def test_third_oct_center_freq_bet_63_12500_hz():
+    """Test returns correct center frequencies for third-octave filters
+
+    Between 63 and 12500 Hz.
+
+    """
+    midfreq = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
+               1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
+    assert noctave_center_freq(63, 12500, width=3) == midfreq

@@ -166,3 +166,20 @@ def noctave_filtering(x, center_f, fs, width=3, return_time=True):
     else:
         pass
     return time_sig, pos_spec
+
+
+def noctave_center_freq(lowf, highf, width=3):
+    """Calculate exact center N-octave space center frequencies
+
+    In practive, what is often desired is the "simplified" center frequencies,
+    so this function is not of much use.
+
+    :lowf: low frequency Hz
+    :highf: high frequency Hz
+    :width: spacing, 3 for third-octave
+    :returns: @todo
+
+    """
+    n_centers = np.log2(highf / lowf) * width + 1
+    n_octave = np.log2(highf / lowf)
+    return lowf * np.logspace(0, n_octave, num=n_centers, base=2)
