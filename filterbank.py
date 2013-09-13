@@ -63,7 +63,7 @@ def mod_filterbank(signal, fs):
     # ------------------------------------------------
     X[0] = 0
     for k in range(len(Wcf)):
-        Vout[k] = X_power_pos * Wcf[k, :np.ceil(N / 2)]
+        Vout[k] = X_power_pos * Wcf[k, :np.floor(N / 2) + 1]
         # Integration estimated as a sum from f > 0
         # integrate envelope power in the passband of the filter. Index goes
         # from 2:end since integration is for f>0

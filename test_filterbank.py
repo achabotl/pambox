@@ -10,4 +10,4 @@ def test_mod_filtering_for_simple_signal():
     target = np.array([6.69785298e-18, 6.06375859e-06, 2.42555385e-05,
                       9.70302212e-05, 3.88249957e-04, 1.55506496e-03,
                       6.25329663e-03])
-    np.testing.assert_allclose(p, target)
+    np.testing.assert_allclose(p, target, rtol=1e-2)
