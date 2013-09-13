@@ -1,6 +1,7 @@
 from numpy import pi, exp, cos
 import numpy as np
 import scipy as sp
+import scipy.signal as ss
 import filterbank
 
 
@@ -27,8 +28,8 @@ def gammatone_filtering(signal, center_f=MIDFREQ, fs=FS):
     :returns: @todo
 
     """
-    b = gammatonefir(center_f, fs)
-    return filterbank.ufilterbank(signal, b)
+    b, a, _, _, _ = gammatone_make(fs, center_f)
+    return gammatone_apply(signal, b, a)
 
 
 def lowpass_env_filtering(x, cutoff=150., N=1, fs=FS):
@@ -107,8 +108,8 @@ def gammatone_apply(x, forward, feedback):
     '''
 
     # Allocate the memory
-    (rows, cols) = np.shape(feedback)
-    y = np.zeros( (rows, len(x)) )
+    rows, _ = np.shape(feedback)
+    y = np.zeros((rows, len(x)))
 
     # Filter the signal
     for ii in range(rows):
