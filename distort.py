@@ -43,3 +43,37 @@ def phase_jitter(x, a):
     """
     N = len(x)
     return x * np.cos(2 * np.pi * a * np.random.random_sample(N))
+
+
+def overlap_and_add(powers, phases, len_window, shift_size):
+    """Reconstruct a signal with the overlap and add method
+
+    :powers: array-like,
+    :phases: array-like,
+    :len_window: int, window length
+    :shift_size: int, shift length. For non overlapping signals, in would
+    equal len_frame. For 50% overlapping signals, it would be len_frame/2.
+    :returns: array-like, reconstructed time-domain signal
+
+    """
+    n_frames, len_frame = powers.shape
+    spectrum = powers * np.exp(1j * phases)
+    signal = np.zeros(n_frames * shift_size + len_window - shift_size)
+
+    # Create full spectrum, by joining conjugated positive spectrum
+    if len_window % 2:
+        # Do no duplicate the DC bin
+        spectrum = np.hstack((spectrum, np.conj(np.fliplr(spectrum[:, 1:]))))
+    else:
+        # If odd-numbered, do not duplicated the DC ans FS/2 bins
+        spectrum = np.hstack((spectrum,
+                                  np.conj(np.fliplr(spectrum[:, 1:-1]))))
+
+    signal = np.zeros((n_frames - 1) * shift_size + len_window)
+
+    for i_frame, hop in enumerate(range(0,
+                                        len(signal) - int(len_window) + 1,
+                                        int(shift_size))):
+        signal[hop:hop + len_window] \
+            += np.real(sp.fftpack.ifft(spectrum[i_frame], len_window))
+    return signal
