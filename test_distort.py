@@ -6,6 +6,11 @@ import distort
 
 
 @pytest.fixture
+def mat_spec_sub():
+    return sio.loadmat('./test_files/test_spec_sub_periodic.mat')
+
+
+@pytest.fixture
 def mat_overlap_and_add():
     return sio.loadmat('./test_files/test_overlap_and_add.mat')
 
@@ -28,6 +33,5 @@ def test_spec_sub(mat_spec_sub):
     shift = mat_spec_sub['SP'].squeeze()
     factor = mat_spec_sub['factor'].squeeze()
     target = mat_spec_sub['output_Y'].squeeze()
-    target_noise = mat_spec_sub['output_N'].squeeze()
-    y_speech, y_noise = distort.spec_sub(signal, noise, factor, w, padz, shift)
-    np.testing.assert_allclose(y_speech, target)
+    y_speech, _ = distort.spec_sub(signal, noise, factor, w, padz, shift)
+    np.testing.assert_allclose(y_speech, target, atol=1e-16)

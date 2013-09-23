@@ -66,8 +66,7 @@ def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
               noisy signal.
 
     """
-    wnd = np.hanning(w + 2)  # create hanning window with length = W
-    wnd = wnd[1:-1]
+    wnd = np.hanning(w)  # create hanning window with length = W
 
     stim = np.vstack((x, noise))
 
