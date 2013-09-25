@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-from scipy.signal import hilbert
+import scipy.signal
 
 
 def dbspl(x, ac=False):
@@ -71,4 +71,4 @@ def rms(x, ac=True):
 
 
 def hilbert_envelope(signal):
-    return np.abs(hilbert(signal))
+    return np.abs(scipy.signal.hilbert(signal))
