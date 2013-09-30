@@ -77,8 +77,12 @@ def gammatone_make(fs, cf, beta=1.019):
     * (-2*np.exp(4*1j*cf*pi*T)*T + 2*np.exp(-(B*T) + 2*1j*cf*pi*T) * T * (np.cos(2*cf*pi*T) + np.sqrt(3 + 2**(3./2))*np.sin(2*cf*pi*T))) \
     / (-2 / np.exp(2*B*T) - 2*np.exp(4*1j*cf*pi*T) + 2*(1 + np.exp(4*1j*cf*pi*T))/np.exp(B*T))**4 )
 
-    feedback = np.zeros((len(cf), 9))
-    forward =  np.zeros((len(cf), 5))
+    if np.isscalar(cf):
+        len_cf = 1
+    else:
+        len_cf = len(cf)
+    feedback = np.zeros((len_cf, 9))
+    forward = np.zeros((len_cf, 5))
 
     forward[:, 0] =    T**4 / gain
     forward[:, 1] = -4*T**4 * np.cos(2*cf*pi*T) / np.exp(B*T)   / gain
@@ -86,7 +90,7 @@ def gammatone_make(fs, cf, beta=1.019):
     forward[:, 3] = -4*T**4 * np.cos(6*cf*pi*T) / np.exp(3*B*T) / gain
     forward[:, 4] =    T**4 * np.cos(8*cf*pi*T) / np.exp(4*B*T) / gain
 
-    feedback[:, 0] = np.ones(len(cf))
+    feedback[:, 0] = np.ones(len_cf)
     feedback[:, 1] = -8 * np.cos(2*cf*pi*T) / np.exp(B*T)
     feedback[:, 2] =  4 * (4 + 3*np.cos(4*cf*pi*T)) / np.exp(2*B*T)
     feedback[:, 3] = -8 * (6*np.cos(2*cf*pi*T) + np.cos(6*cf*pi*T)) / np.exp(3*B*T)
