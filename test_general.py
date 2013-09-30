@@ -46,7 +46,7 @@ def test_envelope_extraction():
     x = mat['signal'][0]
     target = mat['envelope'][0]
     envelope = general.hilbert_envelope(x)
-    np.testing.assert_allclose(envelope, target, atol=1e-4)
+    np.testing.assert_allclose(envelope, target, atol=1e-3)
 
 
 # Can't be done programmatically, because the exact third-octave spacing is not
