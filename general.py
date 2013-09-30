@@ -1,6 +1,5 @@
 import numpy as np
 import scipy as sp
-import scipy.signal
 
 
 def dbspl(x, ac=False):
@@ -36,7 +35,7 @@ def setdbspl(x, lvl, ac=False):
     insig to lvl dB, using the convention that a pure tone with an RMS value
     of 1 corresponds to 100 dB SPL.
 
-    If the input is a matrix, it is assumed that each row is a signal.
+    If the input is an array, it is assumed that each row is a signal.
 
     SETDBSPL(insig,lvl,ac=True) does the same, but considers only the AC
     component of the signal (i.e. the mean is removed).
@@ -83,3 +82,7 @@ def hilbert_envelope(signal):
     y_h = sp.signal.hilbert(signal, N)
     # Return signal with same dimensions as original
     return np.abs(y_h[..., :N_orig])
+
+
+def next_pow_2(x):
+    return int(pow(2, np.ceil(np.log2(x))))

@@ -2,6 +2,7 @@ import numpy as np
 import scipy as sp
 import scipy.signal as ss
 import matplotlib.pyplot as plt
+import general
 from scipy import pi
 
 
@@ -29,7 +30,7 @@ def mod_filterbank(signal, fs):
     # energy
     X_power_pos[1:] = X_power_pos[1:] * 2
 
-    pos_freqs = np.linspace(0, fs / 2, len(X_power_pos))
+    pos_freqs = np.linspace(0, fs / 2, X_power_pos.shape[-1])
     # Concatenate vector of 0:fs and -fs:1
     freqs = np.concatenate((pos_freqs, -1 * pos_freqs[-1:0:-1]))
 
@@ -146,7 +147,8 @@ def noctave_filtering(x, center_f, fs, width=3, return_time=True):
     # frequency bin) behaves differently from numpy's (1 complex result per
     # frequency bin)
     N = len(x)
-    X = np.fft.rfft(x)  # Has only positive frequencies
+    N_fft = general.next_pow_2(N)
+    X = np.fft.rfft(x, N_fft)  # Has only positive frequencies
     # Calculate center frequencies and cutoff frequencies
     #center_f = noctave_center_freq(lowf, highf, width=width)
     bound_f = np.zeros(len(center_f) + 1)
@@ -162,10 +164,10 @@ def noctave_filtering(x, center_f, fs, width=3, return_time=True):
     for idx, (l, f) in enumerate(zip(bound_idx[0:], bound_idx[1:])):
         pos_spec[idx, l:f] = X[l:f]
     if return_time:
-        time_sig = [np.fft.irfft(spec, N) for spec in pos_spec]
+        time_sig = np.array([np.fft.irfft(spec, N_fft) for spec in pos_spec])
     else:
         pass
-    return np.array(time_sig), pos_spec
+    return time_sig[:, :N], pos_spec
 
 
 def noctave_center_freq(lowf, highf, width=3):
