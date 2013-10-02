@@ -3,7 +3,6 @@ from __future__ import print_function
 import numpy as np
 import scipy as sp
 import general
-import scipy.fftpack
 
 
 def mix_noise(clean, noise, snr=None):
