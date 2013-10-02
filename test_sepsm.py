@@ -58,16 +58,16 @@ def test_snr_env(mat_snr_env):
     :returns: @todo
 
     """
-
     clean = mat_snr_env['clean'].squeeze()
     noise = mat_snr_env['noise'].squeeze()
     mix = mat_snr_env['mix'].squeeze()
     fs_env = mat_snr_env['fsNew'].squeeze()
     target_snr_env = mat_snr_env['snr_env'].squeeze()
     target_excitation_patterns = mat_snr_env['env_excitation_patterns'].squeeze().T
+    modf = np.array([1., 2., 4., 8., 16., 32., 64.])
 
     signals = (clean, mix, noise)
-    snrenv, excitation_patterns = sepsm.srn_env(signals, fs_env)
-    np.testing.assert_allclose(snrenv, target_snr_env, rtol=1e-3)
+    snrenv, excitation_patterns = sepsm.snr_env(signals, fs_env, modf)
+    np.testing.assert_allclose(snrenv, target_snr_env)
     np.testing.assert_allclose(excitation_patterns,
-                               target_excitation_patterns, rtol=1e-2)
+                               target_excitation_patterns)
