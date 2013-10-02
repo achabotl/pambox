@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import scipy as sp
 import scipy.signal as ss
@@ -6,7 +7,7 @@ import general
 from scipy import pi
 
 
-def mod_filterbank(signal, fs):
+def mod_filterbank(signal, fs, modf):
     """Implementation of the EPSM-filterbank
 
     :signal: ndarray, temporal envelope of a signal
@@ -14,11 +15,12 @@ def mod_filterbank(signal, fs):
     :returns: ndarray, integrated power spectrum at the output of each filter
 
     """
+    fcs = modf[1:]
+    fcut = modf[0]
     # Make signal odd length
     signal = signal[0:-1] if (len(signal) % 2) == 0 else signal
 
     Q = 1.     # Q-factor of band-pass filters
-    fcut = 1.  # cutoff frequency of low-pass filter:
     n = 3.     # order of the low-pass filter
 
     N = signal.shape[-1]  # length of envelope signals
