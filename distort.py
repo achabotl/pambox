@@ -27,7 +27,7 @@ def mix_noise(clean, noise, snr=None):
     clean_level = general.dbspl(clean)
     noise = general.setdbspl(noise, clean_level - snr)
 
-    if snr:
+    if snr is not None:
         mix = clean + noise
     else:
         mix = clean
