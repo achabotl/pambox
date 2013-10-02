@@ -1,3 +1,4 @@
+from __future__ import division
 from scipy.stats import norm
 from scipy.optimize import leastsq
 from scipy.special import erfc
