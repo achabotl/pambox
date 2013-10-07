@@ -28,8 +28,10 @@ def snrenv(snr):
 
 def test_fit_obs(data, snrenv, idealobs_parameters):
     c = idealobs.IdealObs()
-    popt = c.fit_obs(snrenv, data)
-    np.testing.assert_allclose(popt[0], idealobs_parameters[0:3], atol=1e-5)
+    c.fit_obs(snrenv, data)
+    params = c.get_params()
+    res = [params['k'], params['q'], params['sigma_s']]
+    np.testing.assert_allclose(res, idealobs_parameters[0:3], atol=1e-5)
 
 
 def test_psy_fn():
@@ -43,7 +45,8 @@ def test_psy_fn():
 
 
 def test_snr_env_to_pc(snrenv, idealobs_parameters, data):
-    pc = idealobs.snrenv_to_pc(np.arange(0, 21), 1, 0.5, 0.6, 8000.)
+    c = idealobs.IdealObs(k=1., q=0.5, sigma_s=0.6, m=8000.)
+    pc = c.snrenv_to_pc(np.arange(0, 21))
     target = np.array([0.0000, 0.0025, 0.0267, 0.1327, 0.4403, 1.1314, 2.4278,
                        4.5518, 7.6788, 11.8990, 17.1955, 23.4442, 30.4320,
                        37.8885, 45.5214, 53.0503, 60.2323, 66.8786, 72.8613,
