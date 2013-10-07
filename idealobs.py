@@ -14,6 +14,34 @@ Q = 0.5
 SIGMA_S = 0.6
 M = 8000.0
 
+class IdealObs(object):
+
+    """Docstring for IdealObs. """
+
+    def __init__(self, k=sqrt(1.2), sigma_s=0.5, q=0.6, m=8000.):
+        """@todo: to be defined1.
+
+        :k: @todo
+        :sigma_s: @todo
+        :q: @todo
+        :m: @todo
+
+        """
+        self.k = k
+        self.sigma_s = sigma_s
+        self.q = q
+        self.m = m
+
+    def fit_obs(self, snrenv, pcdata):
+        """Find the optimal parameters for the ideal observer.
+        snrenv: the linear SNRenv values that are to be converted to percent
+            correct.
+        pcdata: the data, in percentage of correctly understood tokens.
+        """
+        errfc = lambda p, snr, data: snrenv_to_pc(snrenv, p[0], p[1], p[2], M) - data
+        p0 = [K, Q, SIGMA_S]
+        res = leastsq(errfc, p0, args=(snrenv, pcdata))
+        return res
 
 def snrenv_to_pc(snrenv, k=K, q=Q, sigma_s=SIGMA_S, m=M):
     """Convert SNR_env values to a percent correct using a ideal observer
@@ -26,18 +54,6 @@ def snrenv_to_pc(snrenv, k=K, q=Q, sigma_s=SIGMA_S, m=M):
     un = Un + 0.577 / Un
     dp = k * snrenv**q
     return norm.cdf(dp, un, sqrt(sigma_s**2 + sn**2)) * 100
-
-
-def fit_obs(snrenv, pcdata):
-    """Find the optimal parameters for the ideal observer.
-    snrenv: the linear SNRenv values that are to be converted to percent
-        correct.
-    pcdata: the data, in percentage of correctly understood tokens.
-    """
-    errfc = lambda p, snr, data: snrenv_to_pc(snrenv, p[0], p[1], p[2], M) - data
-    p0 = [K, Q, SIGMA_S]
-    res = leastsq(errfc, p0, args=(snrenv, pcdata))
-    return res
 
 
 def psy_fn(x, mu=0, sigma=1):

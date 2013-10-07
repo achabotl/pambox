@@ -27,7 +27,8 @@ def snrenv(snr):
 
 
 def test_fit_obs(data, snrenv, idealobs_parameters):
-    popt = idealobs.fit_obs(snrenv, data)
+    c = idealobs.IdealObs()
+    popt = c.fit_obs(snrenv, data)
     np.testing.assert_allclose(popt[0], idealobs_parameters[0:3], atol=1e-5)
 
 
