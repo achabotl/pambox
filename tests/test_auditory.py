@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import auditory as aud
+from pambox import auditory as aud
 import scipy.io as sio
 
 

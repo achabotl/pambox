@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import scipy as sp
 import scipy.io as sio
-import distort
+from pambox import distort
 
 
 @pytest.fixture

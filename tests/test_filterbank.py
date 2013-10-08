@@ -1,5 +1,5 @@
 import pytest
-import filterbank
+from pambox import filterbank
 import numpy as np
 import scipy.io as sio
 

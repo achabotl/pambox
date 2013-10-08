@@ -1,5 +1,5 @@
 import pytest
-import general
+from pambox import general
 from scipy.io import wavfile
 import numpy as np
 import scipy.io as sio

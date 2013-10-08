@@ -1,6 +1,6 @@
 import pytest
 import scipy.io as sio
-import idealobs
+from pambox import idealobs
 import numpy as np
 
 
