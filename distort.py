@@ -47,6 +47,17 @@ def phase_jitter(x, a):
     return x * np.cos(2 * np.pi * a * np.random.random_sample(N))
 
 
+def reverb(x, rt):
+    """@todo: Docstring for reverb.
+
+    :x: @todo
+    :rt: @todo
+    :returns: @todo
+
+    """
+    pass
+
+
 def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
     """Apply spectral subtraction to a signal
 
