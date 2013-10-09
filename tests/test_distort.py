@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-import scipy as sp
 import scipy.io as sio
 from pambox import distort
 
@@ -33,5 +32,7 @@ def test_spec_sub(mat_spec_sub):
     shift = mat_spec_sub['SP'].squeeze()
     factor = mat_spec_sub['factor'].squeeze()
     target = mat_spec_sub['output_Y'].squeeze()
-    y_speech, _ = distort.spec_sub(signal, noise, factor, w, padz, shift)
+    target_noise = mat_spec_sub['output_N'].squeeze()
+    y_speech, y_noise = distort.spec_sub(signal, noise, factor, w, padz, shift)
     np.testing.assert_allclose(y_speech, target, atol=1e-16)
+    np.testing.assert_allclose(y_noise, target_noise, atol=1e-16)
