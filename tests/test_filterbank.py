@@ -2,6 +2,7 @@ import pytest
 from pambox import filterbank
 import numpy as np
 import scipy.io as sio
+from numpy.testing import assert_allclose
 
 
 @pytest.mark.xfail
@@ -19,7 +20,6 @@ def test_third_octave_filtering_of_noise_():
     target_noise_rms = [general.rms(x) for x in target_noise_time]
 
 
-
 def test_mod_filtering_for_simple_signal():
     signal = np.array([1, 0, 1, 0, 1])
     fs = 2205
@@ -28,4 +28,17 @@ def test_mod_filtering_for_simple_signal():
     target = np.array([6.69785298e-18, 6.06375859e-06, 2.42555385e-05,
                       9.70302212e-05, 3.88249957e-04, 1.55506496e-03,
                       6.25329663e-03])
-    np.testing.assert_allclose(p, target, rtol=1e-2)
+    assert_allclose(p, target, rtol=1e-2)
+
+
+def test_mod_filt_complex():
+    """Test modulation filtering with actual speech and noise signals
+    """
+    mat = sio.loadmat('./test_files/test_mod_filtering.mat')
+    x = mat['data'].squeeze()
+    fs = mat['fs'].squeeze()
+    modf = np.hstack((mat['fcut'].squeeze(), mat['fcs'].squeeze()))
+    modf = modf.astype('float')
+    target = mat['powers'].squeeze()
+    powers = filterbank.mod_filterbank(x, fs, modf)
+    assert_allclose(powers, target)
