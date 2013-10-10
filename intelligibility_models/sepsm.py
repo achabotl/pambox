@@ -45,7 +45,9 @@ class Sepsm(object):
         noise_spec_level_corr = noise_rms_db \
             - 10.0 * sp.log10(sp.array(self.cf) * 0.231)
         max_idx = min(len(noise_spec_level_corr), len(HT_DIFFUSE))
-        return noise_spec_level_corr[:max_idx] > HT_DIFFUSE[:max_idx]
+        b = noise_spec_level_corr[:max_idx] > HT_DIFFUSE[:max_idx]
+        idx = np.arange(len(noise_rms_db))
+        return idx[b]
 
     def _snr_env(self, signals, fs):
         """calculate SNR_env for a signal mixture and a noise.
@@ -108,7 +110,7 @@ class Sepsm(object):
         mod_powers = np.empty((3, N_cf, N_modf))
         # For each band above threshold,
         # (actually, for debug purposes, maybe I should keep all...)
-        for idx_band, _ in enumerate(bands_above_thres_idx):
+        for idx_band in bands_above_thres_idx:
             # Peripheral filtering, of just the band we process
             filtered_signals = \
                 np.array([self._auditory_processing(signal,

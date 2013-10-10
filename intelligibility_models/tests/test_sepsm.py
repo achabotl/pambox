@@ -51,9 +51,9 @@ def test_select_bands_above_threshold(midfreq):
 
     c = sepsm.Sepsm(cf=midfreq)
     bands_above_thres = c._bands_above_thres(noise_signal)
-    # Uses boolean values, convert to numbers, and make 1-based
-    bands_above_thres_idx = np.where(bands_above_thres)[0] + 1
-    assert np.array_equal(bands_above_thres_idx, target)
+    # Make 1-based to compare with matlab
+    bands_above_thres += 1
+    assert np.array_equal(bands_above_thres, target)
 
 
 def test_snr_env(mat_snr_env):
