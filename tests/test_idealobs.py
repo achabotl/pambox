@@ -52,3 +52,9 @@ def test_snr_env_to_pc(snrenv, idealobs_parameters, data):
                        37.8885, 45.5214, 53.0503, 60.2323, 66.8786, 72.8613,
                        78.1116, 82.6125])
     np.testing.assert_allclose(pc, target, atol=1e-4)
+
+
+def test_get_params():
+    p = {'k':1, 'q':2, 'sigma_s':0.5, 'm':800}
+    c = idealobs.IdealObs(**p)
+    assert p == c.get_params()
