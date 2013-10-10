@@ -117,7 +117,6 @@ def gammatone_apply(x, forward, feedback):
 
     # Filter the signal
     for ii in range(rows):
-        y[ii,:] = ss.lfilter(forward[ii,:], feedback[ii,:], x)
+        y[ii,:] = ss.lfilter(forward[ii, :], feedback[ii, :], x)
 
     return y
-
