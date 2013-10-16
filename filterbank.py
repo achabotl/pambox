@@ -133,7 +133,7 @@ def impz(b, a=1):
     plt.subplots_adjust(hspace=0.5)
 
 
-def noctave_filtering(x, center_f, fs, width=3, return_time=True):
+def noctave_filtering(x, center_f, fs, width=3):
     """Rectangular nth-octave filtering.
 
     :x: signal
@@ -148,28 +148,30 @@ def noctave_filtering(x, center_f, fs, width=3, return_time=True):
     # Use numpy's FFT because SciPy's version of rfft (2 real results per
     # frequency bin) behaves differently from numpy's (1 complex result per
     # frequency bin)
+    center_f = np.array(center_f, dtype='float')
+
     N = len(x)
-    N_fft = general.next_pow_2(N)
-    X = np.fft.rfft(x, N_fft)  # Has only positive frequencies
+    # TODO Use powers of 2 to calculate the power spectrum, and also, possibly
+    # use RFFT instead of the complete fft.
+    X = sp.fftpack.fft(x)
+    X = np.abs(X)
+    X = X ** 2 / N  # Power spectrum
+    X = X[0:np.floor(N / 2) + 1]
+    X[1:] = X[1:] * 2.
     # Calculate center frequencies and cutoff frequencies
     #center_f = noctave_center_freq(lowf, highf, width=width)
     bound_f = np.zeros(len(center_f) + 1)
-    bound_f[0] = center_f[0] / 2 ** (1 / 2 / width)
-    bound_f[1:] = center_f * 2 ** (1 / 2 / width)
+    bound_f[0] = center_f[0] * 2. ** (- 1. / (2. * width))
+    bound_f[1:] = center_f * 2. ** (1. / (2. * width))
     bound_f = bound_f[bound_f < fs / 2]
     # Convert from frequencies to vector indexes. Factor of two is because
     # we consider positive frequencies only.
-    bound_idx = np.around(bound_f * 2 / fs * len(X))
+    bound_idx = np.floor(bound_f / (fs / 2.) * len(X))
     # Initialize arrays
-    pos_spec = np.zeros((len(center_f), len(X)), dtype=np.complex)
-    time_sig = np.zeros((len(center_f), len(x)))
+    out_rms = np.zeros(len(center_f))
     for idx, (l, f) in enumerate(zip(bound_idx[0:], bound_idx[1:])):
-        pos_spec[idx, l:f] = X[l:f]
-    if return_time:
-        time_sig = np.array([np.fft.irfft(spec, N_fft) for spec in pos_spec])
-    else:
-        pass
-    return time_sig[:, :N], pos_spec
+        out_rms[idx] = np.sqrt(np.sum(X[l:f]) / N)
+    return out_rms
 
 
 def noctave_center_freq(lowf, highf, width=3):
