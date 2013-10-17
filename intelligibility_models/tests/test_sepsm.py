@@ -45,12 +45,11 @@ def mat_snr_env():
 
 def test_select_bands_above_threshold(midfreq):
     mat = sio.loadmat("./test_files/test_bands_above_threshold.mat")
-    noise_signal = mat['noise_time_output'].T
-    noise_signal = noise_signal[0:22, ]
-    target = mat['Nbands_to_process'][0]
+    noise_rms = mat['mix_rms_out'].squeeze()
+    target = mat['bands_to_process'][0]
 
     c = sepsm.Sepsm(cf=midfreq)
-    bands_above_thres = c._bands_above_thres(noise_signal)
+    bands_above_thres = c._bands_above_thres(noise_rms)
     # Make 1-based to compare with matlab
     bands_above_thres += 1
     assert np.array_equal(bands_above_thres, target)

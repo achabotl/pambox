@@ -40,10 +40,23 @@ class Sepsm(object):
         return general.hilbert_envelope(y)
 
     def _bands_above_thres(self, x):
-        noise_rms_db = general.dbspl(x)
-        # convert to spectrum level according to ansi 1997
+        """Select bands above threshold
+
+
+
+        Parameters
+        ----------
+        x : array_like, rms value of each peripheral channel.
+
+        Returns
+        -------
+        idx : array_like, indexes of the bands that are above threshold.
+
+        """
+        noise_rms_db = 20 * np.log10(x)
+        # convert to spectrum level according to ANSI 1997
         noise_spec_level_corr = noise_rms_db \
-            - 10.0 * sp.log10(sp.array(self.cf) * 0.231)
+            - 10.0 * np.log10(sp.array(self.cf) * 0.231)
         max_idx = min(len(noise_spec_level_corr), len(HT_DIFFUSE))
         b = noise_spec_level_corr[:max_idx] > HT_DIFFUSE[:max_idx]
         idx = np.arange(len(noise_rms_db))
@@ -102,9 +115,9 @@ class Sepsm(object):
         N_cf = len(self.cf)
 
         # find bands above threshold
-        filtered_noise, _ = filterbank.noctave_filtering(noise, self.cf,
+        filtered_noise_rms = filterbank.noctave_filtering(noise, self.cf,
                                                          self.fs, width=3)
-        bands_above_thres_idx = self._bands_above_thres(filtered_noise)
+        bands_above_thres_idx = self._bands_above_thres(filtered_noise_rms)
 
         snr_env_dbs = np.empty((N_cf, N_modf))
         mod_powers = np.empty((3, N_cf, N_modf))
