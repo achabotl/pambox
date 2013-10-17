@@ -111,9 +111,9 @@ class Sepsm(object):
         N_cf = len(self.cf)
 
         # find bands above threshold
-        filtered_noise_rms = filterbank.noctave_filtering(noise, self.cf,
-                                                         self.fs, width=3)
-        bands_above_thres_idx = self._bands_above_thres(filtered_noise_rms)
+        filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
+                                                        self.fs, width=3)
+        bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
         snr_env_dbs = np.empty((N_cf, N_modf))
         mod_powers = np.empty((3, N_cf, N_modf))
