@@ -36,3 +36,16 @@ def test_mod_filt_complex():
     target = mat['powers'].squeeze()
     powers = filterbank.mod_filterbank(x, fs, modf)
     assert_allclose(powers, target)
+
+
+def test_mod_filt_sepsm_v1():
+    """Test modulation filtering with actual speech and noise signals
+    """
+    mat = sio.loadmat('./test_files/test_modFbank_v1.mat')
+    x = mat['Env'][:, 0].squeeze()
+    fs = mat['fs'].squeeze()
+    modf = mat['fcs_EPSM'].squeeze()
+    modf = modf.astype('float')
+    target = mat['ExcPtn'][:, 0].squeeze()
+    powers = filterbank.mod_filterbank(x, fs, modf)
+    assert_allclose(powers, target)
