@@ -5,7 +5,7 @@ import scipy.signal as ss
 import filterbank
 
 
-MIDFREQ = np.array([63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800,
+CENTER_F = np.array([63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800,
                    1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000])
 FS = np.array([22050.])
 
@@ -21,7 +21,7 @@ def erbbw(fc):
     return 24.7 + fc / 9.265
 
 
-def gammatone_filtering(signal, center_f=MIDFREQ, fs=FS):
+def gammatone_filtering(signal, center_f=CENTER_F, fs=FS):
     """Filters a signal using a gammatone filterbank
 
     :signal: @todo

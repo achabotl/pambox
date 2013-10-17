@@ -58,6 +58,6 @@ def test_third_oct_center_freq_bet_63_12500_hz():
     Between 63 and 12500 Hz.
 
     """
-    midfreq = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-               1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
-    assert noctave_center_freq(63, 12500, width=3) == midfreq
+    center_f = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
+                1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
+    assert noctave_center_freq(63, 12500, width=3) == center_f

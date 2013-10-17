@@ -8,7 +8,7 @@ from pambox import filterbank
 from pambox import auditory
 
 
-MIDFREQ = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
+CENTER_F = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
            1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
 HT_DIFFUSE = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8, 3.8, 2.1,
               1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0, -3.8, -1.8, 2.5, 6.8)
@@ -20,7 +20,7 @@ class Sepsm(object):
 
     """Implement the sEPSM intelligibility model"""
 
-    def __init__(self, fs=22050, cf=MIDFREQ, modf=MODF, downsamp_factor=10,
+    def __init__(self, fs=22050, cf=CENTER_F, modf=MODF, downsamp_factor=10,
                  noise_floor=0.01, snrenv_limit=-30):
         """@todo: to be defined1. """
         self.fs = fs

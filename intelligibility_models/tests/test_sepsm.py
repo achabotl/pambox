@@ -32,7 +32,7 @@ def noise_65dB():
 
 
 @pytest.fixture
-def midfreq():
+def center_f():
     return np.array([63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800,
                      1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
                      6300, 8000])
@@ -43,12 +43,12 @@ def mat_snr_env():
     return sio.loadmat('./test_files/test_snr_env.mat')
 
 
-def test_select_bands_above_threshold(midfreq):
+def test_select_bands_above_threshold(center_f):
     mat = sio.loadmat("./test_files/test_bands_above_threshold.mat")
     noise_rms = mat['mix_rms_out'].squeeze()
     target = mat['bands_to_process'][0]
 
-    c = sepsm.Sepsm(cf=midfreq)
+    c = sepsm.Sepsm(cf=center_f)
     bands_above_thres = c._bands_above_thres(noise_rms)
     # Make 1-based to compare with matlab
     bands_above_thres += 1
