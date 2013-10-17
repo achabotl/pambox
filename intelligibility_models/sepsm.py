@@ -100,7 +100,7 @@ class Sepsm(object):
         # snrenv - values are truncated to minimum -30 db.
         return sp.maximum(self.snrenv_limit, snr_env_db), mod_powers
 
-    def predict(self, clean, mix, noise):
+    def predict(self, clean, mixture, noise):
         """Predicts intelligibility
 
         :clean: @todo
