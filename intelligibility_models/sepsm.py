@@ -1,15 +1,11 @@
 from __future__ import division
 import numpy as np
 import scipy as sp
-import scipy.io.wavfile
-import pandas as pd
 import matplotlib.pylab as plt
 
 from pambox import general
 from pambox import filterbank
 from pambox import auditory
-from pambox import distort
-from pambox import idealobs
 
 
 MIDFREQ = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
@@ -147,115 +143,7 @@ class Sepsm(object):
             for i_sig in range(3):
                 mod_powers[i_sig, idx_band, :] = mod_powers_tmp[i_sig]
 
-        return snr_env_dbs, mod_powers
-
-
-def load_clue_file(file_number):
-    root_name = '../stimuli/clue/sentencesWAV22/adjustedCLUEsent'
-    name = root_name + '{:03d}'.format(file_number) + '.wav'
-    int_sentence = scipy.io.wavfile.read(name)
-    return np.array(int_sentence[1].astype('float') / int_sentence[0])
-
-
-def load_clue_files(n_files):
-    root_name = '../stimuli/clue/sentencesWAV22/adjustedCLUEsent'
-    names = [root_name + '{:03d}'.format(i) + '.wav'
-             for i in range(1, n_files + 1)]
-    int_sentences = [scipy.io.wavfile.read(name) for name in names]
-    return np.array([int_sentence[1].astype('float') / int_sentence[0]
-                     for int_sentence in int_sentences])
-
-
-if __name__ == '__main__':
-
-    # Set conditions
-    factors = [0, 1, 8]
-    snrs = np.arange(-12, 5, 4)
-
-    # Read files
-    n_files = 1
-    sentences = load_clue_files(n_files)
-
-    # Set speech level
-    speech_level = 65
-    sentences = np.array([general.setdbspl(sentence, speech_level)
-                          for sentence in sentences])
-
-    # load noise
-    full_noise = scipy.io.wavfile.read('../stimuli/clue/SSN_CLUE22.wav')
-    full_noise = full_noise[1].astype('float') / full_noise[0]
-
-    distortion_name = 'SpecSub'
-    factor = 0
-    CF = np.array(MIDFREQ)
-    FS = 22050
-    W = 512
-    PADZ = 512
-    SHIFT_P = 0.5
-
-    columns = ['File', 'SNR', 'Distortion', 'Factor', 'SNRenv']
-    df_results = pd.DataFrame(columns=columns)
-    mod_columns = columns + ['Signal']
-    df_mod_powers = pd.DataFrame(columns=mod_columns)
-
-    sepsm = Sepsm(fs=FS, cf=CF, modf=MODF)
-
-    # for each sentence
-    mod_powers_all = np.empty((n_files, len(factors), len(snrs),
-                               3, len(CF), len(MODF)))
-    # for i_sent, sentence in enumerate(sentences):
-    for i_sent, sentence in enumerate(sentences):
-        print('Starting sentence %d...' % (i_sent + 1))
-        N = len(sentence)
-
-        # For each set of distortion parameters
-        for i_snr, snr in enumerate(snrs):
-            signals = distort.mix_noise(sentence, full_noise, snr)
-
-            for i_factor, factor in enumerate(factors):
-
-                # Add noise and apply distortion
-                mixture, noise = distort.spec_sub(signals[1], signals[2],
-                                                  factor, W, PADZ, SHIFT_P)
-
-                # Truncate signals to remove silences at beginning and end
-                mixture = mixture[1.5 * W:N]
-                noise = noise[1.5 * W:N]
-                clean = sentence[:len(mixture)]
-
-                snr_env_dbs, mod_powers = sepsm.predict(clean, mixture, noise)
-
-                snr_env_lins = 10 ** (snr_env_dbs / 10)
-
-                mod_powers_all[i_sent, i_factor, i_snr] = mod_powers
-
-                for ii, signal_type in enumerate(['Clean', 'Mix', 'Noise']):
-                    df_mod_powers_tmp = pd.DataFrame(mod_powers[ii],
-                                                     columns=MODF)
-                    df_mod_powers_tmp['File'] = i_sent
-                    df_mod_powers_tmp['Signal'] = signal_type
-                    df_mod_powers_tmp['Channel'] = CF
-                    df_mod_powers_tmp['SNR'] = snr
-                    df_mod_powers_tmp['Factor'] = factor
-                    df_mod_powers_tmp['Distortion'] = distortion_name
-
-                df_mod_powers = df_mod_powers.append(df_mod_powers_tmp)
-                df_results = df_results.\
-                    append({'File': i_sent + 1,
-                            'SNR': snr,
-                            'Distortion': distortion_name,
-                            'Factor': factor,
-                            'SNRenv': np.sqrt(np.sum(snr_env_lins ** 2))
-                            }, ignore_index=True)
-
-        print('Done with sentence %d...' % (i_sent + 1))
-
-    # Convert to percent correct
-    ido = idealobs.IdealObs()
-    to_pc = lambda x: ido.snrenv_to_pc(x)
-    df_results['Intelligibility'] = df_results['SNRenv'].map(to_pc)
-
-    print(df_results)
+        return snr_env_dbs, mod_powers, bands_above_thres_idx
 
 
 def plot_mod_powers(mod_powers_all, cf, modf):
@@ -278,9 +166,3 @@ def plot_mod_powers(mod_powers_all, cf, modf):
         ax[ii].set_xticklabels(modf)
     for ii in range(0, 16, 4):
         ax[ii].set_ylabel()
-
-
-
-# for key, grp in df_results.groupby(['Factor','SNR']):
-    # print(key)
-    # plot(grp.SNR, grp.Intelligibility.mean(), label=key)
