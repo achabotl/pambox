@@ -3,7 +3,6 @@ import numpy as np
 import scipy as sp
 import scipy.signal as ss
 import matplotlib.pyplot as plt
-import general
 from scipy import pi
 
 
