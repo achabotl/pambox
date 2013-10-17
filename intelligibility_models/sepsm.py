@@ -64,37 +64,36 @@ class Sepsm(object):
         :signals: namedtuple of ndarrays, channel envelopes for the clean
             speech, mixture and noise alone, in that order
         :fs: int, sampling frequency at which to do the modulation analysis.
-        :returns: ndarray, namedtuple, log snrenv values and modulation
-            excitation patters
+        :returns: ndarray, ndarray
+            lin snrenv values and modulation excitation patterns
 
         """
         fs = np.array(fs, dtype='float')
         signals = [np.array(signal, dtype='float') for signal in signals]
 
-        mod_powers = sp.empty((3, len(self.modf)))
+        exc_ptns = sp.empty((3, len(self.modf)))
         # for each stimulus
         for ii, signal in enumerate(signals):
             # modulation filtering
-            mod_powers[ii] = filterbank.mod_filterbank(signal, fs,
+            exc_ptns[ii] = filterbank.mod_filterbank(signal, fs,
                                                        self.modf)
 
         # set nan values to zero
-        mod_powers[np.isnan(mod_powers)] = 0
+        exc_ptns[np.isnan(exc_ptns)] = 0
 
         # noisefloor cannot exceed the mix, since they exist at the same time
-        mod_powers[2] = np.minimum(mod_powers[2], mod_powers[1])
+        exc_ptns[2] = np.minimum(exc_ptns[2], exc_ptns[1])
 
         # the noisefloor restricted to minimum 0.01 reflecting and internal
         # noise threshold
-        mod_powers[1] = np.maximum(mod_powers[1], self.noise_floor)
-        mod_powers[2] = np.maximum(mod_powers[2], self.noise_floor)
+        exc_ptns[1] = np.maximum(exc_ptns[1], self.noise_floor)
+        exc_ptns[2] = np.maximum(exc_ptns[2], self.noise_floor)
 
         # calculation of snrenv
         snr_env_db = 10 * np.log10((mod_powers[1] - mod_powers[2])
                                    / (mod_powers[2]))
 
-        # snrenv - values are truncated to minimum -30 db.
-        return sp.maximum(self.snrenv_limit, snr_env_db), mod_powers
+        return snr_env, exc_ptns
 
     def predict(self, clean, mixture, noise):
         """Predicts intelligibility
