@@ -4,7 +4,6 @@ from scipy.optimize import leastsq
 from scipy.special import erfc
 from numpy import sqrt
 from numpy import arange
-from numpy import array
 from numpy import linspace
 
 
