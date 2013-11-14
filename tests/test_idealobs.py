@@ -45,16 +45,16 @@ def test_psy_fn():
 
 
 def test_snr_env_to_pc(snrenv, idealobs_parameters, data):
-    c = idealobs.IdealObs(k=1., q=0.5, sigma_s=0.6, m=8000.)
-    pc = c.snrenv_to_pc(np.arange(0, 21))
-    target = np.array([0.0000, 0.0025, 0.0267, 0.1327, 0.4403, 1.1314, 2.4278,
-                       4.5518, 7.6788, 11.8990, 17.1955, 23.4442, 30.4320,
-                       37.8885, 45.5214, 53.0503, 60.2323, 66.8786, 72.8613,
-                       78.1116, 82.6125])
+    c = idealobs.IdealObs(k=0.81, q=0.5, sigma_s=0.6, m=8000.)
+    snrenvs = np.array([2.6649636, 6.13623543, 13.1771355, 24.11754981,
+                        38.35865445, 55.59566425])
+    pc = c.snrenv_to_pc(snrenvs)
+    target = np.array([1.62223958e-02, 4.52538073e-01, 1.02766152e+01,
+                       5.89991555e+01, 9.57537063e+01, 9.99301187e+01])
     np.testing.assert_allclose(pc, target, atol=1e-4)
 
 
 def test_get_params():
-    p = {'k':1, 'q':2, 'sigma_s':0.5, 'm':800}
+    p = {'k': 1, 'q': 2, 'sigma_s': 0.5, 'm': 800}
     c = idealobs.IdealObs(**p)
     assert p == c.get_params()
