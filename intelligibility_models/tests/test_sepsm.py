@@ -73,7 +73,6 @@ def test_snr_env(mat_snr_env):
 
 
 def test_sepsm_prediction_snr_min9_db():
-    #mat = sio.loadmat("./test_files/test_sepsm_snr_-9.mat")
     mat = sio.loadmat("./test_files/test_multChanSNRenv.mat", squeeze_me=True,
                       struct_as_record=False)
     target_snr_env = mat['result'].SNRenv
@@ -85,7 +84,7 @@ def test_sepsm_prediction_snr_min9_db():
 
 
 def test_sepsm_predictions_snr_0_kappa_0_8():
-    mat = sio.loadmat('./test_files/test_spec_sub_0dB_kappa_0_8.mat',
+    mat = sio.loadmat('./test_files/test_sepsm_spec_sub_0dB_kappa_0_8.mat',
                       squeeze_me=True, struct_as_record=False)
     c = sepsm.Sepsm()
     for ii in range(3):
