@@ -1,8 +1,7 @@
-from numpy import pi, exp, cos
+from numpy import pi, exp, sin, cos, sqrt
 import numpy as np
 import scipy as sp
 import scipy.signal as ss
-import filterbank
 
 
 CENTER_F = np.array([63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800,
@@ -29,7 +28,7 @@ def gammatone_filtering(signal, center_f=CENTER_F, fs=FS):
 
     """
     b, a, _, _, _ = gammatone_make(fs, center_f)
-    return gammatone_apply(signal, b, a)
+    return 2 * gammatone_apply(signal, b, a)
 
 
 def lowpass_env_filtering(x, cutoff=150., N=1, fs=FS):
@@ -40,6 +39,7 @@ def lowpass_env_filtering(x, cutoff=150., N=1, fs=FS):
     :returns: @todo
 
     """
+
     b, a = sp.signal.butter(N=N, Wn=cutoff * 2. / fs, btype='lowpass')
     return sp.signal.lfilter(b, a, x)
 
@@ -65,17 +65,16 @@ def gammatone_make(fs, cf, beta=1.019):
     function.
     '''
     T = 1 / float(fs)
-    pi = np.pi
     ERB = 24.7 + cf / 9.265  # In Hz, according to Glasberg and Moore (1990)
     # B = 1.019 * 2 * pi * ERB    # in rad here. Note: some models require B in Hz (NC)
     B = beta * 2 * pi * ERB    # in rad here. Note: some models require B in Hz (NC)
 
     gain = abs( \
-     (-2*np.exp(4*1j*cf*pi*T)*T + 2*np.exp(-(B*T) + 2*1j*cf*pi*T) * T * (np.cos(2*cf*pi*T) - np.sqrt(3 - 2**(3./2))*np.sin(2*cf*pi*T))) \
-    * (-2*np.exp(4*1j*cf*pi*T)*T + 2*np.exp(-(B*T) + 2*1j*cf*pi*T) * T * (np.cos(2*cf*pi*T) + np.sqrt(3 - 2**(3./2))*np.sin(2*cf*pi*T))) \
-    * (-2*np.exp(4*1j*cf*pi*T)*T + 2*np.exp(-(B*T) + 2*1j*cf*pi*T) * T * (np.cos(2*cf*pi*T) - np.sqrt(3 + 2**(3./2))*np.sin(2*cf*pi*T))) \
-    * (-2*np.exp(4*1j*cf*pi*T)*T + 2*np.exp(-(B*T) + 2*1j*cf*pi*T) * T * (np.cos(2*cf*pi*T) + np.sqrt(3 + 2**(3./2))*np.sin(2*cf*pi*T))) \
-    / (-2 / np.exp(2*B*T) - 2*np.exp(4*1j*cf*pi*T) + 2*(1 + np.exp(4*1j*cf*pi*T))/np.exp(B*T))**4 )
+     (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) - sqrt(3 - 2**(3./2))*sin(2*cf*pi*T))) \
+    * (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) + sqrt(3 - 2**(3./2))*sin(2*cf*pi*T))) \
+    * (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) - sqrt(3 + 2**(3./2))*sin(2*cf*pi*T))) \
+    * (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) + sqrt(3 + 2**(3./2))*sin(2*cf*pi*T))) \
+    / (-2 / exp(2*B*T) - 2*exp(4*1j*cf*pi*T) + 2*(1 + exp(4*1j*cf*pi*T))/exp(B*T))**4 )
 
     if np.isscalar(cf):
         len_cf = 1
@@ -85,20 +84,20 @@ def gammatone_make(fs, cf, beta=1.019):
     forward = np.zeros((len_cf, 5))
 
     forward[:, 0] =    T**4 / gain
-    forward[:, 1] = -4*T**4 * np.cos(2*cf*pi*T) / np.exp(B*T)   / gain
-    forward[:, 2] = 6 * T**4 * np.cos(4*cf*pi*T) / np.exp(2*B*T) / gain
-    forward[:, 3] = -4*T**4 * np.cos(6*cf*pi*T) / np.exp(3*B*T) / gain
-    forward[:, 4] =    T**4 * np.cos(8*cf*pi*T) / np.exp(4*B*T) / gain
+    forward[:, 1] = -4*T**4 * cos(2*cf*pi*T) / exp(B*T) / gain
+    forward[:, 2] = 6 * T**4 * cos(4*cf*pi*T) / exp(2*B*T) / gain
+    forward[:, 3] = -4*T**4 * cos(6*cf*pi*T) / exp(3*B*T) / gain
+    forward[:, 4] =    T**4 * cos(8*cf*pi*T) / exp(4*B*T) / gain
 
     feedback[:, 0] = np.ones(len_cf)
-    feedback[:, 1] = -8 * np.cos(2*cf*pi*T) / np.exp(B*T)
-    feedback[:, 2] =  4 * (4 + 3*np.cos(4*cf*pi*T)) / np.exp(2*B*T)
-    feedback[:, 3] = -8 * (6*np.cos(2*cf*pi*T) + np.cos(6*cf*pi*T)) / np.exp(3*B*T)
-    feedback[:, 4] =  2 * (18 + 16*np.cos(4*cf*pi*T) + np.cos(8*cf*pi*T)) / np.exp(4*B*T)
-    feedback[:, 5] = -8 * (6*np.cos(2*cf*pi*T) + np.cos(6*cf*pi*T)) / np.exp(5*B*T)
-    feedback[:, 6] =  4 * (4 + 3*np.cos(4*cf*pi*T)) / np.exp(6*B*T)
-    feedback[:, 7] = -8 * np.cos(2*cf*pi*T) / np.exp(7*B*T)
-    feedback[:, 8] = np.exp(-8*B*T)
+    feedback[:, 1] = -8 * cos(2*cf*pi*T) / exp(B*T)
+    feedback[:, 2] =  4 * (4 + 3*cos(4*cf*pi*T)) / exp(2*B*T)
+    feedback[:, 3] = -8 * (6*cos(2*cf*pi*T) + cos(6*cf*pi*T)) / exp(3*B*T)
+    feedback[:, 4] =  2 * (18 + 16*cos(4*cf*pi*T) + cos(8*cf*pi*T)) / exp(4*B*T)
+    feedback[:, 5] = -8 * (6*cos(2*cf*pi*T) + cos(6*cf*pi*T)) / exp(5*B*T)
+    feedback[:, 6] =  4 * (4 + 3*cos(4*cf*pi*T)) / exp(6*B*T)
+    feedback[:, 7] = -8 * cos(2*cf*pi*T) / exp(7*B*T)
+    feedback[:, 8] = exp(-8*B*T)
 
     return (forward, feedback, cf, ERB, B)
 
