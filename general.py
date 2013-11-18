@@ -86,4 +86,5 @@ def hilbert_envelope(signal):
 
 
 def next_pow_2(x):
+    """Calculate the next power of 2."""
     return int(pow(2, np.ceil(np.log2(x))))
