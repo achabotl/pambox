@@ -29,6 +29,14 @@ def noise_65dB():
     return x_65 / 2. ** 15
 
 
+def test_rms_do_ac():
+    assert general.rms([0,1,2,3,4,5,6], ac=True) == 2
+
+
+def test_rms():
+    assert general.rms([0,1,2,3,4,5,6]) == 3.6055512754639891
+
+
 def test_set_level(noise_raw, noise_65dB):
     x65 = general.setdbspl(noise_raw, 65)
     np.testing.assert_allclose(x65, noise_65dB, atol=1e-4)

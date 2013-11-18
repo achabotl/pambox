@@ -55,8 +55,8 @@ def setdbspl(x, lvl, ac=False):
     return x / rms(x, ac) * 10. ** ((lvl - 100.) / 20.)
 
 
-def rms(x, ac=True):
-    """RMS value of a signal
+def rms(x, ac=False):
+    """RMS value of a signal.
 
     :x: signal
     :ac: bool, default: True
@@ -64,10 +64,11 @@ def rms(x, ac=True):
     :rms: rms value
 
     """
+    x = np.array(x)
     if ac:
-        return np.std(x, axis=-1)
+        return np.linalg.norm((x - np.mean(x)) / np.sqrt(x.shape[-1]))
     else:
-        return np.std(x, axis=-1) + np.mean(x, axis=-1)
+        return np.linalg.norm(x / np.sqrt(x.shape[-1]))
 
 
 def hilbert_envelope(signal):
