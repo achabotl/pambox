@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import scipy as sp
 import matplotlib.pylab as plt
+from collections import namedtuple
 
 from pambox import general
 from pambox import filterbank
@@ -9,7 +10,7 @@ from pambox import auditory
 
 
 CENTER_F = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-           1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
+            1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
 HT_DIFFUSE = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8, 3.8, 2.1,
               1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0, -3.8, -1.8, 2.5, 6.8)
 MODF = (1., 2., 4., 8., 16., 32., 64.)
@@ -21,19 +22,21 @@ class Sepsm(object):
     """Implement the sEPSM intelligibility model"""
 
     def __init__(self, fs=22050, cf=CENTER_F, modf=MODF, downsamp_factor=10,
-                 noise_floor=0.01, snrenv_limit=-30):
+                 noise_floor=0.01, snr_env_limit=0.001):
         """@todo: to be defined1. """
         self.fs = fs
         self.cf = cf
         self.modf = modf
         self.downsamp_factor = downsamp_factor
         self.noise_floor = noise_floor
-        self.snrenv_limit = snrenv_limit
+        self.snr_env_limit = snr_env_limit
 
-    def _auditory_processing(self, signal, center_f):
+    def _peripheral_filtering(self, signal, center_f):
         b, a, _, _, _ = auditory.gammatone_make(self.fs, center_f)
-        y = auditory.gammatone_apply(signal, b, a)
-        return general.hilbert_envelope(y)
+        # Factor 2 to do like in the sEPSM, although I don't really understand
+        # why...
+        y = 2 * auditory.gammatone_apply(signal, b, a)
+        return y
 
     def _bands_above_thres(self, x):
         """Select bands above threshold
@@ -90,8 +93,8 @@ class Sepsm(object):
         exc_ptns[2] = np.maximum(exc_ptns[2], self.noise_floor)
 
         # calculation of snrenv
-        snr_env_db = 10 * np.log10((mod_powers[1] - mod_powers[2])
-                                   / (mod_powers[2]))
+        snr_env = (exc_ptns[1] - exc_ptns[2]) / (exc_ptns[2])
+        snr_env = np.maximum(snr_env, self.snr_env_limit)
 
         return snr_env, exc_ptns
 
@@ -114,21 +117,22 @@ class Sepsm(object):
                                                         self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
-        snr_env_dbs = np.empty((N_cf, N_modf))
-        mod_powers = np.empty((3, N_cf, N_modf))
+        snr_env_lin = np.zeros((N_cf, N_modf))
+        exc_ptns = np.zeros((3, N_cf, N_modf))
         # For each band above threshold,
         # (actually, for debug purposes, maybe I should keep all...)
         for idx_band in bands_above_thres_idx:
             # Peripheral filtering, of just the band we process
             filtered_signals = \
-                np.array([self._auditory_processing(signal,
-                                                    self.cf[idx_band])
+                np.array([self._peripheral_filtering(signal,
+                                                     self.cf[idx_band])
                           for signal in [clean, mixture, noise]])
 
             downsamp_env = np.empty((3, np.ceil(N / self.downsamp_factor)))
             for i, signal in enumerate(filtered_signals):
                 # Extract envelope
                 tmp_env = general.hilbert_envelope(signal).squeeze()
+
                 # Low-pass filtering
                 tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
                                                          N=1, fs=self.fs)
@@ -136,14 +140,24 @@ class Sepsm(object):
                 downsamp_env[i] = tmp_env[::self.downsamp_factor]
 
             # Calculate SNRenv for the current channel
-            snr_env_dbs[idx_band], mod_powers_tmp \
+            snr_env_lin[idx_band], exc_ptns_tmp \
                 = self._snr_env([downsamp_env[0], downsamp_env[1],
                                  downsamp_env[2]], fs_new)
             for i_sig in range(3):
-                mod_powers[i_sig, idx_band, :] = mod_powers_tmp[i_sig]
+                exc_ptns[i_sig, idx_band, :] = exc_ptns_tmp[i_sig]
 
-        return snr_env_dbs, mod_powers, bands_above_thres_idx
+        snr_env = np.sqrt(np.sum(snr_env_lin[bands_above_thres_idx] ** 2,
+                                 axis=-1))
+        snr_env = np.sqrt(np.sum(snr_env ** 2))
 
+        res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
+                                     'bands_above_thres_idx'])
+        res.snr_env = snr_env
+        res.snr_env_matrix = snr_env_lin
+        res.exc_ptns = exc_ptns
+        res.bands_above_thres_idx = bands_above_thres_idx
+
+        return res
 
 def plot_mod_powers(mod_powers_all, cf, modf):
     # File / Factors / SNR / SIGNAL / CF / MODF
