@@ -44,10 +44,10 @@ def mat_snr_env():
 
 
 def test_select_bands_above_threshold(center_f):
-    mat = sio.loadmat("./test_files/test_bands_above_threshold.mat")
+    mat = sio.loadmat("./test_files/test_bands_above_threshold_v1.mat",
+                      squeeze_me=True)
     noise_rms = mat['mix_rms_out'].squeeze()
-    target = mat['bands_to_process'][0]
-
+    target = mat['bands_to_process'].squeeze()
     c = sepsm.Sepsm(cf=center_f)
     bands_above_thres = c._bands_above_thres(noise_rms)
     # Make 1-based to compare with matlab
@@ -56,21 +56,41 @@ def test_select_bands_above_threshold(center_f):
 
 
 def test_snr_env(mat_snr_env):
-    """@todo: Docstring for test_snr_env_for_simple_signals.
-    :returns: @todo
+    mat_snr_env = sio.loadmat('./test_files/test_snr_env_lin.mat',
+                              squeeze_me=True)
+    env = mat_snr_env['env'].T
+    fs = mat_snr_env['fs']
+    target_snr_env = mat_snr_env['SNRenv_p_n'][:, 1]
+    target_excitation_patterns = mat_snr_env['sEPSM_ExPtns']\
+        .T[1, :, :]
+    modf = mat_snr_env['fcs_sEPSM'].astype('float')
 
-    """
-    clean = mat_snr_env['clean'].squeeze()
-    noise = mat_snr_env['noise'].squeeze()
-    mix = mat_snr_env['mix'].squeeze()
-    fs_env = mat_snr_env['fsNew'].squeeze()
-    target_snr_env = mat_snr_env['snr_env'].squeeze()
-    target_excitation_patterns = mat_snr_env['env_excitation_patterns'].\
-        squeeze().T
-    modf = np.array([1., 2., 4., 8., 16., 32., 64.])
-
-    signals = (clean, mix, noise)
+    signals = (env[0], env[0], env[1])
     c = sepsm.Sepsm(modf=modf)
-    snrenv, excitation_patterns = c._snr_env(signals, fs_env)
+    snrenv, excitation_patterns = c._snr_env(signals, fs)
     assert_allclose(snrenv, target_snr_env)
-    assert_allclose(excitation_patterns, target_excitation_patterns)
+    assert_allclose(excitation_patterns[1:, :], target_excitation_patterns)
+
+
+def test_sepsm_prediction_snr_min9_db():
+    #mat = sio.loadmat("./test_files/test_sepsm_snr_-9.mat")
+    mat = sio.loadmat("./test_files/test_multChanSNRenv.mat", squeeze_me=True,
+                      struct_as_record=False)
+    target_snr_env = mat['result'].SNRenv
+    mix = mat['stim'][0]
+    noise = mat['stim'][1]
+    c = sepsm.Sepsm()
+    res = c.predict(mix, mix, noise)
+    assert_allclose(target_snr_env, res.snr_env, rtol=1e-2)
+
+
+def test_sepsm_predictions_snr_0_kappa_0_8():
+    mat = sio.loadmat('./test_files/test_spec_sub_0dB_kappa_0_8.mat',
+                      squeeze_me=True, struct_as_record=False)
+    c = sepsm.Sepsm()
+    for ii in range(3):
+        mix = mat['mixtures'][ii]
+        noise = mat['noises'][ii]
+        target = mat['results'][ii].SNRenv
+        res = c.predict(mix, mix, noise)
+        assert_allclose(target, res.snr_env, rtol=1e-2)
