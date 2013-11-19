@@ -1,3 +1,4 @@
+from __future__ import division, print_function
 import pytest
 import scipy.io as sio
 from pambox import idealobs
