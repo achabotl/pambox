@@ -1,3 +1,4 @@
+from __future__ import division, print_function
 import pytest
 from pambox import general
 from scipy.io import wavfile
