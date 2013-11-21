@@ -140,9 +140,8 @@ class Sepsm(object):
                 downsamp_env[i] = tmp_env[::self.downsamp_factor]
 
             # Calculate SNRenv for the current channel
-            snr_env_lin[idx_band], exc_ptns_tmp \
-                = self._snr_env([downsamp_env[0], downsamp_env[1],
-                                 downsamp_env[2]], fs_new)
+            snr_env_lin[idx_band], exc_ptns_tmp = self._snr_env(downsamp_env,
+                                                                fs_new)
             for i_sig in range(3):
                 exc_ptns[i_sig, idx_band, :] = exc_ptns_tmp[i_sig]
 
