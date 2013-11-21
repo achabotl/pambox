@@ -18,3 +18,17 @@ def test_lowpass_filtering_of_envelope():
 def test_erb():
     bw = aud.erbbw(1000)
     assert_allclose(bw, 132.63, rtol=1e-4)
+
+
+# We use a different implementation than the Matlab one and the delay
+# are different.
+@pytest.mark.xfail
+def test_gammatone_filtering():
+    mat = sio.loadmat('./test_files/test_gammatone_filtering.mat')
+    center_f = mat['midfreq'].squeeze()
+    fs = mat['fs'].squeeze()
+    signal = mat['signal'].squeeze()
+    targets = mat['GT_output'].squeeze()
+    target = targets[:,:,0].T
+    out = aud.gammatone_filtering(signal, center_f, fs)
+    assert_allclose(out, target)
