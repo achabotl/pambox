@@ -15,3 +15,6 @@ def test_lowpass_filtering_of_envelope():
     assert_allclose(filtered_envelope, target, atol=1e-7)
 
 
+def test_erb():
+    bw = aud.erbbw(1000)
+    assert_allclose(bw, 132.63, rtol=1e-4)
