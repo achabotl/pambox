@@ -2,11 +2,11 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import scipy as sp
-import general
+from pambox import general
 
 
-def mix_noise(clean, noise, snr=None):
-    """Mix a signal signal noise at a given signal-to-noise ratio
+def mix_noise(clean, noise, sent_level, snr=None):
+    """Mix a signal signal noise at a given signal-to-noise ratio.
 
     :x: ndarray, clean signal.
     :noise: ndarray, noise signal.
@@ -16,18 +16,19 @@ def mix_noise(clean, noise, snr=None):
               alone.
 
     """
-    N = len(clean)
-    # Pick a random section of the noise
-    nNoise = len(noise)
-    # Select a random portion of the noise.
-    startIdx = np.random.randint(nNoise - N)
-    noise = noise[startIdx:startIdx + N]
 
-    # Get speech level and set noise level accordingly
-    clean_level = general.dbspl(clean)
-    noise = general.setdbspl(noise, clean_level - snr)
+    # Pick a random section of the noise
+    N = len(clean)
+    nNoise = len(noise)
+    if nNoise > N:
+        startIdx = np.random.randint(nNoise - N)
+        noise = noise[startIdx:startIdx + N]
 
     if snr is not None:
+        # Get speech level and set noise level accordingly
+        #    clean_level = general.dbspl(clean)
+        #    noise = general.setdbspl(noise, clean_level - snr)
+        noise = noise / general.rms(noise) * 10 ** ((sent_level - snr) / 20)
         mix = clean + noise
     else:
         mix = clean
@@ -36,7 +37,7 @@ def mix_noise(clean, noise, snr=None):
 
 
 def phase_jitter(x, a):
-    """Apply phase jitter to a signal
+    """Apply phase jitter to a signal.
 
     :x: ndarray, signal.
     :a: float, phase jitter parameter, between 0 and 1.
@@ -59,7 +60,7 @@ def reverb(x, rt):
 
 
 def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
-    """Apply spectral subtraction to a signal
+    """Apply spectral subtraction to a signal.
 
     Typical values of the parameters, for a sampling frequency of 44100 Hz
     W = 1024
@@ -78,7 +79,8 @@ def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
               noisy signal.
 
     """
-    wnd = np.hanning(w)  # create hanning window with length = W
+    wnd = np.hanning(w + 2)  # create hanning window with length = W
+    wnd = wnd[1:-1]
 
     stim = np.vstack((x, noise))
 
@@ -125,19 +127,21 @@ def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
     # The noise "estimate" is simply the average of the noise power
     # spectral density in the frame:
     P_N = Y_N2.mean(axis=-1)
+
     Y_hat = Y2 - factor * P_N[:, np.newaxis]     # subtraction
-    PN_hat = Y_N2 - factor * P_N[:, np.newaxis]  # subtraction for noise alone
     Y_hat = np.maximum(Y_hat, 0)  # Make the minima equal zero
-    PN_hat = np.maximum(PN_hat, 0)
+    PN_hat = Y_N2 - factor * P_N[:, np.newaxis]  # subtraction for noise alone
+    #PN_hat = np.maximum(PN_hat, 0)
+    PN_hat[Y_hat == 0] = 0
+
     Y_hat[0:2, :] = 0
     PN_hat[0:2, :] = 0
 
     # Combining the estimated power spectrum with the original noisy phase,
     # and add the frames using an overlap-add technique
-    output_Y = overlap_and_add(np.sqrt(Y_hat), YPhase,
-                               (w + padz), shift_p * w)
-    output_N = overlap_and_add(np.sqrt(PN_hat), Y_NPhase,
-                               (w + padz), shift_p * w)
+    output_Y = overlap_and_add(np.sqrt(Y_hat), YPhase, (w + padz), shift_p * w)
+    output_N = overlap_and_add(np.sqrt(PN_hat.astype('complex')), Y_NPhase, (w + padz), shift_p * w)
+
     return output_Y, output_N
 
 
@@ -163,7 +167,7 @@ def overlap_and_add(powers, phases, len_window, shift_size):
     else:
         # If odd-numbered, do not duplicated the DC ans FS/2 bins
         spectrum = np.hstack((spectrum,
-                                  np.conj(np.fliplr(spectrum[:, 1:-1]))))
+                              np.conj(np.fliplr(spectrum[:, 1:-1]))))
 
     signal = np.zeros((n_frames - 1) * shift_size + len_window)
 
