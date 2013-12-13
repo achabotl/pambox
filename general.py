@@ -64,7 +64,7 @@ def rms(x, ac=False):
     :rms: rms value
 
     """
-    x = np.array(x)
+    x = np.asarray(x)
     if ac:
         return np.linalg.norm((x - np.mean(x)) / np.sqrt(x.shape[-1]))
     else:

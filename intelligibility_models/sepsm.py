@@ -55,7 +55,7 @@ class Sepsm(object):
         noise_rms_db = 20 * np.log10(x)
         # convert to spectrum level according to ANSI 1997
         noise_spec_level_corr = noise_rms_db \
-            - 10.0 * np.log10(sp.array(self.cf) * 0.231)
+            - 10.0 * np.log10(sp.asarray(self.cf) * 0.231)
         max_idx = min(len(noise_spec_level_corr), len(HT_DIFFUSE))
         b = noise_spec_level_corr[:max_idx] > HT_DIFFUSE[:max_idx]
         idx = np.arange(len(noise_rms_db))
@@ -71,8 +71,8 @@ class Sepsm(object):
             lin snrenv values and modulation excitation patterns
 
         """
-        fs = np.array(fs, dtype='float')
-        signals = [np.array(signal, dtype='float') for signal in signals]
+        fs = np.asarray(fs, dtype='float')
+        signals = [np.asarray(signal, dtype='float') for signal in signals]
 
         exc_ptns = sp.empty((3, len(self.modf)))
         # for each stimulus
@@ -124,7 +124,7 @@ class Sepsm(object):
         for idx_band in bands_above_thres_idx:
             # Peripheral filtering, of just the band we process
             filtered_signals = \
-                np.array([self._peripheral_filtering(signal,
+                np.asarray([self._peripheral_filtering(signal,
                                                      self.cf[idx_band])
                           for signal in [clean, mixture, noise]])
 
