@@ -210,3 +210,19 @@ def make_same_length(a, b):
         c = np.zeros_like(a)
         c[:len(b)] += b
         return a, c
+
+
+def add_signals(a,b):
+    """Add two vectors of different lengths by zero padding the shortest one.
+
+    :a: vector
+    :b: vector
+    :return: vector, of the same length as the longest of the two inputs.
+    """
+    if len(a) < len(b):
+        c = b.copy()
+        c[:len(a)] += a
+    else:
+        c = a.copy()
+        c[:len(b)] += b
+    return c
