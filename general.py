@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 import scipy as sp
+from scipy.io import wavfile
 
 
 def dbspl(x, ac=False):
@@ -89,3 +90,32 @@ def hilbert_envelope(signal):
 def next_pow_2(x):
     """Calculate the next power of 2."""
     return int(pow(2, np.ceil(np.log2(x))))
+
+
+def write_wav(fname, fs, x):
+    """Write floating point numpy array to 16 bit wavfile.
+
+    Convenience wrapper around the scipy.io.wavfile.write function. The signal
+    so that its maximum value is one.
+
+    The '.wav' extension is added to the file if it is not part of the
+    filename string.
+
+    :fname: string, filename with path.
+    :fs: sampling frequency
+    :x: array_like, N_channel x Length, signal
+    :return: nothing
+    """
+    # Make sure that the channels are the second dimension
+    fs = np.int(fs)
+    if not fname.endswith('.wav'):
+        fname += '.wav'
+
+    if x.shape[0] <= 2:
+        x = x.T
+
+    if x is np.float:
+        scaled = (x / np.max(np.abs(x)) * (2 ** 15 - 1))
+    else:
+        scaled = x
+    wavfile.write(fname, fs, scaled.astype('int16'))
