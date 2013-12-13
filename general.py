@@ -24,14 +24,11 @@ def dbspl(x, ac=False, offset=100.0):
       Press, 5th edition, 2003.
 
 
-    :x: arraly_like, signal
-    :ac: bool, consider only the AC component of the signal.
-    :offset: float, reference to convert between RMS and dB SPL.
-    :returns: @todo
-
+    :x: arraly_like, signal ac: bool, consider only the AC component of the
+    :signal. offset: float, reference to convert between RMS and dB SPL.
     """
     x = np.asarray(x)
-    return 20. * np.log10(rms(x, ac)) + offset
+    return 20. * np.log10(rms(x, ac)) + float(offset)
 
 
 def setdbspl(x, lvl, ac=False, offset=100.0):
@@ -58,7 +55,7 @@ def setdbspl(x, lvl, ac=False, offset=100.0):
 
     """
     x = np.asarray(x)
-    return x / rms(x, ac) * 10. ** ((lvl - offset) / 20.)
+    return x / rms(x, ac) * 10. ** ((lvl - float(offset)) / 20.)
 
 
 def rms(x, ac=False):
@@ -193,3 +190,23 @@ def write_wav(fname, fs, x):
     else:
         scaled = x
     wavfile.write(fname, fs, scaled.astype('int16'))
+
+
+def make_same_length(a, b):
+    """Make two vectors the same length.
+
+    Makes two vectors of the same length by padding the shortest one with
+    zeros.
+
+    :a: vector
+    :b: vector
+    :return: array, array, two arrays of the same length.
+    """
+    if len(a) < len(b):
+        c = np.zeros_like(b)
+        c[:len(a)] += a
+        return c, b
+    else:
+        c = np.zeros_like(a)
+        c[:len(b)] += b
+        return a, c
