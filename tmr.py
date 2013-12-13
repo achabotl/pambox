@@ -19,9 +19,9 @@ def st_tmr(signal, noise, fs):
 
     """
     def stft(x, wnd, framesz, len_overlap):
-        frames = np.array([sp.fftpack.fft(wnd * x[hop:hop + framesz])
-                           for hop in range(0, len(x) - framesz,
-                                            len_overlap)])
+        frames = np.asarray([sp.fftpack.fft(wnd * x[hop:hop + framesz])
+                             for hop in range(0, len(x) - framesz,
+                                              len_overlap)])
         return frames
 
     len_win = int(0.023 * fs)  # 23 m windows
