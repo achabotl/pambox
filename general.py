@@ -6,7 +6,7 @@ from numpy import min, log2, ceil, floor, argmin, zeros, arange,  float
 from numpy.fft import fft, ifft
 
 
-def dbspl(x, ac=False):
+def dbspl(x, ac=False, offset=100.0):
     """RMS value of signal (in dB)
 
     DBSPL(x) computes the SPL (sound pressure level) of the input signal
@@ -24,16 +24,18 @@ def dbspl(x, ac=False):
       Press, 5th edition, 2003.
 
 
-    :x: signal
-    :ac: @todo
+    :x: arraly_like, signal
+    :ac: bool, consider only the AC component of the signal.
+    :offset: float, reference to convert between RMS and dB SPL.
     :returns: @todo
 
     """
-    return 20. * np.log10(rms(x, ac)) + 100.
+    x = np.asarray(x)
+    return 20. * np.log10(rms(x, ac)) + offset
 
 
-def setdbspl(x, lvl, ac=False):
-    """set level if signal in dB
+def setdbspl(x, lvl, ac=False, offset=100.0):
+    """Set level of signal in dB SPL
 
     SETDBSPL(insig,lvl) sets the SPL (sound pressure level) of the signal
     insig to lvl dB, using the convention that a pure tone with an RMS value
@@ -55,7 +57,8 @@ def setdbspl(x, lvl, ac=False):
     :returns: @todo
 
     """
-    return x / rms(x, ac) * 10. ** ((lvl - 100.) / 20.)
+    x = np.asarray(x)
+    return x / rms(x, ac) * 10. ** ((lvl - offset) / 20.)
 
 
 def rms(x, ac=False):
