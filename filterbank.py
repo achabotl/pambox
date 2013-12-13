@@ -4,10 +4,11 @@ import scipy as sp
 import scipy.signal as ss
 import matplotlib.pyplot as plt
 from scipy import pi
+from numpy.fft import fft
 
 
 def mod_filterbank(signal, fs, modf):
-    """Implementation of the EPSM-filterbank
+    """Implementation of the EPSM-filterbank.
 
     :signal: ndarray, temporal envelope of a signal
     :fs: int, sampling frequency
@@ -23,9 +24,9 @@ def mod_filterbank(signal, fs, modf):
     n = 3.     # order of the low-pass filter
 
     N = signal.shape[-1]  # length of envelope signals
-    X = sp.fftpack.fft(signal)
+    X = fft(signal)
     X_mag = np.abs(X)
-    X_power = (X_mag ** 2) / N  # power spectrum
+    X_power = np.square(X_mag) / N  # power spectrum
     X_power_pos = X_power[0:np.floor(N / 2) + 1]
     # take positive frequencies only and multiply by two to get the same total
     # energy
@@ -36,7 +37,7 @@ def mod_filterbank(signal, fs, modf):
     freqs = np.concatenate((pos_freqs, -1 * pos_freqs[-1:0:-1]))
 
     # band center frequencies
-    fcs = np.array([2., 4., 8., 16., 32., 64.])
+    fcs = np.asarray([2., 4., 8., 16., 32., 64.])
 
     # Initialize transfer function
     TFs = np.zeros((len(fcs) + 1, len(freqs))).astype('complex')
@@ -46,7 +47,7 @@ def mod_filterbank(signal, fs, modf):
                                                freqs[1:])))  # p287 Hambley.
 
     # squared filter magnitude transfer functions
-    Wcf = np.abs(TFs) ** 2
+    Wcf = np.square(np.abs(TFs))
 
     # Low-pass filter squared transfer function, third order Butterworth filter
     # TF from:
@@ -76,13 +77,14 @@ def mod_filterbank(signal, fs, modf):
     return powers
 
 
-def mfreqz(b, a=1, fs=[]):
-    """Plot the frequency and phase response
+def mfreqz(b, a=1, fs=22050.0):
+    """Plot the frequency and phase response.
 
     :b:
     :a:
 
     From http://mpastell.com/2010/01/18/fir-with-scipy/
+
     """
     w, h = ss.freqz(b, a)
     h_dB = 20 * np.log10(abs(h))
@@ -106,12 +108,13 @@ def mfreqz(b, a=1, fs=[]):
 
 
 def impz(b, a=1):
-    """Plot step and impulse response
+    """Plot step and impulse response.
 
     :b:
     :a:
 
     From http://mpastell.com/2010/01/18/fir-with-scipy/
+
     """
     l = len(b)
     impulse = np.repeat(0., l)
@@ -147,18 +150,16 @@ def noctave_filtering(x, center_f, fs, width=3):
     # Use numpy's FFT because SciPy's version of rfft (2 real results per
     # frequency bin) behaves differently from numpy's (1 complex result per
     # frequency bin)
-    center_f = np.array(center_f, dtype='float')
+    center_f = np.asarray(center_f, dtype='float')
 
     N = len(x)
     # TODO Use powers of 2 to calculate the power spectrum, and also, possibly
     # use RFFT instead of the complete fft.
-    X = sp.fftpack.fft(x)
+    X = fft(x)
     X = np.abs(X)
     X = X ** 2 / N  # Power spectrum
     X = X[0:np.floor(N / 2) + 1]
     X[1:] = X[1:] * 2.
-    # Calculate center frequencies and cutoff frequencies
-    #center_f = noctave_center_freq(lowf, highf, width=width)
     bound_f = np.zeros(len(center_f) + 1)
     bound_f[0] = center_f[0] * 2. ** (- 1. / (2. * width))
     bound_f[1:] = center_f * 2. ** (1. / (2. * width))
@@ -174,7 +175,7 @@ def noctave_filtering(x, center_f, fs, width=3):
 
 
 def noctave_center_freq(lowf, highf, width=3):
-    """Calculate exact center N-octave space center frequencies
+    """Calculate exact center N-octave space center frequencies.
 
     In practive, what is often desired is the "simplified" center frequencies,
     so this function is not of much use.
