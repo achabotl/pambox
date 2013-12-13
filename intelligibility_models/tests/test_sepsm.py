@@ -4,7 +4,7 @@ from scipy.io import wavfile
 import numpy as np
 import scipy.io as sio
 from pambox.intelligibility_models import sepsm
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def test_select_bands_above_threshold(center_f):
     bands_above_thres = c._bands_above_thres(noise_rms)
     # Make 1-based to compare with matlab
     bands_above_thres += 1
-    assert np.array_equal(bands_above_thres, target)
+    assert_array_equal(bands_above_thres, target)
 
 
 def test_snr_env(mat_snr_env):
