@@ -2,7 +2,11 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import scipy as sp
+from itertools import izip
+from scipy.io import wavfile
 from pambox import general
+from pambox.general import fftfilt
+from numpy.fft import fft, ifft
 
 
 def mix_noise(clean, noise, sent_level, snr=None):
@@ -110,7 +114,7 @@ def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
     # FREQUENCY DOMAIN
 
     # signal:
-    Y = sp.fftpack.fft(y[0])
+    Y = fft(y[0])
     #YY = Y(1:round(end/2)+1,:); # Half window (exploit the symmetry)
     YY = Y[:, :(len_segment / 2 + 1)]  # Half window (exploit the symmetry)
     YPhase = np.angle(YY)  # Phase
@@ -118,7 +122,7 @@ def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
     Y2 = Y1 ** 2  # Power Spectrum
 
     #  noise:
-    Y_N = sp.fftpack.fft(y[1])
+    Y_N = fft(y[1])
     YY_N = Y_N[:, :(len_segment / 2 + 1)]  # Half window (exploit the symmetry)
     Y_NPhase = np.angle(YY_N)  # Phase
     Y_N1 = np.abs(YY_N)  # Spectrum
@@ -136,11 +140,11 @@ def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
 
     Y_hat[0:2, :] = 0
     PN_hat[0:2, :] = 0
-
     # Combining the estimated power spectrum with the original noisy phase,
     # and add the frames using an overlap-add technique
     output_Y = overlap_and_add(np.sqrt(Y_hat), YPhase, (w + padz), shift_p * w)
-    output_N = overlap_and_add(np.sqrt(PN_hat.astype('complex')), Y_NPhase, (w + padz), shift_p * w)
+    output_N = overlap_and_add(np.sqrt(PN_hat.astype('complex')),
+                               Y_NPhase, (w + padz), shift_p * w)
 
     return output_Y, output_N
 
@@ -175,5 +179,5 @@ def overlap_and_add(powers, phases, len_window, shift_size):
                                         len(signal) - int(len_window) + 1,
                                         int(shift_size))):
         signal[hop:hop + len_window] \
-            += np.real(sp.fftpack.ifft(spectrum[i_frame], len_window))
+            += np.real(ifft(spectrum[i_frame], len_window))
     return signal
