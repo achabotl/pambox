@@ -226,3 +226,26 @@ def add_signals(a,b):
         c = a.copy()
         c[:len(b)] += b
     return c
+
+
+def int2srt(x, y, srt=50.0):
+    """Find intersection using linear interpolation.
+
+    This function finds the x values at which a curve intersects with a
+    constant value.
+
+    :x: x values
+    :y: y values
+    :srt: value of `y` at which the interception is calculated.
+
+    """
+    x = np.asarray(x)
+    y = np.asarray(y)
+    srt = np.float(srt)
+    idx = np.nonzero(np.diff(y >= srt))[0]
+    if idx:
+        srt = x[idx] + (srt - y[idx]) * (x[idx + 1] - x[idx]) \
+            / (y[idx + 1] - y[idx])
+    else:
+        srt = None
+    return srt

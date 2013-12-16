@@ -70,3 +70,15 @@ def test_third_oct_center_freq_bet_63_12500_hz():
     center_f = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
                 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
     assert noctave_center_freq(63, 12500, width=3) == center_f
+
+
+def test_find_calculate_srt_when_found():
+    x = np.arange(10)
+    y = 20 * x + 4
+    assert 2.3 == general.int2srt(x,y, srt=50)
+
+
+def test_find_calculate_srt_when_not_found():
+    x = np.arange(10)
+    y = 2 * x + 4
+    assert None == general.int2srt(x,y, srt=50)
