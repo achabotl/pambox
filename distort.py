@@ -4,6 +4,7 @@ import numpy as np
 import scipy as sp
 from itertools import izip
 from scipy.io import wavfile
+from scipy.signal import lfilter
 from pambox import general
 from pambox.general import fftfilt
 from numpy.fft import fft, ifft
@@ -181,3 +182,64 @@ def overlap_and_add(powers, phases, len_window, shift_size):
         signal[hop:hop + len_window] \
             += np.real(ifft(spectrum[i_frame], len_window))
     return signal
+
+
+class Westermann_crm(object):
+
+    """Applies HRTF and BRIR for a given target and masker distance."""
+
+    def __init__(self):
+        """@todo: to be defined1. """
+        # Load the binaural impulse responses
+        self.dist = np.asarray([0.5, 2, 5, 10])
+        self.brir = {}
+        for d in self.dist:
+            d_str = self._normalize_fname(d)
+            fname = '../stimuli/crm/brirs_40k/aud' \
+                    + d_str + 'm.wav'
+            wav = wavfile.read(fname)
+            self.brir[d] = np.array(wav[1].astype('float') / 2. ** 15).T
+
+    def _normalize_fname(self, d):
+        if d > 1:
+            d_str = str('%d' % d)
+        else:
+            d_str = str(d).replace('.', '')
+        return d_str
+
+    def apply(self, x, m, tdist, mdist):
+        """@todo: Docstring for apply.
+
+        :x: N array, mono clean speech signal
+        :m: N array, mono masker signal
+        :tdist: float, target distance, in meters
+        :mdist: float, masker distance, in meters
+        :returns: (2xN array, 2xN array), filtered signal and filterd masker
+
+        """
+
+        if tdist not in self.dist or mdist not in self.dist:
+            raise ValueError('The distance values are incorrect.')
+
+        # Filter target with BRIR only
+        out_x = np.asarray([fftfilt(b, x) for b in self.brir[tdist]])
+
+        # Equalized masker and then apply the BRIR
+        if tdist == mdist:
+            m = [m, m]
+        else:
+            # Load the equalization filter
+            eqfilt_name = 't' + self._normalize_fname(tdist) + \
+                        'm_m' + self._normalize_fname(mdist) + 'm.mat'
+
+            try:
+                eqfilt = sp.io.loadmat('../stimuli/crm/eqfilts/' + eqfilt_name,
+                                    squeeze_me=True)
+            except IOError:
+                raise IOError('Cannot file file %s' % '../stimuli/crm/eqfilts/'
+                            + eqfilt_name)
+            m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
+
+        out_m = np.asarray([fftfilt(b, chan) for b, chan
+                            in izip(self.brir[mdist], m)])
+        return out_x, out_m
