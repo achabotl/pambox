@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 import scipy as sp
 from scipy.io import wavfile
-from numpy import min, log2, ceil, floor, argmin, zeros, arange,  float
+from numpy import min, log2, ceil, argmin, zeros, arange, complex
 from numpy.fft import fft, ifft
 
 
