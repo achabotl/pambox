@@ -103,16 +103,17 @@ def fftfilt(b, x, *n):
 
     From: http://projects.scipy.org/scipy/attachment/ticket/837/fftfilt.py
     """
-
     x = np.asarray(x)
     b = np.asarray(b)
+
+    if b.ndim > 1 or x.ndim > 1:
+        raise ValueError('The inputs should be one dimensional')
 
     N_x = len(x)
     N_b = len(b)
 
     # Determine the FFT length to use:
     if len(n):
-
         # Use the specified FFT length (rounded up to the nearest
         # power of 2), provided that it is no less than the filter
         # length:
@@ -123,9 +124,7 @@ def fftfilt(b, x, *n):
             n = N_b
         N_fft = 2 ** next_pow_2(n)
     else:
-
         if N_x > N_b:
-
             # When the filter length is smaller than the signal,
             # choose the FFT length and block size that minimize the
             # FLOPS cost. Since the cost for a length-N FFT is
@@ -134,15 +133,13 @@ def fftfilt(b, x, *n):
             # cost of the overlap-add method for 1 length-N block is
             # N*(1+log2(N)). For the sake of efficiency, only FFT
             # lengths that are powers of 2 are considered:
-            N = 2 ** arange(ceil(log2(N_b)), floor(log2(N_x)) + 1)
+            N = 2 ** arange(ceil(log2(N_b)), 27)
             cost = ceil(N_x / (N - N_b + 1)) * N * (log2(N) + 1)
             N_fft = N[argmin(cost)]
-
         else:
-
             # When the filter length is at least as long as the signal,
             # filter the signal using a single block:
-            N_fft = 2 ** next_pow_2(N_b + N_x - 1)
+            N_fft = next_pow_2(N_b + N_x - 1)
 
     N_fft = int(N_fft)
 
@@ -152,7 +149,7 @@ def fftfilt(b, x, *n):
     # Compute the transform of the filter:
     H = fft(b, N_fft)
 
-    y = zeros(N_x, float)
+    y = zeros(N_x, complex)
     i = 0
     while i <= N_x:
         il = min([i + L, N_x])
