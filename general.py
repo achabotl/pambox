@@ -209,7 +209,7 @@ def make_same_length(a, b):
         return a, c
 
 
-def add_signals(a,b):
+def add_signals(a, b):
     """Add two vectors of different lengths by zero padding the shortest one.
 
     :a: vector
