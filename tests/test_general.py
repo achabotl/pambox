@@ -32,40 +32,12 @@ def noise_65dB():
     return x_65 / 2. ** 15
 
 
-def test_dbspl():
-    tests = ((([0], True, 0, -1), -np.inf),
-             (([1], False, 0, -1), 0),
-             (([1], False, 100, -1), 100),
-             (([1], True, 0, -1), -np.inf),
-             (([10], False, 0, -1), 20),
-             (([10, 10], False, 0, -1), 20),
-             (([10, 10], False, 0, 1), [20, 20]),
-            )
-    for (x, ac, offset, axis), target in tests:
-        np.testing.assert_allclose(general.dbspl(x, ac=ac, offset=offset,
-                                                 axis=axis), target)
-
 def test_rms_do_ac():
     assert general.rms([0,1,2,3,4,5,6], ac=True) == 2
 
 
 def test_rms():
-    tests = ((([0], True, -1), 0),
-             (([1], True, -1), 0),
-             (([1], False, -1), 1),
-             (([-1], False, -1), 1),
-             (([-1], True, -1), 0),
-             (([10, 10], False, -1), 10),
-             (([10, 10], True, -1), 0),
-             (([[0, 1],[0, 1]], True, -1), [0.5, 0.5]),
-             (([[0, 1],[0, 1]], False, -1), [0.70710678, 0.70710678]),
-             (([[0, 1],[0, 1]], True, 0), [0, 0]),
-             (([[0, 1],[0, 1]], False, 0), [0, 1]),
-             (([[0, 1],[0, 1]], True, 1), [0.5, 0.5]),
-             (([[0, 1],[0, 1]], False, 1), [0.70710678, 0.70710678]),
-    )
-    for (x, ac, axis), target in tests:
-        np.testing.assert_allclose(general.rms(x, ac=ac, axis=axis), target)
+    assert general.rms([0,1,2,3,4,5,6]) == 3.6055512754639891
 
 
 def test_set_level(noise_raw, noise_65dB):
@@ -86,24 +58,6 @@ def test_envelope_extraction():
     target = mat['envelope'][0]
     envelope = general.hilbert_envelope(x)
     np.testing.assert_allclose(envelope, target, atol=1e-3)
-
-
-def test_hilbert_env_on_2d_array_with_last_dimension():
-    tests = (([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
-              [0, 1, 2, 1, 0]),
-             ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
-              [0, 1, 2, 1, 0]),
-             ([[0., 1.], [0., 1.]],
-              [[0, 1], [0, 1]]),
-             ([[0.5, 1., 0.5], [2.5, 3.16227766, 1.5]],
-              [[0, 1, 0], [2, 3, 0]]),
-    )
-
-    for target, x in tests:
-        env = general.hilbert_envelope(x)
-        np.testing.assert_allclose(env, target,
-                                   err_msg="Input was {}".format(x))
-
 
 
 # Can't be done programmatically, because the exact third-octave spacing is not
@@ -130,21 +84,3 @@ def test_find_calculate_srt_when_not_found():
     x = np.arange(10)
     y = 2 * x + 4
     assert None == general.int2srt(x,y, srt=50)
-
-
-def test_find_srt_when_srt_at_index_zero():
-    x = [0, 1]
-    y = [50, 51]
-    assert 0 == general.int2srt(x,y, srt=50)
-
-
-def test_make_same_length_with_padding():
-    tests = ((([1], [1, 1]), ([1, 0], [1, 1])),
-             (([1, 1], [1, 1]), ([1, 1], [1, 1])),
-             (([1, 1], [1]), ([1, 1], [1, 0])),
-             (([1], [1, 1], False), ([1], [1])),
-    )
-
-    for inputs, targets in tests:
-        np.testing.assert_allclose(general.make_same_length(*inputs),
-                                   targets)

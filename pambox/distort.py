@@ -3,17 +3,12 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import scipy as sp
-from six.moves import zip
+from itertools import izip
 from scipy.io import wavfile
+from scipy.signal import lfilter
 from pambox import general
 from pambox.general import fftfilt
-
-try:
-    _ = np.use_fastnumpy
-    from numpy.fft import fft, ifft, rfft, irfft
-except AttributeError:
-    from scipy.fftpack import fft, ifft
-    from numpy.fft import rfft, irfft
+from numpy.fft import fft, ifft
 
 
 def mix_noise(clean, noise, sent_level, snr=None):
@@ -39,11 +34,11 @@ def mix_noise(clean, noise, sent_level, snr=None):
     """
 
     # Pick a random section of the noise
-    n_clean = len(clean)
-    n_noise = len(noise)
-    if n_noise > n_clean:
-        start_idx = np.random.randint(n_noise - n_clean)
-        noise = noise[start_idx:start_idx + n_clean]
+    N = len(clean)
+    nNoise = len(noise)
+    if nNoise > N:
+        startIdx = np.random.randint(nNoise - N)
+        noise = noise[startIdx:startIdx + N]
 
     if snr is not None:
         # Get speech level and set noise level accordingly
@@ -58,35 +53,34 @@ def mix_noise(clean, noise, sent_level, snr=None):
 
 
 def phase_jitter(x, a):
-    """Apply phase jitter to a signal.
+    """
+    Apply phase jitter to a signal.
 
     The expression of phase jitter is:
 
-    .. math::
+    .. math:: y(t) = s(t) * cos(\Phi(t)),
 
-        y(t) = s(t) * cos(\\Phi(t)),
-
-    where :math:`\\Phi(t)` is a random process uniformly distributed over
-    :math:`[0, 2 \\pi \\alpha]`. The effect of the jitter when
-    :math:`\\alpha` is 0.5  or 1 is to completely destroy the carrier signal,
-    effictively yielding modulated white noise.
+    where :math:`\Phi(t)` is a random process uniformly distributed over
+    :math:`[0, 2\pi\alpha]`. The effect of the jitter when \alpha is 0.5 or 1
+    is to completely destroy the carrier signal, effictively yielding
+    modulated white noise.
 
     Parameters
     ----------
     x : ndarray
-        Signal
+       Signal
     a : float
         Phase jitter parameter, typically between 0 and 1, but it can be
         anything.
 
     Returns
     -------
-    out : ndarray
+    ndarray
         Processed signal of the same dimension as the input signal.
 
     """
-    n = len(x)
-    return x * np.cos(2 * np.pi * a * np.random.random_sample(n))
+    N = len(x)
+    return x * np.cos(2 * np.pi * a * np.random.random_sample(N))
 
 
 def reverb(x, rt):
@@ -132,15 +126,13 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
         Zero padding (pad with padz/2 from the left and the right) (Default
         value = 1024 / 2.)
     shift_p : float
-        Shift percentage (overlap) between each window, in fraction of the
-        window size (Default value = 0.5)
+         Shift percentage (overlap) between each window, in fraction of the
+         window size (Default value = 0.5)
 
     Returns
     -------
-    clean_estimate : ndarray
-        Estimate of the clean signal.
-    noise_estimate : ndarray
-        Estimate of the noisy signal.
+    tuple of ndarrays
+        Estimate of clean signal and estimate of noisy signal.
 
     """
     wnd = np.hanning(w + 2)  # create hanning window with length = W
@@ -210,7 +202,9 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
 
 def overlap_and_add(powers, phases, len_window, shift_size):
-    """Reconstruct a signal with the overlap and add method.
+    """
+    Reconstruct a signal with the overlap and add method.
+    
 
     Parameters
     ----------
@@ -231,8 +225,6 @@ def overlap_and_add(powers, phases, len_window, shift_size):
         Reconstructed time-domain signal.
 
     """
-    len_window = int(len_window)
-    shift_size = int(shift_size)
     n_frames, len_frame = powers.shape
     spectrum = powers * np.exp(1j * phases)
     signal = np.zeros(n_frames * shift_size + len_window - shift_size)
@@ -256,32 +248,22 @@ def overlap_and_add(powers, phases, len_window, shift_size):
     return signal
 
 
-class WestermannCrm(object):
-    """Applies HRTF and BRIR for a given target and masker distance.
+class Westermann_crm(object):
 
-    Parameters
-    ----------
-    fs : int
-         Samping frequenc of the process. (Default value = 40000)
-
-    Attributes
-    ----------
-    brir : dict
-        Binaural room impulse responses for each distance.
-    delays : dict
-        Delay until the first peak in the BRIR for each distance.
-    dist : ndarray
-        List of the valid distances (0.5, 2, 5, and 10 meters).
-
-    References
-    ----------
-    .. [westermann2013release] A. Westermann and J. M. Buchholz: Release from
-        masking through spatial separation in distance in hearing impaired
-        listeners. Proceedings of Meetings on Acoustics 19 (2013) 050156.
-
-    """
+    """Applies HRTF and BRIR for a given target and masker distance."""
 
     def __init__(self, fs=40000):
+        """
+
+        Parameters
+        ----------
+        fs : int
+             Samping frequenc of the process. (Default value = 40000)
+
+        Returns
+        -------
+
+        """
         self.dist = np.asarray([0.5, 2, 5, 10])
         self.fs = fs
         self.brir = self._load_brirs()
@@ -291,13 +273,11 @@ class WestermannCrm(object):
         """Loads BRIRs from file."""
         brirs = {}
         for d in self.dist:
-            fname = '../stimuli/crm/brirs_{fs}/aud{d_str}m.wav'.format(
-                fs=self.fs,
-                d_str=self._normalize_fname(d)
-            )
+            d_str = self._normalize_fname(d)
+            fname = '../stimuli/crm/brirs_40k/aud' \
+                    + d_str + 'm.wav'
             wav = wavfile.read(fname)
-            brirs[d] = np.array(wav[1].astype('float') / 2. ** 15).T
-        return brirs
+            self.brir[d] = np.array(wav[1].astype('float') / 2. ** 15).T
 
     def _find_delay(self):
         """Calculates the delay of the direct sound, in samples."""
@@ -380,11 +360,11 @@ class WestermannCrm(object):
 
         Returns
         -------
-        mix : (2, N) ndarray
-            Mixture processesed by the BRIRs.
-        noise : (2, N)
-            Noise alone processed by the BRIRs.
+        tuple of ndarray
+            Mixture and noise alone, processed by the BRIRs.
+        
         """
+
         if tdist not in self.dist or mdist not in self.dist:
             raise ValueError('The distance values are incorrect.')
 
@@ -397,8 +377,17 @@ class WestermannCrm(object):
         if tdist == mdist:
             m = [m, m]
         else:
-            eqfilt = self._load_eqfilt(tdist, mdist)
-            m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
+            # Load the equalization filter
+            eqfilt_name = 't' + self._normalize_fname(tdist) + \
+                        'm_m' + self._normalize_fname(mdist) + 'm.mat'
+
+            try:
+                eqfilt = sp.io.loadmat('../stimuli/crm/eqfilts/' + eqfilt_name,
+                                    squeeze_me=True)
+            except IOError:
+                raise IOError('Cannot file file %s' % '../stimuli/crm/eqfilts/'
+                            + eqfilt_name)
+            m = [fftfilt(b, m) for b in [eqfilt['br'], eqfilt['bl']]]
 
         out_m = np.asarray([fftfilt(b, chan) for b, chan
                             in zip(self.brir[mdist], m)])
@@ -427,10 +416,7 @@ class WestermannCrm(object):
 
         Returns
         -------
-        i_x : int
-            Index of earliest peak in the signal.
-        i_m : int
-            Index of the earliest peak in the maskers.
+
         """
         # location of earliest peak
         m_is_shortest = np.argmin([self.delays[tdist], self.delays[mdist]])
@@ -461,6 +447,7 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     ndarray
         Noise signal.
 
+    
     """
     x = np.asarray(x)
     n_x = x.shape[-1]

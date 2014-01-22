@@ -1,0 +1,150 @@
+# -*- coding: utf-8 -*-
+from __future__ import division, print_function
+import pytest
+from pambox import general
+from scipy.io import wavfile
+import numpy as np
+import scipy.io as sio
+from tests import __DATA_ROOT__
+
+
+@pytest.fixture
+def speech_raw():
+    x = wavfile.read(__DATA_ROOT__ + "/test_speech_raw_22050.wav")[1]
+    return x / 2. ** 15
+
+
+@pytest.fixture
+def noise_raw():
+    x = wavfile.read(__DATA_ROOT__ + "/test_noise_raw_22050.wav")[1]
+    return x / 2. ** 15
+
+
+@pytest.fixture
+def mix_0dB():
+    x = wavfile.read(__DATA_ROOT__ + "/test_mix_0dB_22050.wav")[1]
+    return x / 2. ** 15
+
+
+@pytest.fixture
+def noise_65dB():
+    x_65 = wavfile.read(__DATA_ROOT__ + "/test_noise_65dB_22050.wav")[1]
+    return x_65 / 2. ** 15
+
+
+def test_dbspl():
+    tests = ((([0], True, 0, -1), -np.inf),
+             (([1], False, 0, -1), 0),
+             (([1], False, 100, -1), 100),
+             (([1], True, 0, -1), -np.inf),
+             (([10], False, 0, -1), 20),
+             (([10, 10], False, 0, -1), 20),
+             (([10, 10], False, 0, 1), [20, 20]),
+            )
+    for (x, ac, offset, axis), target in tests:
+        np.testing.assert_allclose(general.dbspl(x, ac=ac, offset=offset,
+                                                 axis=axis), target)
+
+def test_rms_do_ac():
+    assert general.rms([0,1,2,3,4,5,6], ac=True) == 2
+
+
+def test_rms():
+    tests = ((([0], True, -1), 0),
+             (([1], True, -1), 0),
+             (([1], False, -1), 1),
+             (([-1], False, -1), 1),
+             (([-1], True, -1), 0),
+             (([10, 10], False, -1), 10),
+             (([10, 10], True, -1), 0),
+             (([[0, 1],[0, 1]], True, -1), [0.5, 0.5]),
+             (([[0, 1],[0, 1]], False, -1), [0.70710678, 0.70710678]),
+             (([[0, 1],[0, 1]], True, 0), [0, 0]),
+             (([[0, 1],[0, 1]], False, 0), [0, 1]),
+             (([[0, 1],[0, 1]], True, 1), [0.5, 0.5]),
+             (([[0, 1],[0, 1]], False, 1), [0.70710678, 0.70710678]),
+    )
+    for (x, ac, axis), target in tests:
+        np.testing.assert_allclose(general.rms(x, ac=ac, axis=axis), target)
+
+
+def test_set_level(noise_raw, noise_65dB):
+    x65 = general.setdbspl(noise_raw, 65)
+    np.testing.assert_allclose(x65, noise_65dB, atol=1e-4)
+
+
+def test_mix_speech_and_noise_0dB(speech_raw, noise_raw, mix_0dB):
+    speech65 = general.setdbspl(speech_raw, 65)
+    noise65 = general.setdbspl(noise_raw, 65)
+    mixed = speech65 + noise65
+    np.testing.assert_allclose(mixed, mix_0dB, atol=1e-4)
+
+
+def test_envelope_extraction():
+    mat = sio.loadmat(__DATA_ROOT__ + "/test_envelope.mat")
+    x = mat['signal'][0]
+    target = mat['envelope'][0]
+    envelope = general.hilbert_envelope(x)
+    np.testing.assert_allclose(envelope, target, atol=1e-3)
+
+
+def test_hilbert_env_on_2d_array_with_last_dimension():
+    tests = (([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
+              [0, 1, 2, 1, 0]),
+             ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
+              [0, 1, 2, 1, 0]),
+             ([[0., 1.], [0., 1.]],
+              [[0, 1], [0, 1]]),
+             ([[0.5, 1., 0.5], [2.5, 3.16227766, 1.5]],
+              [[0, 1, 0], [2, 3, 0]]),
+    )
+
+    for target, x in tests:
+        env = general.hilbert_envelope(x)
+        np.testing.assert_allclose(env, target,
+                                   err_msg="Input was {}".format(x))
+
+
+
+# Can't be done programmatically, because the exact third-octave spacing is not
+# exactly the same as the one commonly used.
+@pytest.mark.xfail(run=False, reason="Real 3rd-oct != common ones")
+def test_third_oct_center_freq_bet_63_12500_hz():
+    """Test returns correct center frequencies for third-octave filters
+
+    Between 63 and 12500 Hz.
+
+    """
+    center_f = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
+                1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
+    assert noctave_center_freq(63, 12500, width=3) == center_f
+
+
+def test_find_calculate_srt_when_found():
+    x = np.arange(10)
+    y = 20 * x + 4
+    assert 2.3 == general.int2srt(x,y, srt=50)
+
+
+def test_find_calculate_srt_when_not_found():
+    x = np.arange(10)
+    y = 2 * x + 4
+    assert None == general.int2srt(x,y, srt=50)
+
+
+def test_find_srt_when_srt_at_index_zero():
+    x = [0, 1]
+    y = [50, 51]
+    assert 0 == general.int2srt(x,y, srt=50)
+
+
+def test_make_same_length_with_padding():
+    tests = ((([1], [1, 1]), ([1, 0], [1, 1])),
+             (([1, 1], [1, 1]), ([1, 1], [1, 1])),
+             (([1, 1], [1]), ([1, 1], [1, 0])),
+             (([1], [1, 1], False), ([1], [1])),
+    )
+
+    for inputs, targets in tests:
+        np.testing.assert_allclose(general.make_same_length(*inputs),
+                                   targets)
