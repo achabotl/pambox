@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import numpy as np
+import scipy as sp
 from scipy.io import wavfile
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
-try:
-    _ = np.use_fastnumpy
-    from numpy.fft import fft, ifft
-except AttributeError:
-    from scipy.fftpack import fft, ifft
+from numpy.fft import fft, ifft
 
 
 def dbspl(x, ac=False, offset=100.0, axis=-1):
@@ -35,17 +32,16 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
 
     References
     ----------
-    .. [amtoolbox] Auditory Modeling Toolbox, Peter L. Soendergaard
+    .. [1] Auditory Modeling Toolbox, Peter L. Soendergaard
       B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
       Press, 5th edition, 2003.
 
     See also
     --------
-    setdbspl
-    rms
+    `setdbspl`, `rms`.
     """
     x = np.asarray(x)
-    return 20. * np.log10(rms(x, ac=ac, axis=axis)) + float(offset)
+    return 20. * np.log10(rms(x, ac)) + float(offset)
 
 
 def setdbspl(x, lvl, ac=False, offset=100.0):
@@ -70,10 +66,8 @@ def setdbspl(x, lvl, ac=False, offset=100.0):
     ndarray
         Signal of the same dimension as the original.
     """
-    axis = -1
     x = np.asarray(x)
-    return (x.T / rms(x, ac, axis=axis)
-            * 10. ** ((lvl - float(offset)) / 20.)).T
+    return x / rms(x, ac) * 10. ** ((lvl - float(offset)) / 20.)
 
 
 def rms(x, ac=False, axis=-1):
@@ -96,8 +90,6 @@ def rms(x, ac=False, axis=-1):
 
     """
     x = np.asarray(x)
-    if not x.ndim > 1:
-        axis = -1
     if ac:
         return np.linalg.norm((x - np.mean(x, axis=axis))
                               / np.sqrt(x.shape[axis]), axis=axis)
@@ -142,17 +134,17 @@ def hilbert(x, N=None, axis=-1):
     out, turning the real-valued signal into a complex signal.  The Hilbert
     transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
     original signal from ``np.real(hilbert(x))``.
-
     References
     ----------
     .. [1] Wikipedia, "Analytic signal".
-        http://en.wikipedia.org/wiki/Analytic_signal
+           http://en.wikipedia.org/wiki/Analytic_signal
 
     License
     -------
-
-    This code was copied from Scipy.
-    The following license applies for this function:
+    This code was copied from Scipy. . The following license
+    applies
+    for this
+    function:
 
     Copyright (c) 2001, 2002 Enthought, Inc.
     All rights reserved.
@@ -199,15 +191,7 @@ def hilbert(x, N=None, axis=-1):
         h[0] = h[N // 2] = 1
         h[1:N // 2] = 2
     else:
-        h[0] = 1
-        h[1:(N + 1) // 2] = 2
-
-    if len(x.shape) > 1:
-        ind = [np.newaxis] * x.ndim
-        ind[axis] = slice(None)
-        h = h[ind]
-    x = ifft(Xf * h, axis=axis)
-    return x
+        return np.linalg.norm(x / np.sqrt(x.shape[-1]))
 
 
 def hilbert_envelope(signal, axis=None):
@@ -227,15 +211,12 @@ def hilbert_envelope(signal, axis=None):
 
     """
     signal = np.asarray(signal)
-
-    if axis is None:
-        axis = -1
-    n_orig = signal.shape[-1]
+    N_orig = signal.shape[-1]
     # Next power of 2.
-    n = next_pow_2(n_orig)
-    y_h = hilbert(signal, n, axis=axis)
+    N = next_pow_2(N_orig)
+    y_h = sp.signal.hilbert(signal, N)
     # Return signal with same dimensions as original
-    return np.abs(y_h[..., :n_orig])
+    return np.abs(y_h[..., :N_orig])
 
 
 def next_pow_2(x):
@@ -287,8 +268,8 @@ def fftfilt(b, x, *n):
     if b.ndim > 1 or x.ndim > 1:
         raise ValueError('The inputs should be one dimensional')
 
-    n_x = len(x)
-    n_b = len(b)
+    N_x = len(x)
+    N_b = len(b)
 
     # Determine the FFT length to use:
     if len(n):
@@ -298,11 +279,11 @@ def fftfilt(b, x, *n):
         n = n[0]
         if n != int(n) or n <= 0:
             raise ValueError('n must be a nonnegative integer')
-        if n < n_b:
-            n = n_b
-        n_fft = 2 ** next_pow_2(n)
+        if n < N_b:
+            n = N_b
+        N_fft = 2 ** next_pow_2(n)
     else:
-        if n_x > n_b:
+        if N_x > N_b:
             # When the filter length is smaller than the signal,
             # choose the FFT length and block size that minimize the
             # FLOPS cost. Since the cost for a length-N FFT is
@@ -311,30 +292,30 @@ def fftfilt(b, x, *n):
             # cost of the overlap-add method for 1 length-N block is
             # N*(1+log2(N)). For the sake of efficiency, only FFT
             # lengths that are powers of 2 are considered:
-            N = 2 ** arange(ceil(log2(n_b)), 27)
-            cost = ceil(n_x / (N - n_b + 1)) * N * (log2(N) + 1)
-            n_fft = N[argmin(cost)]
+            N = 2 ** arange(ceil(log2(N_b)), 27)
+            cost = ceil(N_x / (N - N_b + 1)) * N * (log2(N) + 1)
+            N_fft = N[argmin(cost)]
         else:
             # When the filter length is at least as long as the signal,
             # filter the signal using a single block:
-            n_fft = next_pow_2(n_b + n_x - 1)
+            N_fft = next_pow_2(N_b + N_x - 1)
 
-    n_fft = int(n_fft)
+    N_fft = int(N_fft)
 
     # Compute the block length:
-    bl = int(n_fft - n_b + 1)
+    L = int(N_fft - N_b + 1)
 
     # Compute the transform of the filter:
-    H = fft(b, n_fft)
+    H = fft(b, N_fft)
 
-    y = zeros(n_x, complex)
+    y = zeros(N_x, complex)
     i = 0
-    while i <= n_x:
-        il = min([i + bl, n_x])
-        k = min([i + n_fft, n_x])
-        yt = ifft(fft(x[i:il], n_fft) * H, n_fft)  # Overlap..
+    while i <= N_x:
+        il = min([i + L, N_x])
+        k = min([i + N_fft, N_x])
+        yt = ifft(fft(x[i:il], N_fft) * H, N_fft)  # Overlap..
         y[i:k] = y[i:k] + yt[:k - i]  # and add
-        i += bl
+        i += L
     return np.real(y)
 
 
@@ -375,12 +356,8 @@ def write_wav(fname, fs, x):
         scaled = x
     wavfile.write(fname, fs, scaled.astype('int16'))
 
-
 def make_same_length(a, b, extend_first=True):
-    """Makes two arrays the same length along the last dimension.
-
-    Default behavior is to zero-pad the shorted array. It is also possible to
-    cut the second array to the same length as the first.
+    """Make two vectors the same length.
 
     Parameters
     ----------
@@ -396,18 +373,13 @@ def make_same_length(a, b, extend_first=True):
         Two arrays with the same length along the last dimension.
 
     """
-    a = np.asarray(a)
-    b = np.asarray(b)
-    if a.shape[-1] < b.shape[-1]:
-        if extend_first:
-            c = np.zeros_like(b)
-            c[..., :a.shape[-1]] += a
-            return c, b
-        else:
-            return a, b[..., :a.shape[-1]]
+    if len(a) < len(b):
+        c = np.zeros_like(b)
+        c[:len(a)] += a
+        return c, b
     else:
         c = np.zeros_like(a)
-        c[..., :b.shape[-1]] += b
+        c[:len(b)] += b
         return a, c
 
 
@@ -457,15 +429,9 @@ def int2srt(x, y, srt=50.0):
     """
     x = np.asarray(x)
     y = np.asarray(y)
-
-    if x.shape != y.shape:
-        raise ValueError('Inputs of different lenghts.')
     srt = np.float(srt)
     idx = np.nonzero(np.diff(y >= srt))[0]
-    if not idx and y[0] == srt:
-        return x[0]
-
-    if len(idx) >= 1:
+    if idx:
         srt = x[idx] + (srt - y[idx]) * (x[idx + 1] - x[idx]) \
             / (y[idx + 1] - y[idx])
     else:

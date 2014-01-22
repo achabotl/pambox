@@ -117,7 +117,7 @@ class MrSepsm(Sepsm):
         Parameters
         ----------
         mr_snr_env : ndarray
-            
+
 
         Returns
         -------
@@ -311,6 +311,7 @@ class MrSepsm(Sepsm):
         Parameters
         ----------
         mat :
+<<<<<<< HEAD
         x :
             (Default value = None)
         y : array_like
@@ -321,6 +322,18 @@ class MrSepsm(Sepsm):
             (Default value = None)
         subplot_pos :
             (Default value = 111)
+=======
+            param x:
+        y :
+            param ax:
+            :return: (Default value = None)
+        x :
+             (Default value = None)
+        fig :
+             (Default value = None)
+        subplot_pos :
+             (Default value = 111)
+>>>>>>> bc39394... Convert all docstrings to numpydoc.
 
         Returns
         -------

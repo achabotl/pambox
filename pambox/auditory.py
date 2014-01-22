@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function, absolute_import
+from __future__ import division, print_function
 from numpy import pi, exp, sin, cos, sqrt, abs, ones
 import numpy as np
 import scipy as sp
@@ -49,7 +49,7 @@ def lowpass_env_filtering(x, cutoff=150., n=1, fs=22050):
 
     """
 
-    b, a = sp.signal.butter(N=n, Wn=cutoff * 2. / fs, btype='lowpass')
+    b, a = sp.signal.butter(N=N, Wn=cutoff * 2. / fs, btype='lowpass')
     return sp.signal.lfilter(b, a, x)
 
 
