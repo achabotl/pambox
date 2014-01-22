@@ -238,7 +238,7 @@ class Westermann_crm(object):
             except IOError:
                 raise IOError('Cannot file file %s' % '../stimuli/crm/eqfilts/'
                             + eqfilt_name)
-            m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
+            m = [fftfilt(b, m) for b in [eqfilt['br'], eqfilt['bl']]]
 
         out_m = np.asarray([fftfilt(b, chan) for b, chan
                             in izip(self.brir[mdist], m)])
