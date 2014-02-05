@@ -1,0 +1,752 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pambox Package &mdash; pambox  documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pambox  documentation" href="index.html" />
+    <link rel="next" title="tests Package" href="pambox.tests.html" />
+    <link rel="prev" title="Welcome to pambox’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pambox.tests.html" title="tests Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pambox’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pambox  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pambox-package">
+<h1>pambox Package<a class="headerlink" href="#pambox-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">__version__</span></tt> Module<a class="headerlink" href="#version-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pambox.auditory">
+<span id="auditory-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">auditory</span></tt> Module<a class="headerlink" href="#module-pambox.auditory" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pambox.auditory.erbbw">
+<tt class="descclassname">pambox.auditory.</tt><tt class="descname">erbbw</tt><big>(</big><em>fc</em><big>)</big><a class="reference internal" href="_modules/pambox/auditory.html#erbbw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.auditory.erbbw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Auditory filter bandwith</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Fc :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">&#64;todo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.auditory.gammatone_apply">
+<tt class="descclassname">pambox.auditory.</tt><tt class="descname">gammatone_apply</tt><big>(</big><em>x</em>, <em>forward</em>, <em>feedback</em><big>)</big><a class="reference internal" href="_modules/pambox/auditory.html#gammatone_apply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.auditory.gammatone_apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function filters the waveform x with the array of filters
+specified by the forward and feedback parameters. Each row
+of the forward and feedback parameters are the parameters
+to the SciPy function &#8220;lfilter&#8221;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">gammatone_filtering(signal, center_f=array([  63,   80,  100,  125,  160,  200,  250,  315,  400,  500,  630,</tt></dt>
+<dt>
+<tt class="descname">800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000]), fs=array([ 22050.]))</tt></dt>
+<dd><p>Filters a signal using a gammatone filterbank</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Signal :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">&#64;todo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.auditory.gammatone_make">
+<tt class="descclassname">pambox.auditory.</tt><tt class="descname">gammatone_make</tt><big>(</big><em>fs</em>, <em>cf</em>, <em>beta=1.019</em><big>)</big><a class="reference internal" href="_modules/pambox/auditory.html#gammatone_make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.auditory.gammatone_make" title="Permalink to this definition">¶</a></dt>
+<dd><p>GammaToneMake(fs,cf)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>fs ... float, sampling frequency
+cf ... ndarray, center frequencies</dd>
+<dt>Output:</dt>
+<dd>forward ... &#8220;b&#8221;-coefficients for the linear filter
+feedback ... &#8220;a&#8221;-coefficients for the linear filter
+cf ... center frequency
+ERB ... Equivalent Rectangular Bandwidth
+B ... Gammatone filter parameter in Roy Patterson&#8217;s ear model</dd>
+</dl>
+<p>Computes the filter coefficients for a bank of Gammatone filters. The
+results are returned as arrays of filter coefficients. Each row of the
+filter arrays (forward and feedback) can be passed to the SciPy &#8220;lfilter&#8221;
+function.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.auditory.lowpass_env_filtering">
+<tt class="descclassname">pambox.auditory.</tt><tt class="descname">lowpass_env_filtering</tt><big>(</big><em>x</em>, <em>cutoff=150.0</em>, <em>N=1</em>, <em>fs=array([ 22050.])</em><big>)</big><a class="reference internal" href="_modules/pambox/auditory.html#lowpass_env_filtering"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.auditory.lowpass_env_filtering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Low-pass filters signal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Cutoff :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">&#64;todo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pambox.distort">
+<span id="distort-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">distort</span></tt> Module<a class="headerlink" href="#module-pambox.distort" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pambox.distort.Westermann_crm">
+<em class="property">class </em><tt class="descclassname">pambox.distort.</tt><tt class="descname">Westermann_crm</tt><a class="reference internal" href="_modules/pambox/distort.html#Westermann_crm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.Westermann_crm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Applies HRTF and BRIR for a given target and masker distance.</p>
+<dl class="method">
+<dt id="pambox.distort.Westermann_crm.apply">
+<tt class="descname">apply</tt><big>(</big><em>x</em>, <em>m</em>, <em>tdist</em>, <em>mdist</em><big>)</big><a class="reference internal" href="_modules/pambox/distort.html#Westermann_crm.apply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.Westermann_crm.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;todo: Docstring for apply.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">N array, mono clean speech signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">M :</th><td class="field-body">N array, mono masker signal</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Tdist :</th><td class="field-body">float, target distance, in meters</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Mdist :</th><td class="field-body">float, masker distance, in meters</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(2xN array, 2xN array), filtered signal and filterd masker</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.distort.mix_noise">
+<tt class="descclassname">pambox.distort.</tt><tt class="descname">mix_noise</tt><big>(</big><em>clean</em>, <em>noise</em>, <em>sent_level</em>, <em>snr=None</em><big>)</big><a class="reference internal" href="_modules/pambox/distort.html#mix_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.mix_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mix a signal signal noise at a given signal-to-noise ratio.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">ndarray, clean signal.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Noise :</th><td class="field-body">ndarray, noise signal.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Snr :</th><td class="field-body">float, signal-to-noise ratio. If ignored, no noise is mixed, i.e.
+clean == mix.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">tuple, returns the clean signal, the mixture, and the noise
+alone.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.distort.overlap_and_add">
+<tt class="descclassname">pambox.distort.</tt><tt class="descname">overlap_and_add</tt><big>(</big><em>powers</em>, <em>phases</em>, <em>len_window</em>, <em>shift_size</em><big>)</big><a class="reference internal" href="_modules/pambox/distort.html#overlap_and_add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.overlap_and_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstruct a signal with the overlap and add method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Powers :</th><td class="field-body">array-like,</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Phases :</th><td class="field-body">array-like,</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Len_window :</th><td class="field-body">int, window length</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Shift_size :</th><td class="field-body">int, shift length. For non overlapping signals, in would</td>
+</tr>
+</tbody>
+</table>
+<p>equal len_frame. For 50% overlapping signals, it would be len_frame/2.
+:returns: array-like, reconstructed time-domain signal</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.distort.phase_jitter">
+<tt class="descclassname">pambox.distort.</tt><tt class="descname">phase_jitter</tt><big>(</big><em>x</em>, <em>a</em><big>)</big><a class="reference internal" href="_modules/pambox/distort.html#phase_jitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.phase_jitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply phase jitter to a signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">ndarray, signal.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">A :</th><td class="field-body">float, phase jitter parameter, between 0 and 1.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ndarray, processed signal</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.distort.reverb">
+<tt class="descclassname">pambox.distort.</tt><tt class="descname">reverb</tt><big>(</big><em>x</em>, <em>rt</em><big>)</big><a class="reference internal" href="_modules/pambox/distort.html#reverb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.reverb" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;todo: Docstring for reverb.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rt :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">&#64;todo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.distort.spec_sub">
+<tt class="descclassname">pambox.distort.</tt><tt class="descname">spec_sub</tt><big>(</big><em>x</em>, <em>noise</em>, <em>factor</em>, <em>w=512.0</em>, <em>padz=512.0</em>, <em>shift_p=0.5</em><big>)</big><a class="reference internal" href="_modules/pambox/distort.html#spec_sub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.distort.spec_sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply spectral subtraction to a signal.</p>
+<p>Typical values of the parameters, for a sampling frequency of 44100 Hz
+W = 1024
+padz = 1024; %zero padding (pad with padz/2 from the left and padz/2 from
+the right )Note that (W+padz) is the final frame window and hence the fft
+length (it is normally chose as a power of 2)
+shift_p = 0.5 # %Shift percentage is 50%</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">ndarray, signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Noise :</th><td class="field-body">ndarray, noise</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Factor :</th><td class="field-body">float, the over-subtraction factor</td>
+</tr>
+<tr class="field-even field"><th class="field-name">W :</th><td class="field-body">int, frame length</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Padz :</th><td class="field-body">int, zero padding (pad with padz/2 from the left and the right)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Shift_p :</th><td class="field-body">float, shift percentage (overlap)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple of ndarrays, estimate of clean signal and estimate of
+noisy signal.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pambox.filterbank">
+<span id="filterbank-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">filterbank</span></tt> Module<a class="headerlink" href="#module-pambox.filterbank" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pambox.filterbank.impz">
+<tt class="descclassname">pambox.filterbank.</tt><tt class="descname">impz</tt><big>(</big><em>b</em>, <em>a=1</em><big>)</big><a class="reference internal" href="_modules/pambox/filterbank.html#impz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.filterbank.impz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot step and impulse response.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">B :</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">A :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>From <a class="reference external" href="http://mpastell.com/2010/01/18/fir-with-scipy/">http://mpastell.com/2010/01/18/fir-with-scipy/</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.filterbank.mfreqz">
+<tt class="descclassname">pambox.filterbank.</tt><tt class="descname">mfreqz</tt><big>(</big><em>b</em>, <em>a=1</em>, <em>fs=22050.0</em><big>)</big><a class="reference internal" href="_modules/pambox/filterbank.html#mfreqz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.filterbank.mfreqz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the frequency and phase response.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">B :</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">A :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>From <a class="reference external" href="http://mpastell.com/2010/01/18/fir-with-scipy/">http://mpastell.com/2010/01/18/fir-with-scipy/</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.filterbank.mod_filterbank">
+<tt class="descclassname">pambox.filterbank.</tt><tt class="descname">mod_filterbank</tt><big>(</big><em>signal</em>, <em>fs</em>, <em>modf</em><big>)</big><a class="reference internal" href="_modules/pambox/filterbank.html#mod_filterbank"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.filterbank.mod_filterbank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of the EPSM-filterbank.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Signal :</th><td class="field-body">ndarray, temporal envelope of a signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Fs :</th><td class="field-body">int, sampling frequency</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ndarray, integrated power spectrum at the output of each filter</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.filterbank.noctave_center_freq">
+<tt class="descclassname">pambox.filterbank.</tt><tt class="descname">noctave_center_freq</tt><big>(</big><em>lowf</em>, <em>highf</em>, <em>width=3</em><big>)</big><a class="reference internal" href="_modules/pambox/filterbank.html#noctave_center_freq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.filterbank.noctave_center_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate exact center N-octave space center frequencies.</p>
+<p>In practive, what is often desired is the &#8220;simplified&#8221; center frequencies,
+so this function is not of much use.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Lowf :</th><td class="field-body">low frequency Hz</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Highf :</th><td class="field-body">high frequency Hz</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Width :</th><td class="field-body">spacing, 3 for third-octave</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">&#64;todo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.filterbank.noctave_filtering">
+<tt class="descclassname">pambox.filterbank.</tt><tt class="descname">noctave_filtering</tt><big>(</big><em>x</em>, <em>center_f</em>, <em>fs</em>, <em>width=3</em><big>)</big><a class="reference internal" href="_modules/pambox/filterbank.html#noctave_filtering"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.filterbank.noctave_filtering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rectangular nth-octave filtering.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Center_f :</th><td class="field-body">ndarray, center frequencies, in Hz</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Width :</th><td class="field-body">width of the filters, default 3 for 1/3-octave</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:
+:time_sig: array of the filtered signal
+:spec: nth-octave spectrumt</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pambox.general">
+<span id="general-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">general</span></tt> Module<a class="headerlink" href="#module-pambox.general" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pambox.general.add_signals">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">add_signals</tt><big>(</big><em>a</em>, <em>b</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#add_signals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.add_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add two vectors of different lengths by zero padding the shortest one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">A :</th><td class="field-body">vector</td>
+</tr>
+<tr class="field-even field"><th class="field-name">B :</th><td class="field-body">vector</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">vector, of the same length as the longest of the two inputs.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.dbspl">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">dbspl</tt><big>(</big><em>x</em>, <em>ac=False</em>, <em>offset=100.0</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#dbspl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.dbspl" title="Permalink to this definition">¶</a></dt>
+<dd><p>RMS value of signal (in dB)</p>
+<p>DBSPL(x) computes the SPL (sound pressure level) of the input signal
+measured in dB, using the convention that a pure tone at 100 dB SPL has
+an RMS value of 1.</p>
+<p>DBSPL(x, ac=True) does the same, but considers only the AC component of the
+signal (i.e. the mean is removed).</p>
+<p>See also: setdbspl</p>
+<dl class="docutils">
+<dt>References:</dt>
+<dd>Auditory Modeling Toolbox, Peter L. Soendergaard
+B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
+Press, 5th edition, 2003.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">arraly_like, signal ac: bool, consider only the AC component of the</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Signal. offset:</th><td class="field-body">float, reference to convert between RMS and dB SPL.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.fftfilt">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">fftfilt</tt><big>(</big><em>b</em>, <em>x</em>, <em>*n</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#fftfilt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.fftfilt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter the signal x with the FIR filter described by the
+coefficients in b using the overlap-add method. If the FFT
+length n is not specified, it and the overlap-add block length
+are selected so as to minimize the computational cost of
+the filtering operation.</p>
+<p>From: <a class="reference external" href="http://projects.scipy.org/scipy/attachment/ticket/837/fftfilt.py">http://projects.scipy.org/scipy/attachment/ticket/837/fftfilt.py</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.hilbert_envelope">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">hilbert_envelope</tt><big>(</big><em>signal</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#hilbert_envelope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.hilbert_envelope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the hilbert envelope of a signal</p>
+<p>Also does the FFT on the -1 axis.
+:returns: ndarray of the same shape as the input.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.int2srt">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">int2srt</tt><big>(</big><em>x</em>, <em>y</em>, <em>srt=50.0</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#int2srt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.int2srt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find intersection using linear interpolation.</p>
+<p>This function finds the x values at which a curve intersects with a
+constant value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">x values</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Y :</th><td class="field-body">y values</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Srt :</th><td class="field-body">value of <cite>y</cite> at which the interception is calculated.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.make_same_length">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">make_same_length</tt><big>(</big><em>a</em>, <em>b</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#make_same_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.make_same_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make two vectors the same length.</p>
+<p>Makes two vectors of the same length by padding the shortest one with
+zeros.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">A :</th><td class="field-body">vector</td>
+</tr>
+<tr class="field-even field"><th class="field-name">B :</th><td class="field-body">vector</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">array, array, two arrays of the same length.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.next_pow_2">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">next_pow_2</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#next_pow_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.next_pow_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the next power of 2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.rms">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">rms</tt><big>(</big><em>x</em>, <em>ac=False</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#rms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.rms" title="Permalink to this definition">¶</a></dt>
+<dd><p>RMS value of a signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Ac :</th><td class="field-body">bool, default: True
+consider only the AC component of the signal</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Rms :</th><td class="field-body">rms value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.setdbspl">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">setdbspl</tt><big>(</big><em>x</em>, <em>lvl</em>, <em>ac=False</em>, <em>offset=100.0</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#setdbspl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.setdbspl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set level of signal in dB SPL</p>
+<p>SETDBSPL(insig,lvl) sets the SPL (sound pressure level) of the signal
+insig to lvl dB, using the convention that a pure tone with an RMS value
+of 1 corresponds to 100 dB SPL.</p>
+<p>If the input is an array, it is assumed that each row is a signal.</p>
+<p>SETDBSPL(insig,lvl,ac=True) does the same, but considers only the AC
+component of the signal (i.e. the mean is removed).</p>
+<dl class="docutils">
+<dt>References:</dt>
+<dd>B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
+Press, 5th edition, 2003.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Lvl :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Ac :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">&#64;todo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.general.write_wav">
+<tt class="descclassname">pambox.general.</tt><tt class="descname">write_wav</tt><big>(</big><em>fname</em>, <em>fs</em>, <em>x</em><big>)</big><a class="reference internal" href="_modules/pambox/general.html#write_wav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.general.write_wav" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write floating point numpy array to 16 bit wavfile.</p>
+<p>Convenience wrapper around the scipy.io.wavfile.write function. The signal
+so that its maximum value is one.</p>
+<p>The &#8216;.wav&#8217; extension is added to the file if it is not part of the
+filename string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Fname :</th><td class="field-body">string, filename with path.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Fs :</th><td class="field-body">sampling frequency</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">X :</th><td class="field-body">array_like, N_channel x Length, signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">nothing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pambox.idealobs">
+<span id="idealobs-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">idealobs</span></tt> Module<a class="headerlink" href="#module-pambox.idealobs" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pambox.idealobs.IdealObs">
+<em class="property">class </em><tt class="descclassname">pambox.idealobs.</tt><tt class="descname">IdealObs</tt><big>(</big><em>k=1.0954451150103321</em>, <em>q=0.5</em>, <em>sigma_s=0.6</em>, <em>m=8000.0</em><big>)</big><a class="reference internal" href="_modules/pambox/idealobs.html#IdealObs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.idealobs.IdealObs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Docstring for IdealObs.</p>
+<dl class="method">
+<dt id="pambox.idealobs.IdealObs.fit_obs">
+<tt class="descname">fit_obs</tt><big>(</big><em>snrenv</em>, <em>pcdata</em><big>)</big><a class="reference internal" href="_modules/pambox/idealobs.html#IdealObs.fit_obs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.idealobs.IdealObs.fit_obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the optimal parameters for the ideal observer.
+snrenv: the linear SNRenv values that are to be converted to percent</p>
+<blockquote>
+<div>correct.</div></blockquote>
+<p>pcdata: the data, in percentage of correctly understood tokens.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pambox.idealobs.IdealObs.get_params">
+<tt class="descname">get_params</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pambox/idealobs.html#IdealObs.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.idealobs.IdealObs.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pambox.idealobs.IdealObs.snrenv_to_pc">
+<tt class="descname">snrenv_to_pc</tt><big>(</big><em>snrenv</em><big>)</big><a class="reference internal" href="_modules/pambox/idealobs.html#IdealObs.snrenv_to_pc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.idealobs.IdealObs.snrenv_to_pc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert SNR_env values to a percent correct using a ideal observer</p>
+<dl class="docutils">
+<dt>snrenv <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
+<dd>linear values of SNRenv</dd>
+</dl>
+<dl class="docutils">
+<dt>pc <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Percentage of correctly understood speech units.</dd>
+</dl>
+<p>Reference: Jorgensen and Dau (2011)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pambox.idealobs.psy_fn">
+<tt class="descclassname">pambox.idealobs.</tt><tt class="descname">psy_fn</tt><big>(</big><em>x</em>, <em>mu=0</em>, <em>sigma=1</em><big>)</big><a class="reference internal" href="_modules/pambox/idealobs.html#psy_fn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.idealobs.psy_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Psychometric function
+Convert x values to percent correct
+Inputs:
+x: the input array
+mu: mean of the distribution (default 0)
+sigma: standard deviation of the distribution (default 1)</p>
+<p>Outputs:
+pc: array of values between 0 and 100</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pambox.tmr">
+<span id="tmr-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">tmr</span></tt> Module<a class="headerlink" href="#module-pambox.tmr" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pambox.tmr.long_term_tmr">
+<tt class="descclassname">pambox.tmr.</tt><tt class="descname">long_term_tmr</tt><big>(</big><em>signal</em>, <em>noise</em><big>)</big><a class="reference internal" href="_modules/pambox/tmr.html#long_term_tmr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.tmr.long_term_tmr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pambox.tmr.st_tmr">
+<tt class="descclassname">pambox.tmr.</tt><tt class="descname">st_tmr</tt><big>(</big><em>signal</em>, <em>noise</em>, <em>fs</em><big>)</big><a class="reference internal" href="_modules/pambox/tmr.html#st_tmr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pambox.tmr.st_tmr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate spectro-temporal target-to-masker ratio</p>
+<p>Implemented as described in Schoenmaker and van de Par, 2013</p>
+<p>Schoenmaker, E and van de Par, S. &#8220;Auditory streaming in cocktail parties:
+Better-ear versus binaural processing,&#8221; AIA-DAGA 2013, Merano.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Signal :</th><td class="field-body">ndarray, mono or stereo speech</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Noise :</th><td class="field-body">&#64;todo</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Fs :</th><td class="field-body">int, sampling frequency</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">float, TMR distribution, in dB</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pambox.tests.html">tests Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pambox.tests.html#module-pambox.tests.test_auditory"><tt class="docutils literal"><span class="pre">test_auditory</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pambox.tests.html#module-pambox.tests.test_distort"><tt class="docutils literal"><span class="pre">test_distort</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pambox.tests.html#module-pambox.tests.test_filterbank"><tt class="docutils literal"><span class="pre">test_filterbank</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pambox.tests.html#module-pambox.tests.test_general"><tt class="docutils literal"><span class="pre">test_general</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pambox.tests.html#module-pambox.tests.test_idealobs"><tt class="docutils literal"><span class="pre">test_idealobs</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pambox Package</a><ul>
+<li><a class="reference internal" href="#version-module"><tt class="docutils literal"><span class="pre">__version__</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pambox.auditory"><tt class="docutils literal"><span class="pre">auditory</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pambox.distort"><tt class="docutils literal"><span class="pre">distort</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pambox.filterbank"><tt class="docutils literal"><span class="pre">filterbank</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pambox.general"><tt class="docutils literal"><span class="pre">general</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pambox.idealobs"><tt class="docutils literal"><span class="pre">idealobs</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pambox.tmr"><tt class="docutils literal"><span class="pre">tmr</span></tt> Module</a></li>
+<li><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to pambox&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pambox.tests.html"
+                        title="next chapter">tests Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pambox.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pambox.tests.html" title="tests Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pambox’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">pambox  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Alexandre Chabot-Leclerc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
