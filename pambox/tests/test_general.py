@@ -4,29 +4,30 @@ from pambox import general
 from scipy.io import wavfile
 import numpy as np
 import scipy.io as sio
+from config import DATA_ROOT
 
 
 @pytest.fixture
 def speech_raw():
-    x = wavfile.read("test_files/test_speech_raw_22050.wav")[1]
+    x = wavfile.read(DATA_ROOT + "/test_speech_raw_22050.wav")[1]
     return x / 2. ** 15
 
 
 @pytest.fixture
 def noise_raw():
-    x = wavfile.read("test_files/test_noise_raw_22050.wav")[1]
+    x = wavfile.read(DATA_ROOT + "/test_noise_raw_22050.wav")[1]
     return x / 2. ** 15
 
 
 @pytest.fixture
 def mix_0dB():
-    x = wavfile.read("test_files/test_mix_0dB_22050.wav")[1]
+    x = wavfile.read(DATA_ROOT + "/test_mix_0dB_22050.wav")[1]
     return x / 2. ** 15
 
 
 @pytest.fixture
 def noise_65dB():
-    x_65 = wavfile.read("test_files/test_noise_65dB_22050.wav")[1]
+    x_65 = wavfile.read(DATA_ROOT + "/test_noise_65dB_22050.wav")[1]
     return x_65 / 2. ** 15
 
 
@@ -51,7 +52,7 @@ def test_mix_speech_and_noise_0dB(speech_raw, noise_raw, mix_0dB):
 
 
 def test_envelope_extraction():
-    mat = sio.loadmat("./test_files/test_envelope.mat")
+    mat = sio.loadmat(DATA_ROOT + "/test_envelope.mat")
     x = mat['signal'][0]
     target = mat['envelope'][0]
     envelope = general.hilbert_envelope(x)

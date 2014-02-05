@@ -4,10 +4,11 @@ import numpy as np
 from pambox import auditory as aud
 import scipy.io as sio
 from numpy.testing import assert_allclose
+from config import DATA_ROOT
 
 
 def test_lowpass_filtering_of_envelope():
-    mat = sio.loadmat("./test_files/test_hilbert_env_and_lp_filtering_v1.mat",
+    mat = sio.loadmat(DATA_ROOT + "/test_hilbert_env_and_lp_filtering_v1.mat",
                       squeeze_me=True)
     envelope = mat['unfiltered_env']
     target = mat['lp_filtered_env']
@@ -24,7 +25,7 @@ def test_erb():
 # are different.
 @pytest.mark.xfail
 def test_gammatone_filtering():
-    mat = sio.loadmat('./test_files/test_gammatone_filtering.mat')
+    mat = sio.loadmat(DATA_ROOT + '/test_gammatone_filtering.mat')
     center_f = mat['midfreq'].squeeze()
     fs = mat['fs'].squeeze()
     signal = mat['signal'].squeeze()
