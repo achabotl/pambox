@@ -1,0 +1,127 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pambox.tests.test_auditory &mdash; pambox  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pambox  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pambox  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pambox.tests.test_auditory</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pambox</span> <span class="kn">import</span> <span class="n">auditory</span> <span class="k">as</span> <span class="n">aud</span>
+<span class="kn">import</span> <span class="nn">scipy.io</span> <span class="kn">as</span> <span class="nn">sio</span>
+<span class="kn">from</span> <span class="nn">numpy.testing</span> <span class="kn">import</span> <span class="n">assert_allclose</span>
+
+
+<div class="viewcode-block" id="test_lowpass_filtering_of_envelope"><a class="viewcode-back" href="../../../pambox.tests.html#pambox.tests.test_auditory.test_lowpass_filtering_of_envelope">[docs]</a><span class="k">def</span> <span class="nf">test_lowpass_filtering_of_envelope</span><span class="p">():</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">sio</span><span class="o">.</span><span class="n">loadmat</span><span class="p">(</span><span class="s">&quot;./test_files/test_hilbert_env_and_lp_filtering_v1.mat&quot;</span><span class="p">,</span>
+                      <span class="n">squeeze_me</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">envelope</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s">&#39;unfiltered_env&#39;</span><span class="p">]</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s">&#39;lp_filtered_env&#39;</span><span class="p">]</span>
+    <span class="n">filtered_envelope</span> <span class="o">=</span> <span class="n">aud</span><span class="o">.</span><span class="n">lowpass_env_filtering</span><span class="p">(</span><span class="n">envelope</span><span class="p">,</span> <span class="mf">150.</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">22050.</span><span class="p">)</span>
+    <span class="n">assert_allclose</span><span class="p">(</span><span class="n">filtered_envelope</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="test_erb"><a class="viewcode-back" href="../../../pambox.tests.html#pambox.tests.test_auditory.test_erb">[docs]</a><span class="k">def</span> <span class="nf">test_erb</span><span class="p">():</span>
+    <span class="n">bw</span> <span class="o">=</span> <span class="n">aud</span><span class="o">.</span><span class="n">erbbw</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">assert_allclose</span><span class="p">(</span><span class="n">bw</span><span class="p">,</span> <span class="mf">132.63</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+
+
+<span class="c"># We use a different implementation than the Matlab one and the delay</span>
+<span class="c"># are different.</span></div>
+<span class="nd">@pytest.mark.xfail</span>
+<div class="viewcode-block" id="test_gammatone_filtering"><a class="viewcode-back" href="../../../pambox.tests.html#pambox.tests.test_auditory.test_gammatone_filtering">[docs]</a><span class="k">def</span> <span class="nf">test_gammatone_filtering</span><span class="p">():</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">sio</span><span class="o">.</span><span class="n">loadmat</span><span class="p">(</span><span class="s">&#39;./test_files/test_gammatone_filtering.mat&#39;</span><span class="p">)</span>
+    <span class="n">center_f</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s">&#39;midfreq&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s">&#39;fs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s">&#39;signal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s">&#39;GT_output&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">aud</span><span class="o">.</span><span class="n">gammatone_filtering</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">center_f</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">assert_allclose</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pambox  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Alexandre Chabot-Leclerc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
