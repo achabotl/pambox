@@ -4,7 +4,8 @@ import scipy as sp
 import scipy.signal as ss
 import matplotlib.pyplot as plt
 from scipy import pi
-from numpy.fft import fft
+from numpy.fft import fft, ifft
+from itertools import izip
 
 
 def mod_filterbank(signal, fs, modf):
@@ -15,6 +16,7 @@ def mod_filterbank(signal, fs, modf):
     :returns: ndarray, integrated power spectrum at the output of each filter
 
     """
+    modf = np.asarray(modf)
     fcs = modf[1:]
     fcut = modf[0]
     # Make signal odd length
@@ -36,9 +38,6 @@ def mod_filterbank(signal, fs, modf):
     # Concatenate vector of 0:fs and -fs:1
     freqs = np.concatenate((pos_freqs, -1 * pos_freqs[-1:0:-1]))
 
-    # band center frequencies
-    fcs = np.asarray([2., 4., 8., 16., 32., 64.])
-
     # Initialize transfer function
     TFs = np.zeros((len(fcs) + 1, len(freqs))).astype('complex')
     # Calculating frequency-domain transfer function for each center frequency:
@@ -58,23 +57,25 @@ def mod_filterbank(signal, fs, modf):
 
     # initialize output product:
     Vout = np.zeros((len(fcs) + 1, len(pos_freqs)))
-    powers = np.zeros(7)
+    powers = np.zeros(len(modf))
 
     # ------------ DC-power, --------------------------
     # here divide by two such that a fully modulated tone has an AC-power of 1.
     DC_power = X_power_pos[0] / N / 2
     # ------------------------------------------------
-    X[0] = 0
-    for k in range(len(Wcf)):
-        Vout[k] = X_power_pos * Wcf[k, :np.floor(N / 2) + 1]
+    X_filt = np.zeros((Wcf.shape[0], X.shape[-1]), dtype='complex128')
+    filtered_envs = np.zeros_like(X_filt, dtype='float')
+
+    for k, (w, TF) in enumerate(izip(Wcf, TFs)):
+        Vout[k] = X_power_pos * w[:np.floor(N / 2) + 1]
         # Integration estimated as a sum from f > 0
         # integrate envelope power in the passband of the filter. Index goes
         # from 2:end since integration is for f>0
         powers[k] = np.sum(Vout[k, 1:]) / N / DC_power
         # Filtering and inverse Fourier transform to get time signal.
-        #X_filt[k,:] = X * TFs[k, :]
-        #outTimeEPSM[:,k] = np.real(sp.fftpack.ifft(X_filt[k,:]))
-    return powers
+        X_filt[k] = X * TF
+        filtered_envs[k] = np.real(ifft(X_filt[k]))
+    return powers, filtered_envs
 
 
 def mfreqz(b, a=1, fs=22050.0):
