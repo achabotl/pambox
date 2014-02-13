@@ -78,8 +78,8 @@ class Sepsm(object):
         # for each stimulus
         for ii, signal in enumerate(signals):
             # modulation filtering
-            exc_ptns[ii] = filterbank.mod_filterbank(signal, fs,
-                                                       self.modf)
+            exc_ptns[ii], _ = filterbank.mod_filterbank(signal, fs,
+                                                        self.modf)
 
         # set nan values to zero
         exc_ptns[np.isnan(exc_ptns)] = 0
