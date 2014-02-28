@@ -23,7 +23,7 @@ def test_erb():
 
 # We use a different implementation than the Matlab one and the delay
 # are different.
-@pytest.mark.xfail
+@pytest.mark.xfail(run=False, reason="Python implementation different from Matlab's.")
 def test_gammatone_filtering():
     mat = sio.loadmat(DATA_ROOT + '/test_gammatone_filtering.mat')
     center_f = mat['midfreq'].squeeze()
