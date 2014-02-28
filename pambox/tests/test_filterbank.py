@@ -60,13 +60,11 @@ def test_mod_filterbank_for_temporal_outpout():
     Mostly used in the mr-sEPSM model, where the time output is needed to
     process the envelope power for different window lenghts.
     """
-    mat = sio.loadmat(DATA_ROOT +
-                      '/test_mrsepsm_mod_filterbank_temporal_outputs.mat',
+    mat = sio.loadmat(DATA_ROOT + '/test_mr_sepsm_snrenv_mr_v1.mat',
                       squeeze_me=True)
-    x = mat['Env']
+    x = mat['Env'].T[0]
     fs = mat['fs']
     modf = mat['fcs']
-    print(modf)
     p, t = filterbank.mod_filterbank(x, fs, modf)
-    assert_allclose(p, mat['Penv'])
-    assert_allclose(t, mat['Filtered_Env'].T)
+    assert_allclose(p, mat['ExcPtns'].T[0])
+    assert_allclose(t, mat['tempOutput'].T[0])
