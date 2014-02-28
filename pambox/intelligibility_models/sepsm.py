@@ -97,6 +97,19 @@ class Sepsm(object):
 
         return snr_env, exc_ptns
 
+    def _optimal_combination(self, snr_env_lin, bands_above_thres_idx):
+        """@todo: Docstring for _optimal_combination.
+
+        :param snr_env: @todo
+        :type snr_env: @todo
+        :returns: @todo
+
+        """
+        snr_env = np.sqrt(np.sum(snr_env_lin[bands_above_thres_idx] ** 2,
+                                 axis=-1))
+        snr_env = np.sqrt(np.sum(snr_env ** 2))
+        return snr_env
+
     def predict(self, clean, mixture, noise):
         """Predicts intelligibility
 
@@ -144,9 +157,7 @@ class Sepsm(object):
             for i_sig in range(3):
                 exc_ptns[i_sig, idx_band, :] = exc_ptns_tmp[i_sig]
 
-        snr_env = np.sqrt(np.sum(snr_env_lin[bands_above_thres_idx] ** 2,
-                                 axis=-1))
-        snr_env = np.sqrt(np.sum(snr_env ** 2))
+        snr_env = self._optimal_combination(snr_env_lin, bands_above_thres_idx)
 
         res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
                                      'bands_above_thres_idx'])
