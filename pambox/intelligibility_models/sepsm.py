@@ -18,7 +18,6 @@ FS = 22050.0
 
 
 class Sepsm(object):
-
     """Implement the sEPSM intelligibility model"""
 
     def __init__(self, fs=22050, cf=CENTER_F, modf=MODF, downsamp_factor=10,
@@ -35,7 +34,7 @@ class Sepsm(object):
         b, a, _, _, _ = auditory.gammatone_make(self.fs, center_f)
         # Factor 2 to do like in the sEPSM, although I don't really understand
         # why...
-        y = 2 * auditory.gammatone_apply(signal, b, a)
+        y = auditory.gammatone_apply(signal, b, a)
         return y
 
     def _bands_above_thres(self, x):
