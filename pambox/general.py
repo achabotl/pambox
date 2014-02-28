@@ -190,14 +190,12 @@ def write_wav(fname, fs, x):
 
 
 def make_same_length(a, b):
-    """Make two vectors the same length.
+    """Makes two arrays the same length by zero-padding the shortest.
 
-    Makes two vectors of the same length by padding the shortest one with
-    zeros.
+    :a: 1d array, first vector.
+    :b: 1d array, second vector.
 
-    :a: vector
-    :b: vector
-    :return: array, array, two arrays of the same length.
+    :return: tuple of ndarray, both vectors with same length.
     """
     if len(a) < len(b):
         c = np.zeros_like(b)
