@@ -56,6 +56,7 @@ def test_select_bands_above_threshold(center_f):
     assert_array_equal(bands_above_thres, target)
 
 
+@pytest.mark.slow
 def test_snr_env(mat_snr_env):
     mat_snr_env = sio.loadmat(DATA_ROOT + '/test_snr_env_lin.mat',
                               squeeze_me=True)
@@ -73,6 +74,7 @@ def test_snr_env(mat_snr_env):
     assert_allclose(excitation_patterns[1:, :], target_excitation_patterns)
 
 
+@pytest.mark.slow
 def test_sepsm_prediction_snr_min9_db():
     mat = sio.loadmat(DATA_ROOT + "/test_multChanSNRenv.mat", squeeze_me=True,
                       struct_as_record=False)
@@ -84,6 +86,7 @@ def test_sepsm_prediction_snr_min9_db():
     assert_allclose(target_snr_env, res.snr_env, rtol=1e-2)
 
 
+@pytest.mark.slow
 def test_sepsm_predictions_snr_0_kappa_0_8():
     mat = sio.loadmat(DATA_ROOT + '/test_sepsm_spec_sub_0dB_kappa_0_8.mat',
                       squeeze_me=True, struct_as_record=False)

@@ -61,7 +61,7 @@ def test_envelope_extraction():
 
 # Can't be done programmatically, because the exact third-octave spacing is not
 # exactly the same as the one commonly used.
-@pytest.mark.xfail
+@pytest.mark.xfail(run=False, reason="Real 3rd-oct != common ones")
 def test_third_oct_center_freq_bet_63_12500_hz():
     """Test returns correct center frequencies for third-octave filters
 
