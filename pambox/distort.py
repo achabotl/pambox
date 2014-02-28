@@ -243,3 +243,30 @@ class Westermann_crm(object):
         out_m = np.asarray([fftfilt(b, chan) for b, chan
                             in izip(self.brir[mdist], m)])
         return out_x, out_m
+
+
+def noise_from_signal(x, fs=40000, keep_env=False):
+    """Create a noise with same spectrum as the input signal.
+
+    :x: vector, speech signal
+    :fs: int, sampling frequency of the signal.
+    :keep_env: bool, apply the envelope of the original signal to the noise
+        (default: False).
+    :return: ndarray, noise of the same length as the input.
+    """
+    x = np.asarray(x)
+    N_orig = x.shape[-1]
+    N = general.next_pow_2(N_orig)
+    X = rfft(x, general.next_pow_2(N))
+    # Randomize phase.
+    XN = np.abs(X) * np.exp(2 * np.pi * 1j * np.random.random(X.shape[-1]))
+    n = np.real(irfft(XN, N))
+    out = n[:N_orig]
+
+    if keep_env:
+        env = np.abs(sp.signal.hilbert(x))
+        [bb, aa] = sp.signal.butter(6, 50 / (fs / 2))  # 50 Hz LP filter
+        env = sp.signal.filtfilt(bb, aa, env)
+        out *= env
+
+    return out
