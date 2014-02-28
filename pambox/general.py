@@ -246,3 +246,20 @@ def int2srt(x, y, srt=50.0):
     else:
         srt = None
     return srt
+
+
+def add_signals(a, b):
+    """Add two vectors of different lengths by zero padding the shortest one.
+
+    :a: 1d array, first vector.
+    :b: 1d array, second vector.
+
+    :return: ndarray, sum of both vectors.
+    """
+    if len(a) < len(b):
+        c = b.copy()
+        c[:len(a)] += a
+    else:
+        c = a.copy()
+        c[:len(b)] += b
+    return c
