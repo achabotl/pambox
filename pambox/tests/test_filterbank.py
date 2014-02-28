@@ -40,6 +40,7 @@ def test_mod_filt_complex():
     assert_allclose(powers, target)
 
 
+@pytest.mark.slow
 def test_mod_filt_sepsm_v1():
     """Test modulation filtering with actual speech and noise signals
     """
