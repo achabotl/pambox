@@ -43,3 +43,8 @@ nosetests.xml
 
 # Unused files that I keep in the directory
 unused/*
+
+*.DS_Store
+
+# PyCharm settings
+.idea
