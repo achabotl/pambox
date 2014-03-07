@@ -91,9 +91,16 @@ class MrSepsm(Sepsm):
         N_modf = len(self.modf)
         N_cf = len(self.cf)
 
-        downsamp_chan_envs = np.empty((3, np.ceil(N / self.downsamp_factor)))
-        mod_channel_envs = np.empty(
-            (3, len(self.modf), downsamp_chan_envs.shape[-1] - 1))
+        if (clean is None) or (np.array_equal(clean, mixture)):
+            signals = (mixture, noise)
+        else:
+            signals = (clean, mixture, noise)
+
+        downsamp_chan_envs = np.zeros((len(signals),
+                                       np.ceil(N / self.downsamp_factor)))
+        mod_channel_envs = np.zeros((len(signals),
+                                     len(self.modf),
+                                     downsamp_chan_envs.shape[-1] - 1))
         snr_env_lin = np.zeros((N_cf, N_modf))
         lt_exc_ptns = np.zeros((3, N_cf, N_modf))
         mr_snr_env_lin = OrderedDict()
@@ -104,11 +111,10 @@ class MrSepsm(Sepsm):
         bands_above_thres_idx = self._bands_above_thres(filtered_rms_mix)
 
         for idx_band in bands_above_thres_idx:
-            # Peripheral filtering of just the band we process
             channel_envs = \
                 np.asarray(
                     [self._peripheral_filtering(signal, self.cf[idx_band])
-                     for signal in (clean, mixture, noise)])
+                     for signal in signals])
 
             for ii, channel_env in enumerate(channel_envs):
                 # Extract envelope
@@ -120,18 +126,19 @@ class MrSepsm(Sepsm):
                 # Downsample the envelope for faster processing
                 downsamp_chan_envs[ii] = tmp_env[::self.downsamp_factor]
 
-            for ii, channel_env in enumerate(downsamp_chan_envs):
                 # Sub-band modulation filtering
                 lt_exc_ptns[ii, idx_band], mod_channel_envs[ii] = \
-                    filterbank.mod_filterbank(channel_env, fs_new, self.modf)
+                    filterbank.mod_filterbank(downsamp_chan_envs[ii], fs_new, self.modf)
 
             mr_env_powers = []
             for chan_env, mod_envs in izip(downsamp_chan_envs,
                                            mod_channel_envs):
                 mr_env_powers.append(self._mr_env_powers(chan_env, mod_envs))
 
-            snr_env_lin[idx_band], _, mr_snr_env_lin[idx_band] = self._mr_snr_env(
-                *mr_env_powers[1:])
+            snr_env_lin[idx_band], _, mr_snr_env_lin[idx_band] \
+                = self._mr_snr_env(*mr_env_powers[-2:])  # Select only the env
+            # powers from the mixture and the noise, even if we calculated the
+            # envelope powers for the clean speech.
 
         snr_env = self._optimal_combination(snr_env_lin, bands_above_thres_idx)
 
