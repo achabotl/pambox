@@ -4,23 +4,17 @@
 from __future__ import print_function
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-import io
+import codecs
 import os
 import sys
-import pambox
+import re
 
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-
-def read(*filenames, **kwargs):
-    encoding = kwargs.get('encoding', 'utf-8')
-    sep = kwargs.get('sep', '\n')
-    buf = []
-    for filename in filenames:
-        with io.open(filename, encoding=encoding) as f:
-            buf.append(f.read())
-    return sep.join(buf)
+def read(*parts):
+    # intentionally *not* adding an encoding option to open
+    return codecs.open(os.path.join(here, *parts), 'r').read()
 
 
 def find_version(*file_paths):
@@ -32,7 +26,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-long_description = read('README.md', 'CHANGES.txt')
+long_description = read('README.md')
 
 
 class PyTest(TestCommand):
@@ -48,7 +42,7 @@ class PyTest(TestCommand):
 
 setup(
     name='pambox',
-    version=find_version('pambox',
+    version=find_version('pambox', '__init__.py'),
     url='https://bitbucket.org/achabotl/pambox',
     license='Modified BSD License',
     author='Alexandre Chabot-Leclerc',
@@ -68,9 +62,10 @@ setup(
         'Natural Language :: English',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Modified BSD License',
+
         'Operating System :: OS Independent'
     ],
     extras_require={
-        'testing': ['pytest'],
+        'testing': ['pytest']
     }
 )
