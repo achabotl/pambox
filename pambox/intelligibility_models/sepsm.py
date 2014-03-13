@@ -9,18 +9,18 @@ from pambox import filterbank
 from pambox import auditory
 
 
-CENTER_F = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-            1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
-HT_DIFFUSE = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8, 3.8, 2.1,
-              1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0, -3.8, -1.8, 2.5, 6.8)
-MODF = (1., 2., 4., 8., 16., 32., 64.)
-FS = 22050.0
 
 
 class Sepsm(object):
     """Implement the sEPSM intelligibility model"""
 
-    def __init__(self, fs=22050, cf=CENTER_F, modf=MODF, downsamp_factor=10,
+    _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
+                1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
+    _default_ht_diffuse = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8, 3.8, 2.1,
+                  1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0, -3.8, -1.8, 2.5, 6.8)
+    _default_modf = (1., 2., 4., 8., 16., 32., 64.)
+
+    def __init__(self, fs=22050, cf=_default_center_cf, modf=_default_modf, downsamp_factor=10,
                  noise_floor=0.01, snr_env_limit=0.001):
         """@todo: to be defined1. """
         self.fs = fs
@@ -29,6 +29,7 @@ class Sepsm(object):
         self.downsamp_factor = downsamp_factor
         self.noise_floor = noise_floor
         self.snr_env_limit = snr_env_limit
+        self.ht_diffuse = self._default_ht_diffuse
 
     def _peripheral_filtering(self, signal, center_f):
         g = auditory.GammatoneFilterbank(center_f, self.fs)
@@ -53,8 +54,8 @@ class Sepsm(object):
         # convert to spectrum level according to ANSI 1997
         noise_spec_level_corr = noise_rms_db \
                                 - 10.0 * np.log10(sp.asarray(self.cf) * 0.231)
-        max_idx = min(len(noise_spec_level_corr), len(HT_DIFFUSE))
-        b = noise_spec_level_corr[:max_idx] > HT_DIFFUSE[:max_idx]
+        max_idx = min(len(noise_spec_level_corr), len(self.ht_diffuse))
+        b = noise_spec_level_corr[:max_idx] > self.ht_diffuse[:max_idx]
         idx = np.arange(len(noise_rms_db))
         return idx[b]
 
