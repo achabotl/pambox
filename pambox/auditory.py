@@ -1,4 +1,5 @@
-from numpy import pi, exp, sin, cos, sqrt
+from __future__ import division, print_function
+from numpy import pi, exp, sin, cos, sqrt, abs, ones
 import numpy as np
 import scipy as sp
 import scipy.signal as ss
@@ -45,78 +46,95 @@ def lowpass_env_filtering(x, cutoff=150., N=1, fs=FS):
     return sp.signal.lfilter(b, a, x)
 
 
-def gammatone_make(fs, cf, beta=1.019):
+class GammatoneFilterbank():
     '''
-    GammaToneMake(fs,cf)
+    GammatoneFilterbank
 
     Input:
         fs ... float, sampling frequency
         cf ... ndarray, center frequencies
 
-    Output:
-        forward ... "b"-coefficients for the linear filter
-        feedback ... "a"-coefficients for the linear filter
-        cf ... center frequency
-        ERB ... Equivalent Rectangular Bandwidth
-        B ... Gammatone filter parameter in Roy Patterson's ear model
-
-    Computes the filter coefficients for a bank of Gammatone filters. The
-    results are returned as arrays of filter coefficients. Each row of the
-    filter arrays (forward and feedback) can be passed to the SciPy "lfilter"
-    function.
     '''
-    T = 1 / float(fs)
-    ERB = 24.7 + cf / 9.265  # In Hz, according to Glasberg and Moore (1990)
-    # B = 1.019 * 2 * pi * ERB    # in rad here. Note: some models require B in Hz (NC)
-    B = beta * 2 * pi * ERB    # in rad here. Note: some models require B in Hz (NC)
+    def __init__(self, cf, fs, b=1.019, order=1, Q=9.26449,
+                 min_bw=24.7):
+        """
 
-    gain = abs( \
-     (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) - sqrt(3 - 2**(3./2))*sin(2*cf*pi*T))) \
-    * (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) + sqrt(3 - 2**(3./2))*sin(2*cf*pi*T))) \
-    * (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) - sqrt(3 + 2**(3./2))*sin(2*cf*pi*T))) \
-    * (-2*exp(4*1j*cf*pi*T)*T + 2*exp(-(B*T) + 2*1j*cf*pi*T) * T * (cos(2*cf*pi*T) + sqrt(3 + 2**(3./2))*sin(2*cf*pi*T))) \
-    / (-2 / exp(2*B*T) - 2*exp(4*1j*cf*pi*T) + 2*(1 + exp(4*1j*cf*pi*T))/exp(B*T))**4 )
+        :cf: center frequencies of the filterbank
+        :fs: sampling frequency
+        :b: beta of the gammatone filter
+        :order:
+        :Q: Q-value of the ERB
+        :min_bw: minimum bandwidth of an ERB
+        """
+        try:
+            len(cf)
+        except TypeError:
+            cf = [cf]
+        cf = np.asarray(cf)
+        self.fs = fs
+        T = 1 / self.fs
+        self.b, self.erb_order, self.EarQ, self.min_bw = b, order, Q, min_bw
+        erb = ((cf / Q) ** order + min_bw ** order) ** (
+            1 / order)
 
-    if np.isscalar(cf):
-        len_cf = 1
-    else:
-        len_cf = len(cf)
-    feedback = np.zeros((len_cf, 9))
-    forward = np.zeros((len_cf, 5))
+        B = b * 2 * pi * erb
 
-    forward[:, 0] =    T**4 / gain
-    forward[:, 1] = -4*T**4 * cos(2*cf*pi*T) / exp(B*T) / gain
-    forward[:, 2] = 6 * T**4 * cos(4*cf*pi*T) / exp(2*B*T) / gain
-    forward[:, 3] = -4*T**4 * cos(6*cf*pi*T) / exp(3*B*T) / gain
-    forward[:, 4] =    T**4 * cos(8*cf*pi*T) / exp(4*B*T) / gain
+        A0 = T
+        A2 = 0
+        B0 = 1
+        B1 = -2 * cos(2 * cf * pi * T) / exp(B * T)
+        B2 = exp(-2 * B * T)
 
-    feedback[:, 0] = np.ones(len_cf)
-    feedback[:, 1] = -8 * cos(2*cf*pi*T) / exp(B*T)
-    feedback[:, 2] =  4 * (4 + 3*cos(4*cf*pi*T)) / exp(2*B*T)
-    feedback[:, 3] = -8 * (6*cos(2*cf*pi*T) + cos(6*cf*pi*T)) / exp(3*B*T)
-    feedback[:, 4] =  2 * (18 + 16*cos(4*cf*pi*T) + cos(8*cf*pi*T)) / exp(4*B*T)
-    feedback[:, 5] = -8 * (6*cos(2*cf*pi*T) + cos(6*cf*pi*T)) / exp(5*B*T)
-    feedback[:, 6] =  4 * (4 + 3*cos(4*cf*pi*T)) / exp(6*B*T)
-    feedback[:, 7] = -8 * cos(2*cf*pi*T) / exp(7*B*T)
-    feedback[:, 8] = exp(-8*B*T)
+        A11 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) + 2 * sqrt(
+            3 + 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
+        A12 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) - 2 * sqrt(
+            3 + 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
+        A13 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) + 2 * sqrt(
+            3 - 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
+        A14 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) - 2 * sqrt(
+            3 - 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
 
-    return (forward, feedback, cf, ERB, B)
+        i = 1j
+        gain = abs((-2 * exp(4 * i * cf * pi * T) * T + \
+                    2 * exp(-(B * T) + 2 * i * cf * pi * T) * T * \
+                    (cos(2 * cf * pi * T) - sqrt(3 - 2 ** (3. / 2)) * \
+                     sin(2 * cf * pi * T))) * \
+                   (-2 * exp(4 * i * cf * pi * T) * T + \
+                    2 * exp(-(B * T) + 2 * i * cf * pi * T) * T * \
+                    (cos(2 * cf * pi * T) + sqrt(3 - 2 ** (3. / 2)) * \
+                     sin(2 * cf * pi * T))) * \
+                   (-2 * exp(4 * i * cf * pi * T) * T + \
+                    2 * exp(-(B * T) + 2 * i * cf * pi * T) * T * \
+                    (cos(2 * cf * pi * T) - \
+                     sqrt(3 + 2 ** (3. / 2)) * sin(2 * cf * pi * T))) * \
+                   (-2 * exp(4 * i * cf * pi * T) * T + 2 * exp(
+                       -(B * T) + 2 * i * cf * pi * T) * T * \
+                    (cos(2 * cf * pi * T) + sqrt(3 + 2 ** (3. / 2)) * sin(
+                        2 * cf * pi * T))) / \
+                   (-2 / exp(2 * B * T) - 2 * exp(4 * i * cf * pi * T) + \
+                    2 * (1 + exp(4 * i * cf * pi * T)) / exp(B * T)) ** 4)
+
+        allfilts = ones(len(cf))
+
+        self.A0, self.A11, self.A12, self.A13, self.A14, self.A2, self.B0, self.B1, self.B2, self.gain = \
+            A0 * allfilts, A11, A12, A13, A14, A2 * allfilts, B0 * allfilts, B1, B2, gain
 
 
-def gammatone_apply(x, forward, feedback):
-    '''
-    This function filters the waveform x with the array of filters
-    specified by the forward and feedback parameters. Each row
-    of the forward and feedback parameters are the parameters
-    to the SciPy function "lfilter".
-    '''
+    def filter(self, x):
+        A0, A11, A12, A13, A14, A2, B0, B1, B2, gain = \
+            self.A0, self.A11, self.A12, self.A13, self.A14, self.A2, self.B0, self.B1, self.B2, self.gain
 
-    # Allocate the memory
-    rows, _ = np.shape(feedback)
-    y = np.zeros((rows, len(x)))
+        output = np.zeros((gain.shape[0], x.shape[-1]))
+        for chan in range(gain.shape[0]):
+            y1 = ss.lfilter([A0[chan] / gain[chan], A11[chan] / gain[chan],
+                             A2[chan] / gain[chan]],
+                            [B0[chan], B1[chan], B2[chan]], x)
+            y2 = ss.lfilter([A0[chan], A12[chan], A2[chan]],
+                            [B0[chan], B1[chan], B2[chan]], y1)
+            y3 = ss.lfilter([A0[chan], A13[chan], A2[chan]],
+                            [B0[chan], B1[chan], B2[chan]], y2)
+            y4 = ss.lfilter([A0[chan], A14[chan], A2[chan]],
+                            [B0[chan], B1[chan], B2[chan]], y3)
+            output[chan, :] = y4
 
-    # Filter the signal
-    for ii in range(rows):
-        y[ii,:] = ss.lfilter(forward[ii, :], feedback[ii, :], x)
-
-    return y
+        return output

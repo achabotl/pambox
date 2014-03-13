@@ -21,15 +21,14 @@ def test_erb():
     assert_allclose(bw, 132.63, rtol=1e-4)
 
 
-# We use a different implementation than the Matlab one and the delay
-# are different.
-@pytest.mark.xfail(run=False, reason="Python implementation different from Matlab's.")
-def test_gammatone_filtering():
-    mat = sio.loadmat(DATA_ROOT + '/test_gammatone_filtering.mat')
-    center_f = mat['midfreq'].squeeze()
-    fs = mat['fs'].squeeze()
-    signal = mat['signal'].squeeze()
-    targets = mat['GT_output'].squeeze()
-    target = targets[:,:,0].T
-    out = aud.gammatone_filtering(signal, center_f, fs)
-    assert_allclose(out, target)
+def test_slaney_gammatone_filtering():
+    from itertools import product
+    mat = sio.loadmat(DATA_ROOT + '/test_slaney_gammatone_coef.mat',
+                        squeeze_me=True)
+    cf = [63, 1000]
+    fs = [22050, 44100]
+    for c, f in product(cf, fs):
+        g = aud.GammatoneFilterbank(c, f)
+        y = g.filter(mat['x'])
+        target_file = 'y_%d_%d' % (f, c)
+        np.testing.assert_allclose(y[0], mat[target_file])

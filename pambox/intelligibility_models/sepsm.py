@@ -31,10 +31,8 @@ class Sepsm(object):
         self.snr_env_limit = snr_env_limit
 
     def _peripheral_filtering(self, signal, center_f):
-        b, a, _, _, _ = auditory.gammatone_make(self.fs, center_f)
-        # Factor 2 to do like in the sEPSM, although I don't really understand
-        # why...
-        y = auditory.gammatone_apply(signal, b, a)
+        g = auditory.GammatoneFilterbank(center_f, self.fs)
+        y = g.filter(signal)
         return y
 
     def _bands_above_thres(self, x):
