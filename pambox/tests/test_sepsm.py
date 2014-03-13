@@ -96,4 +96,4 @@ def test_sepsm_predictions_snr_0_kappa_0_8():
         noise = mat['noises'][ii]
         target = mat['results'][ii].SNRenv
         res = c.predict(mix, mix, noise)
-        assert_allclose(target, res.snr_env, rtol=1e-2)
+        assert_allclose(target, res.snr_env, rtol=2e-2)
