@@ -4,12 +4,12 @@ import numpy as np
 import scipy.io as sio
 from pambox import distort
 from pambox import general
-from config import DATA_ROOT
+from tests import __DATA_ROOT__
 
 
 @pytest.fixture
 def mat_overlap_and_add():
-    return sio.loadmat(DATA_ROOT + '/test_overlap_and_add.mat')
+    return sio.loadmat(__DATA_ROOT__ + '/test_overlap_and_add.mat')
 
 
 def test_overlap_and_add(mat_overlap_and_add):
@@ -23,7 +23,7 @@ def test_overlap_and_add(mat_overlap_and_add):
 
 
 def test_spec_sub_0dB_kappa_1():
-    mat = sio.loadmat(DATA_ROOT + '/test_spec_sub_complete.mat',
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_spec_sub_complete.mat',
                       squeeze_me=True)
     signal = mat['input']
     noise = mat['noise']
@@ -39,7 +39,7 @@ def test_spec_sub_0dB_kappa_1():
 
 
 def test_spec_sub_0dB_kappa_0():
-    mat = sio.loadmat(DATA_ROOT + '/test_spec_sub_0dB_kappa_0.mat',
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_spec_sub_0dB_kappa_0.mat',
                       squeeze_me=True)
     signal = mat['test']
     noise = mat['noise']
@@ -55,7 +55,7 @@ def test_spec_sub_0dB_kappa_0():
 
 
 def test_level_adjustment_and_spec_sub_processing():
-    mat = sio.loadmat(DATA_ROOT + '/setting_level_and_spec_sub_processing_v1.mat',
+    mat = sio.loadmat(__DATA_ROOT__ + '/setting_level_and_spec_sub_processing_v1.mat',
                       squeeze_me=True)
     x = mat['x']
     x_adj = mat['x_adjusted']
@@ -90,7 +90,7 @@ def test_level_adjustment_and_spec_sub_processing():
 
 
 def test_level_adjustment():
-    mat = sio.loadmat(DATA_ROOT + '/setting_level_and_spec_sub_processing_v1.mat',
+    mat = sio.loadmat(__DATA_ROOT__ + '/setting_level_and_spec_sub_processing_v1.mat',
                       squeeze_me=True)
     target_x = mat['x_adjusted']
     target_noise = mat['noise_adjusted']
