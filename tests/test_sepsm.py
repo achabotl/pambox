@@ -5,30 +5,30 @@ import numpy as np
 import scipy.io as sio
 from pambox.intelligibility_models import sepsm
 from numpy.testing import assert_allclose, assert_array_equal
-from config import DATA_ROOT
+from tests import __DATA_ROOT__
 
 
 @pytest.fixture
 def speech_raw():
-    x = wavfile.read(DATA_ROOT + "/test_speech_raw_22050.wav")[1]
+    x = wavfile.read(__DATA_ROOT__ + "/test_speech_raw_22050.wav")[1]
     return x / 2. ** 15
 
 
 @pytest.fixture
 def noise_raw():
-    x = wavfile.read(DATA_ROOT + "/test_noise_raw_22050.wav")[1]
+    x = wavfile.read(__DATA_ROOT__ + "/test_noise_raw_22050.wav")[1]
     return x / 2. ** 15
 
 
 @pytest.fixture
 def mix_0dB():
-    x = wavfile.read(DATA_ROOT + "/test_mix_0dB_22050.wav")[1]
+    x = wavfile.read(__DATA_ROOT__ + "/test_mix_0dB_22050.wav")[1]
     return x / 2. ** 15
 
 
 @pytest.fixture
 def noise_65dB():
-    x_65 = wavfile.read(DATA_ROOT + "/test_noise_65dB_22050.wav")[1]
+    x_65 = wavfile.read(__DATA_ROOT__ + "/test_noise_65dB_22050.wav")[1]
     return x_65 / 2. ** 15
 
 
@@ -41,11 +41,11 @@ def center_f():
 
 @pytest.fixture
 def mat_snr_env():
-    return sio.loadmat(DATA_ROOT + '/test_snr_env.mat')
+    return sio.loadmat(__DATA_ROOT__ + '/test_snr_env.mat')
 
 
 def test_select_bands_above_threshold(center_f):
-    mat = sio.loadmat(DATA_ROOT + "/test_bands_above_threshold_v1.mat",
+    mat = sio.loadmat(__DATA_ROOT__ + "/test_bands_above_threshold_v1.mat",
                       squeeze_me=True)
     noise_rms = mat['mix_rms_out'].squeeze()
     target = mat['bands_to_process'].squeeze()
@@ -58,7 +58,7 @@ def test_select_bands_above_threshold(center_f):
 
 @pytest.mark.slow
 def test_snr_env(mat_snr_env):
-    mat_snr_env = sio.loadmat(DATA_ROOT + '/test_snr_env_lin.mat',
+    mat_snr_env = sio.loadmat(__DATA_ROOT__ + '/test_snr_env_lin.mat',
                               squeeze_me=True)
     env = mat_snr_env['env'].T
     fs = mat_snr_env['fs']
@@ -76,7 +76,7 @@ def test_snr_env(mat_snr_env):
 
 @pytest.mark.slow
 def test_sepsm_prediction_snr_min9_db():
-    mat = sio.loadmat(DATA_ROOT + "/test_multChanSNRenv.mat", squeeze_me=True,
+    mat = sio.loadmat(__DATA_ROOT__ + "/test_multChanSNRenv.mat", squeeze_me=True,
                       struct_as_record=False)
     target_snr_env = mat['result'].SNRenv
     mix = mat['stim'][0]
@@ -88,7 +88,7 @@ def test_sepsm_prediction_snr_min9_db():
 
 @pytest.mark.slow
 def test_sepsm_predictions_snr_0_kappa_0_8():
-    mat = sio.loadmat(DATA_ROOT + '/test_sepsm_spec_sub_0dB_kappa_0_8.mat',
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_sepsm_spec_sub_0dB_kappa_0_8.mat',
                       squeeze_me=True, struct_as_record=False)
     c = sepsm.Sepsm()
     for ii in range(3):

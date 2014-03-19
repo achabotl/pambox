@@ -3,7 +3,7 @@ import pytest
 from pambox.intelligibility_models.mrsepsm import MrSepsm
 import scipy.io as sio
 from numpy.testing import assert_allclose
-from .config import DATA_ROOT
+from tests import __DATA_ROOT__
 from itertools import izip
 
 
@@ -14,13 +14,13 @@ def mr():
 
 @pytest.fixture
 def mat():
-    return sio.loadmat(DATA_ROOT + '/test_mr_sepsm_snrenv_mr_v1.mat',
+    return sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_snrenv_mr_v1.mat',
                        squeeze_me=True)
 
 
 @pytest.fixture
 def mat_complete():
-    return sio.loadmat(DATA_ROOT + '/test_mr_sepsm_full_prediction.mat',
+    return sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_full_prediction.mat',
                        squeeze_me=True)
 
 

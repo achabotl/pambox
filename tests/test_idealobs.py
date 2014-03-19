@@ -3,7 +3,7 @@ import pytest
 import scipy.io as sio
 from pambox import idealobs
 import numpy as np
-from config import DATA_ROOT
+from tests import __DATA_ROOT__
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def test_fit_obs(data, snrenv, idealobs_parameters):
 
 
 def test_psy_fn():
-    mat = sio.loadmat(DATA_ROOT + '/test_psychometric_function.mat')
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_psychometric_function.mat')
     x = mat['x'][0]
     mu = 0.
     sigma = 1.0

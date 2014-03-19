@@ -4,11 +4,11 @@ from pambox import filterbank
 import numpy as np
 import scipy.io as sio
 from numpy.testing import assert_allclose
-from config import DATA_ROOT
+from tests import __DATA_ROOT__
 
 
 def test_third_octave_filtering_of_noise_():
-    mat = sio.loadmat(DATA_ROOT + '/test_third_oct_filt_rms.mat')
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_third_oct_filt_rms.mat')
     noise = mat['x'].squeeze()
     target_noise_rms = mat['rms_out'].squeeze()
     center_f = mat['midfreq'].squeeze()
@@ -30,7 +30,7 @@ def test_mod_filtering_for_simple_signal():
 def test_mod_filt_complex():
     """Test modulation filtering with actual speech and noise signals
     """
-    mat = sio.loadmat(DATA_ROOT + '/test_mod_filtering.mat')
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_mod_filtering.mat')
     x = mat['data'].squeeze()
     fs = mat['fs'].squeeze()
     modf = np.hstack((mat['fcut'].squeeze(), mat['fcs'].squeeze()))
@@ -44,7 +44,7 @@ def test_mod_filt_complex():
 def test_mod_filt_sepsm_v1():
     """Test modulation filtering with actual speech and noise signals
     """
-    mat = sio.loadmat(DATA_ROOT + '/test_modFbank_v1.mat')
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_modFbank_v1.mat')
     x = mat['Env'][:, 0].squeeze()
     fs = mat['fs'].squeeze()
     modf = mat['fcs_EPSM'].squeeze()
@@ -60,7 +60,7 @@ def test_mod_filterbank_for_temporal_outpout():
     Mostly used in the mr-sEPSM model, where the time output is needed to
     process the envelope power for different window lenghts.
     """
-    mat = sio.loadmat(DATA_ROOT + '/test_mr_sepsm_snrenv_mr_v1.mat',
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_snrenv_mr_v1.mat',
                       squeeze_me=True)
     x = mat['Env'].T[0]
     fs = mat['fs']
