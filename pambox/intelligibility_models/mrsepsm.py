@@ -11,10 +11,13 @@ from pambox import auditory
 class MrSepsm(Sepsm):
     """Docstring for MrSepsm. """
 
+    _default_modf = (1., 2., 4., 8., 16., 32., 64., 128., 256.)
+
     def __init__(self, fs=22050, cf=Sepsm._default_center_cf,
-                 modf=(1., 2., 4., 8., 16., 32., 64., 128., 256.),
+                 modf=_default_modf,
                  downsamp_factor=10,
-                 noise_floor=0.001, snr_env_limit=0.001):
+                 noise_floor=0.001,
+                 snr_env_limit=0.001):
         """@todo: to be defined1. """
         Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                        snr_env_limit)
