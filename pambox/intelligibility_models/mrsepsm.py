@@ -101,7 +101,7 @@ class MrSepsm(Sepsm):
                                      downsamp_chan_envs.shape[-1] - 1))
         snr_env_lin = np.zeros((N_cf, N_modf))
         lt_exc_ptns = np.zeros((3, N_cf, N_modf))
-        mr_snr_env_lin = OrderedDict()
+        mr_snr_env_lin = []
 
         # find bands above threshold
         filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
@@ -133,18 +133,21 @@ class MrSepsm(Sepsm):
                                            mod_channel_envs):
                 mr_env_powers.append(self._mr_env_powers(chan_env, mod_envs))
 
-            snr_env_lin[idx_band], _, mr_snr_env_lin[idx_band] \
+            snr_env_lin[idx_band], _, tmp_mr_snr_env_lin \
                 = self._mr_snr_env(*mr_env_powers[-2:])  # Select only the env
             # powers from the mixture and the noise, even if we calculated the
             # envelope powers for the clean speech.
+            mr_snr_env_lin.append(tmp_mr_snr_env_lin)
 
         snr_env = self._optimal_combination(snr_env_lin, bands_above_thres_idx)
 
         res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
-                                     'bands_above_thres_idx'])
+                                     'bands_above_thres_idx',
+                                     'mr_snr_env_matrix'])
         res.snr_env = snr_env
         res.snr_env_db = 10 * np.log10(snr_env)
         res.snr_env_matrix = snr_env_lin
+        res.mr_snr_env_matrix = mr_snr_env_lin
         # res.exc_ptns = mr_env_powers
         res.bands_above_thres_idx = bands_above_thres_idx
         return res
