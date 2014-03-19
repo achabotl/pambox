@@ -5,7 +5,6 @@ import scipy.io as sio
 from numpy.testing import assert_allclose
 from .config import DATA_ROOT
 from itertools import izip
-from collections import OrderedDict
 
 
 @pytest.fixture
@@ -39,9 +38,7 @@ def test_mr_snr_env(mr, mat):
     """Test calculation of SNRenv for a given channel
     """
     mat = mat
-    # od_mix = OrderedDict(izip(mat['fcs'], mat['multiRes_envPower'].T[0]))
     od_mix = mat['multiRes_envPower'].T[0]
-    # od_noise = OrderedDict(izip(mat['fcs'], mat['multiRes_envPower'].T[1]))
     od_noise = mat['multiRes_envPower'].T[1]
     time_av_snr_env, exc_ptns, mr_snr_env = mr._mr_snr_env(od_mix,
                                                            od_noise)
