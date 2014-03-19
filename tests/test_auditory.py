@@ -4,11 +4,11 @@ import numpy as np
 from pambox import auditory as aud
 import scipy.io as sio
 from numpy.testing import assert_allclose
-from config import DATA_ROOT
+import tests
 
 
 def test_lowpass_filtering_of_envelope():
-    mat = sio.loadmat(DATA_ROOT + "/test_hilbert_env_and_lp_filtering_v1.mat",
+    mat = sio.loadmat(tests.__DATA_ROOT__ + "/test_hilbert_env_and_lp_filtering_v1.mat",
                       squeeze_me=True)
     envelope = mat['unfiltered_env']
     target = mat['lp_filtered_env']
@@ -23,7 +23,7 @@ def test_erb():
 
 def test_slaney_gammatone_filtering():
     from itertools import product
-    mat = sio.loadmat(DATA_ROOT + '/test_slaney_gammatone_coef.mat',
+    mat = sio.loadmat(tests.__DATA_ROOT__ + '/test_slaney_gammatone_coef.mat',
                         squeeze_me=True)
     cf = [63, 1000]
     fs = [22050, 44100]
