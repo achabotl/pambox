@@ -108,11 +108,16 @@ class MrSepsm(Sepsm):
         else:
             signals = (clean, mixture, noise)
 
+
         downsamp_chan_envs = np.zeros((len(signals),
                                        np.ceil(N / self.downsamp_factor)))
+        if (downsamp_chan_envs.shape[-1] % 2) == 0:
+            len_offset = 1
+        else:
+            len_offset = 0
         mod_channel_envs = np.zeros((len(signals),
                                      len(self.modf),
-                                     downsamp_chan_envs.shape[-1] - 1))
+                                     downsamp_chan_envs.shape[-1] - len_offset))
         snr_env_lin = np.zeros((N_cf, N_modf))
         lt_exc_ptns = np.zeros((3, N_cf, N_modf))
         mr_snr_env_lin = []
