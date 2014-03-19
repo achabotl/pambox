@@ -9,14 +9,10 @@ from pambox import filterbank
 from pambox import auditory
 
 
-CENTER_F = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-            1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
-
-
 class MrSepsm(Sepsm):
     """Docstring for MrSepsm. """
 
-    def __init__(self, fs=22050, cf=CENTER_F,
+    def __init__(self, fs=22050, cf=Sepsm._default_center_cf,
                  modf=(1., 2., 4., 8., 16., 32., 64., 128., 256.),
                  downsamp_factor=10,
                  noise_floor=0.001, snr_env_limit=0.001):
@@ -91,6 +87,8 @@ class MrSepsm(Sepsm):
         N_modf = len(self.modf)
         N_cf = len(self.cf)
 
+        # Process only the mixture and noise if the clean speech is the same
+        # as the noise.
         if (clean is None) or (np.array_equal(clean, mixture)):
             signals = (mixture, noise)
         else:
