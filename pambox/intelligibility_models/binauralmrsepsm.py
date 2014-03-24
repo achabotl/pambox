@@ -16,6 +16,22 @@ class BinauralMrSepsm(MrSepsm):
         MrSepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                          snr_env_limit)
 
+
+    def _mr_better_ear(self, res):
+        """Calculate the multi-resolution better-ear SNRenv.
+
+        Args:
+            (self, res)
+
+        Returns:
+
+        """
+        # The mr-SNRenv is not a numpy matrix but a N_s x N_m list of N_x long
+        # numpy arrays, where N_s is the number of bands above threshold and N_m is
+        #  the number of modulation channels, which is constant.
+
+
+
     def predict(self, clean, mixture, noise):
         """Predict intelligibility.
 
