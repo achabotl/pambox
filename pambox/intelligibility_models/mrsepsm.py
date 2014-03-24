@@ -1,8 +1,7 @@
 from __future__ import division
 import numpy as np
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 from itertools import izip
-
 from pambox.intelligibility_models.sepsm import Sepsm
 from pambox import general
 from pambox import filterbank
@@ -21,64 +20,79 @@ class MrSepsm(Sepsm):
                        snr_env_limit)
 
     def _mr_env_powers(self, channel_env, filtered_envs):
+        len_env = filtered_envs.shape[-1]
         win_durations = 1. / np.asarray(self.modf, dtype='float')
-        win_lengths = [np.floor(win * self.fs / self.downsamp_factor) for win in
-                       win_durations]
+        win_lengths = np.floor(win_durations * self.fs / self.downsamp_factor)
+        n_segments = np.ceil(len_env / win_lengths)
 
         # DC power used for normalization. Divided by 2 such that a fully
         # modulated signal has # an AC-power of 1.
         dc_power = np.mean(channel_env) ** 2 / 2
 
-        mr_env_powers = []
+        # Create a masked array of zeros, where all entries are hidden.
+        mr_env_powers = np.ma.masked_all((len(self.modf), max(n_segments)))
 
-        for i_modf, (mod_cf, env, win_length) in enumerate(
-                izip(self.modf, filtered_envs, win_lengths)):
-            tmp_env_powers = np.zeros(np.ceil(env.shape / win_length))
-            for ii, hop in enumerate(
-                    range(0, env.shape[0] - int(win_length), int(win_length))):
-                # Normalize the variance by N-1, like in MATLAB.
-                tmp_env_powers[ii] = np.var(env[hop:hop + win_length],
-                                            ddof=1) / dc_power
-            else:  # Calculate variance for the last incomplete window.
-                ii += 1
-                hop = hop + win_length
-                tmp_env_powers[ii] = np.var(env[hop:], ddof=1) / dc_power
-                mr_env_powers.append(tmp_env_powers)
+        for i_modf, (n_seg, env, win_length) in enumerate(
+                izip(n_segments, filtered_envs, win_lengths)):
+            n_complete_seg = n_seg - 1
+            last_idx = n_complete_seg * win_length
+            # Reshape to n_seg x win_length so that we can calculate the
+            # variance in a single operation
+            tmp_env = env[:last_idx].reshape((-1, win_length))
+            # Normalize the variance by N-1, like in MATLAB.
+            tmp_env_powers = np.var(tmp_env, axis=-1, ddof=1) / dc_power
+            # Treat the last segment independently, just in case it is not
+            # complete, i.e. it is shorter than the window length.
+            tmp_env_powers_last = np.var(env[last_idx:], ddof=1) / dc_power
+            mr_env_powers[i_modf, :n_complete_seg] = tmp_env_powers
+            mr_env_powers[i_modf, n_complete_seg] = tmp_env_powers_last
 
-        return np.asarray(mr_env_powers)
+            mr_env_powers.mask[i_modf, :n_seg] = False
+
+        return mr_env_powers
 
     def _time_average(self, mr_snr_env):
-        snr_env_matrix = np.zeros(len(self.modf))
-        for ii, v in enumerate(mr_snr_env):
-            snr_env_matrix[ii] = v.mean()
-        return snr_env_matrix
+        return mr_snr_env.mean(axis=-1)
 
-    def _mr_snr_env(self, mr_env_powers_mix, mr_env_powers_noise):
+
+
+    def _mr_snr_env(self, p_mix, p_noise):
         """Calculate the multi-resolution SNRenv.
 
         :param mr_env_powers_mix:
         :param mr_env_powers_noise:
         :returns: tuple( ndarray, list), time-average of the mr-SNRenv, and mr-SNRenv.
         """
-        mr_snr_env = []
-        for ii, (modf, p_mix, p_noise) in enumerate(izip(self.modf,
-                                                         mr_env_powers_mix,
-                                                         mr_env_powers_noise)):
-            # noisefloor cannot exceed the mix, since they exist at the same time
-            p_noise = np.minimum(p_noise, p_mix)
 
-            # the noisefloor restricted to minimum 0.01 reflecting and internal
-            # noise threshold
-            p_mix = np.maximum(p_mix, self.noise_floor)
-            p_noise = np.maximum(p_noise, self.noise_floor)
+        # noisefloor cannot exceed the mix, since they exist at the same time
+        p_noise = np.minimum(p_noise, p_mix)
 
-            # calculation of snrenv
-            mr_snr_env.append((p_mix - p_noise) / p_noise)
-            mr_snr_env[-1] = np.maximum(mr_snr_env[-1], self.snr_env_limit)
+        # the noise floor restricted to minimum 0.01 reflecting an
+        # internal noise threshold
+        p_mix = np.maximum(p_mix, self.noise_floor)
+        p_noise = np.maximum(p_noise, self.noise_floor)
+
+        # calculation of snrenv
+        mr_snr_env = (p_mix - p_noise) / p_noise
+        mr_snr_env = np.maximum(mr_snr_env, self.snr_env_limit)
 
         snr_env_matrix = self._time_average(mr_snr_env)
 
         return snr_env_matrix, [p_mix, p_noise], mr_snr_env
+
+
+    def _mr_optimal_combination(self, powers, bands_above_thres_idx):
+        """
+        :powers: multi-resolution envelope modulation powers
+        :mask: bands above threshold
+        """
+        snr_env = 0
+        # Instead of looping over the channel dimensions and the modulation
+        # channel dimensions, just flatten the list.
+        for each in chain.from_iterable(powers):
+            snr_env += each.sum() ** 2
+        snr_env = np.sqrt(snr_env)
+        return snr_env
 
     def predict(self, clean, mixture, noise):
 
@@ -110,9 +124,8 @@ class MrSepsm(Sepsm):
 
         for idx_band in bands_above_thres_idx:
             channel_envs = \
-                np.asarray(
                     [self._peripheral_filtering(signal, self.cf[idx_band])
-                     for signal in signals])
+                     for signal in signals]
 
             for ii, channel_env in enumerate(channel_envs):
                 # Extract envelope
@@ -126,7 +139,9 @@ class MrSepsm(Sepsm):
 
                 # Sub-band modulation filtering
                 lt_exc_ptns[ii, idx_band], mod_channel_envs[ii] = \
-                    filterbank.mod_filterbank(downsamp_chan_envs[ii], fs_new, self.modf)
+                    filterbank.mod_filterbank(downsamp_chan_envs[ii],
+                                              fs_new,
+                                              self.modf)
 
             mr_env_powers = []
             for chan_env, mod_envs in izip(downsamp_chan_envs,
