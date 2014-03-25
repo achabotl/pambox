@@ -86,7 +86,7 @@ class BinauralMrSepsm(MrSepsm):
         """
         at = {}
         for ii in range(2):
-            at[ii] = np.zeros_like(res[ii].snr_env_matrix)
+            at[ii] = np.zeros((len(self.cf), len(self.modf)))
             at[ii][res[ii].bands_above_thres_idx] = 1
-        all_above_thres = np.logical_and(at[0], at[1])
+        all_above_thres = np.logical_or(at[0], at[1])
         return all_above_thres
