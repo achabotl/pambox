@@ -43,6 +43,7 @@ nosetests.xml
 
 # Unused files that I keep in the directory
 unused/*
+design/*
 
 *.DS_Store
 
