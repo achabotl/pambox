@@ -2,12 +2,17 @@ from __future__ import division
 import numpy as np
 import scipy as sp
 import matplotlib.pylab as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
 from collections import namedtuple
-
+from itertools import izip
+import brewer2mpl
 from pambox import general
 from pambox import filterbank
 from pambox import auditory
-
+try:
+    import seaborn
+except:
+    pass
 
 
 
@@ -167,24 +172,144 @@ class Sepsm(object):
 
         return res
 
+    def plot_bands_above_thres(self, res):
+        """Plot bands that were above threshold as a bar chart.
 
-def plot_mod_powers(mod_powers_all, cf, modf):
-    # File / Factors / SNR / SIGNAL / CF / MODF
+        :res: namedtuple, output from the sEPSM prediction. Must have a
+        `bands_above_threshold_idx` member.
+        :return: self
+        """
+        cf = self.cf
+        cf_ticks = range(len(cf))
+        bands = res.bands_above_thres_idx
+        # Make the bar chart
+        y = np.zeros_like(cf)
+        y[bands] = 1
 
-    # Make a 4x4 figure, with the excitation patterns for 4 CF and 4
-    # FACTOR/SNR conditions
-    f = plt.figure()
-    i_ax = 0
-    ax = []
-    for base, i_snr in enumerate([0, 3, 6, 8]):
-        base = base * 4 + 1
-        for i, i_cf in enumerate([6, 9, 12, 15]):
-            ax.append(f.add_subplot(4, 4, base + i))
-            for i_sig in range(3):
-                ax[i_ax].plot(mod_powers_all[0, 0, i_snr, i_sig, i_cf, :])
-            i_ax += 1
-    plt.legend(('Clean', 'Mix', 'Noise'))
-    for ii in range(12, 16):
-        ax[ii].set_xticklabels(modf)
-    for ii in range(0, 16, 4):
-        ax[ii].set_ylabel()
+        f, ax = plt.subplots()
+        ax.bar(cf_ticks, y, align='center')
+        ax.set_xlim([-1, len(cf)])
+        ax.set_xticks(cf_ticks[::3])
+        ax.set_xticklabels(cf[::3])  # only octave-spaced values
+        ax.set_yticks([])
+
+        ax.set_xlabel('Center frequency [Hz]')
+
+        return self
+
+    def _plot_mod_matrix(self, mat, ax=None, vmax=None):
+        """Plot a matrix of values values as a heat map.
+
+        :mat: ndarray, modulation power or SNRenv values
+        :ax: axes where to plot. Will create a new figure and plot by default.
+        :vmin, vmax: scalar, minimum and maximum value to normalize the color
+        scale.
+        :return: image, mpl.AxesImage
+        """
+        cf = self.cf
+        mf = self.modf
+
+        xlabel = 'Modulation frequency [Hz]'
+        ylabel = 'Channel frequency [Hz]'
+        bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
+
+        if ax is None:
+            f, ax = plt.subplots()
+            ax.set_xticks(range(len(mf))[::2])
+            ax.set_xticklabels(mf[::2])
+            ax.set_yticks(range(len(cf))[::3])
+            ax.set_yticklabels(cf[::3])
+
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+
+        im = ax.imshow(mat, origin='lower',
+                       interpolation='none',
+                       cmap=bmap,
+                       vmax=vmax,
+                       aspect='auto')
+        return im
+
+    def plot_snr_env_matrix(self, res):
+        data = np.log10(res.snr_env_matrix)
+        im = self._plot_mod_matrix(data)
+        cb = plt.colorbar(im)
+        cb.set_label(r"SNRenv [dB]")
+
+    def plot_exc_ptns(self, res, db=True):
+        """Plot the excitation patterns from a prediction.
+
+        :res: namedtuple, results from an sEPSM prediction. The namedtuple
+        should have a "exc_ptns" member.
+        :db: bool, plot as decibels (default: True)
+        :return: self
+
+        """
+        cf = self.cf
+        mf = self.modf
+        if db:
+            data = np.log10(res.exc_ptns)
+        else:
+            data = res.exc_ptns
+        vmax = data.max()
+
+        xlabel = 'Modulation frequency [Hz]'
+        ylabel = 'Channel frequency [Hz]'
+        titles = ['Clean', 'Mixture', 'Noise']
+        n_subs = data.shape[0]
+
+        fig = plt.figure()
+        grid = ImageGrid(fig, 111,
+                         nrows_ncols=(1, n_subs),
+                         axes_pad=0.1,
+                         share_all=True,
+                         cbar_location='right',
+                         cbar_mode='single',
+                         cbar_size='7%',
+                         cbar_pad=0.05)
+        fig.subplots_adjust(wspace=0.05)
+
+        for ax, exc_ptns in izip(grid, data):
+            im = self._plot_mod_matrix(exc_ptns, ax=ax, vmax=vmax)
+
+        for ax in grid:
+            ax.set_xticks(range(len(mf))[::2])
+            ax.set_xticklabels(mf[::2])
+            ax.set_yticks(range(len(cf))[::3])
+            ax.set_yticklabels(cf[::3])
+
+        for ax, title in izip(grid, titles[-n_subs:]):
+            ax.set_title(title)
+
+        grid.cbar_axes[0].colorbar(im)
+        grid[0].set_ylabel(ylabel)
+        fig.text(0.5, 0.05, xlabel, ha='center', size=11)
+        return self
+
+    def plot_filtered_envs(self, envs, fs, axes=None):
+        """Plot the filtered envelopes.
+
+        :envs: ndarray, list of envelopes.
+        :fs: int, sampling frequency of the envelopes
+        :cf: list, center frequency of each filter.
+        :return: self
+
+        """
+        mf = self.modf
+
+        n_envs, len_env = envs.shape
+        t = np.arange(len_env) / fs * 1000  # time in ms.
+        fig, axes = plt.subplots(n_envs, 1, sharex=True, sharey=False)
+        fig.subplots_adjust(hspace=0.05)
+
+        for ax, env, f in izip(axes, envs[::-1], mf[::-1]):
+            ax.plot(t, env)
+            ax.set_yticks([env.mean()])
+            ax.set_yticklabels([f])
+            ax.set_xlim([t.min(), t.max()])
+
+        axes[-1].set_xlabel('Time [ms]')
+        fig.text(0.05, 0.5, 'Filter center frequency [Hz]',
+                 va='center', rotation=90, size=11)
+        return self
+
