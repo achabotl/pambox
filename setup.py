@@ -57,12 +57,13 @@ setup(
     platforms='any',
     test_suite='pambox.test.test_pambox',
     classifiers = [
-        'Programming Language :: Python',
         'Development Status :: 1 - Alpha',
-        'Natural Language :: English',
-        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Modified BSD License',
-
+        'Natural Language :: English',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Topic :: Scientific/Engineering',
         'Operating System :: OS Independent'
     ],
     extras_require={
