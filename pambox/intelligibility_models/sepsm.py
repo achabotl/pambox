@@ -133,16 +133,15 @@ class Sepsm(object):
                                                         self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
-        snr_env_lin = np.zeros((N_cf, N_modf))
+        snr_env_matrix = np.zeros((N_cf, N_modf))
         exc_ptns = np.zeros((3, N_cf, N_modf))
         # For each band above threshold,
         # (actually, for debug purposes, maybe I should keep all...)
         for idx_band in bands_above_thres_idx:
             # Peripheral filtering, of just the band we process
-            filtered_signals = \
-                np.asarray([self._peripheral_filtering(signal,
-                                                       self.cf[idx_band])
-                            for signal in [clean, mixture, noise]])
+            filtered_signals = [self._peripheral_filtering(signal,
+                                                           self.cf[idx_band])
+                                for signal in [clean, mixture, noise]]
 
             downsamp_env = np.empty((3, np.ceil(N / self.downsamp_factor)))
             for i, signal in enumerate(filtered_signals):
@@ -156,17 +155,17 @@ class Sepsm(object):
                 downsamp_env[i] = tmp_env[::self.downsamp_factor]
 
             # Calculate SNRenv for the current channel
-            snr_env_lin[idx_band], exc_ptns_tmp = self._snr_env(downsamp_env,
+            snr_env_matrix[idx_band], exc_ptns_tmp = self._snr_env(downsamp_env,
                                                                 fs_new)
             for i_sig in range(3):
                 exc_ptns[i_sig, idx_band, :] = exc_ptns_tmp[i_sig]
 
-        snr_env = self._optimal_combination(snr_env_lin, bands_above_thres_idx)
+        snr_env = self._optimal_combination(snr_env_matrix, bands_above_thres_idx)
 
         res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
                                      'bands_above_thres_idx'])
         res.snr_env = snr_env
-        res.snr_env_matrix = snr_env_lin
+        res.snr_env_matrix = snr_env_matrix
         res.exc_ptns = exc_ptns
         res.bands_above_thres_idx = bands_above_thres_idx
 

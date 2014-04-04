@@ -14,6 +14,7 @@ def mod_filterbank(signal, fs, modf):
     :signal: ndarray, temporal envelope of a signal
     :fs: int, sampling frequency
     :returns: ndarray, integrated power spectrum at the output of each filter
+              ndarray, filtered time signals.
 
     """
     modf = np.asarray(modf)
