@@ -1,4 +1,8 @@
 from __future__ import division
+import brewer2mpl
+import seaborn as sns
+import matplotlib.pylab as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 from collections import namedtuple
 from itertools import izip
@@ -111,14 +115,13 @@ class MrSepsm(Sepsm):
         else:
             signals = (clean, mixture, noise)
 
-
         downsamp_chan_envs = np.zeros((len(signals),
                                        np.ceil(N / self.downsamp_factor)))
         if (downsamp_chan_envs.shape[-1] % 2) == 0:
             len_offset = 1
         else:
             len_offset = 0
-        mod_channel_envs = np.zeros((len(signals),
+        chan_mod_envs = np.zeros((len(signals),
                                      len(self.modf),
                                      downsamp_chan_envs.shape[-1] - len_offset))
         snr_env_lin = np.zeros((N_cf, N_modf))
@@ -135,7 +138,7 @@ class MrSepsm(Sepsm):
                     [self._peripheral_filtering(signal, self.cf[idx_band])
                      for signal in signals]
 
-            for ii, channel_env in enumerate(channel_envs):
+            for i_sig, channel_env in enumerate(channel_envs):
                 # Extract envelope
                 tmp_env = general.hilbert_envelope(channel_env).squeeze()
 
@@ -143,17 +146,17 @@ class MrSepsm(Sepsm):
                 tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
                                                          N=1, fs=self.fs)
                 # Downsample the envelope for faster processing
-                downsamp_chan_envs[ii] = tmp_env[::self.downsamp_factor]
+                downsamp_chan_envs[i_sig] = tmp_env[::self.downsamp_factor]
 
                 # Sub-band modulation filtering
-                lt_exc_ptns[ii, idx_band], mod_channel_envs[ii] = \
-                    filterbank.mod_filterbank(downsamp_chan_envs[ii],
+                lt_exc_ptns[i_sig, idx_band], chan_mod_envs[i_sig] = \
+                    filterbank.mod_filterbank(downsamp_chan_envs[i_sig],
                                               fs_new,
                                               self.modf)
 
             mr_env_powers = []
             for chan_env, mod_envs in izip(downsamp_chan_envs,
-                                           mod_channel_envs):
+                                           chan_mod_envs):
                 mr_env_powers.append(self._mr_env_powers(chan_env, mod_envs))
 
             snr_env_lin[idx_band], _, tmp_mr_snr_env_lin \
@@ -167,12 +170,123 @@ class MrSepsm(Sepsm):
         res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
                                      'bands_above_thres_idx',
                                      'mr_snr_env_matrix'])
+
+        #
         res.snr_env = snr_env
-        res.snr_env_db = 10 * np.log10(snr_env)
         res.snr_env_matrix = snr_env_lin
+        # res.snr_env_matrix = snr_env_matrix
+
+        # Output of what is essentially the sEPSM.
+        # res.lt_snr_env = lt_snr_env
+        # res.lt_snr_env_matrix = lt_snr_env_matrix
+        res.lt_exc_ptns = lt_exc_ptns
+
+
+        # res.mr_snr_env = mr_snr_env
         res.mr_snr_env_matrix = mr_snr_env_lin
-        # res.exc_ptns = mr_env_powers
+        # res.mr_exc_ptns = mr_exc_ptns
+
         res.bands_above_thres_idx = bands_above_thres_idx
         return res
+
+    @staticmethod
+    def _plot_mr_matrix(mat, x=None, y=None, fig=None, subplot_pos=111):
+        """
+
+        :param mat:
+        :param x:
+        :param y:
+        :param ax:
+        :return:
+        """
+
+        n_y, n_x = mat.shape
+        if y is None:
+            y = np.arange(n_y)
+
+        max_mat = mat.max()
+        bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
+
+        if fig is None:
+            fig = plt.figure()
+        else:
+            pass
+
+        grid = ImageGrid(fig, subplot_pos,
+                         nrows_ncols=(n_y, 1),
+                         aspect=False,
+                         share_all=False,
+                         cbar_mode='single',
+                         cbar_location='right',
+                         cbar_size='0.5%',
+                         cbar_pad=0.05)
+
+        for ax, p, f in izip(grid, mat[::-1], y[::-1]):
+            values = p.compressed()
+            extent = (0, 1, 0, 1)
+            im = ax.imshow(values[np.newaxis, :],
+                      aspect='auto',
+                      interpolation='none',
+                      extent=extent,
+                      vmax=max_mat,
+                      cmap=bmap)
+            ax.grid(False)
+            ax.set_yticks([0.5])
+            ax.set_yticklabels([f])
+        return im
+
+
+    def plot_mr_exc_ptns(self, ptns, dur=None, db=True):
+        """
+
+        :param res: namedtuple, predictions from the model. Must have a
+        `mr_snr_env_matrix` property.
+        :param dur:
+        :return: self
+        """
+
+        mf = self.modf
+
+        if db:
+            ptns = np.log10(ptns)
+            cbar_label = 'SNRenv [dB]'
+        else:
+            ptns = ptns
+            cbar_label = 'SNRenv [lin]'
+
+        n_mf, n_win = ptns.shape
+        max_ptns = ptns.max()
+        bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
+        xlabel = "Time [ms]"
+        ylabel = "Modulation filter center frequency [Hz]"
+        fig = plt.figure()
+        grid = ImageGrid(fig, 111,
+                         nrows_ncols=(n_mf, 1),
+                         aspect=False,
+                         share_all=False,
+                         cbar_mode='single',
+                         cbar_location='right',
+                         cbar_size='0.5%',
+                         cbar_pad=0.05)
+
+        for ax, p, f in izip(grid, ptns[::-1], mf[::-1]):
+            values = p.compressed()
+            extent = (0, 1, 0, 1)
+            im = ax.imshow(values[np.newaxis, :],
+                      aspect='auto',
+                      interpolation='none',
+                      extent=extent,
+                      vmax=max_ptns,
+                      cmap=bmap)
+            ax.grid(False)
+            ax.set_yticks([0.5])
+            ax.set_yticklabels([f])
+
+        cbar = grid.cbar_axes[0].colorbar(im)
+        cbar.ax.set_ylabel(cbar_label)
+        grid[-1].set_xlabel(xlabel)
+        n_ticks = len(grid[-1].get_xticks())
+
+        fig.text(0.05, 0.5, ylabel, va='center', rotation=90, size=11)
 
 
