@@ -57,21 +57,26 @@ def test_select_bands_above_threshold(center_f):
 
 
 @pytest.mark.slow
-def test_snr_env(mat_snr_env):
-    mat_snr_env = sio.loadmat(__DATA_ROOT__ + '/test_snr_env_lin.mat',
-                              squeeze_me=True)
-    env = mat_snr_env['env'].T
-    fs = mat_snr_env['fs']
-    target_snr_env = mat_snr_env['SNRenv_p_n'][:, 1]
-    target_excitation_patterns = mat_snr_env['sEPSM_ExPtns']\
-        .T[1, :, :]
-    modf = mat_snr_env['fcs_sEPSM'].astype('float')
+def test_snr_env():
+    tests = [[0.001, [[0.], [0.]]],
+             [0.001, [[0.0001], [0]]],
+             [0.001, [[0.01], [1]]],
+             [0.001, [[0, 0], [0, 0]]],
+             [0.001, [[[0, 0],
+                       [0, 0]],
+                      [[0, 0],
+                       [0, 0]]]],
+             [0.001, [[[0, 0],
+                       [0, 0]],
+                      [[0, 0],
+                       [0, 0]]]]
+    ]
 
-    signals = (env[0], env[0], env[1])
-    c = sepsm.Sepsm(modf=modf)
-    snrenv, excitation_patterns = c._snr_env(signals, fs)
-    assert_allclose(snrenv, target_snr_env)
-    assert_allclose(excitation_patterns[1:, :], target_excitation_patterns)
+    c = sepsm.Sepsm()
+    for target, (p_mix, p_noise) in tests:
+
+        snrenv = c._snr_env(p_mix, p_noise)
+        assert_allclose(snrenv, target)
 
 
 @pytest.mark.slow
