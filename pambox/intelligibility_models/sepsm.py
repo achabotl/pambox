@@ -64,42 +64,37 @@ class Sepsm(object):
         idx = np.arange(len(noise_rms_db))
         return idx[b]
 
-    def _snr_env(self, signals, fs):
+    def _snr_env(self, p_mix, p_noise):
         """calculate SNR_env for a signal mixture and a noise.
 
         :signals: namedtuple of ndarrays, channel envelopes for the clean
             speech, mixture and noise alone, in that order
         :fs: int, sampling frequency at which to do the modulation analysis.
-        :returns: ndarray, ndarray
-            lin snrenv values and modulation excitation patterns
+        :returns: ndarray
+            lin snrenv values
 
         """
-        fs = np.asarray(fs, dtype='float')
-        signals = [np.asarray(signal, dtype='float') for signal in signals]
 
-        exc_ptns = sp.empty((3, len(self.modf)))
-        # for each stimulus
-        for ii, signal in enumerate(signals):
-            # modulation filtering
-            exc_ptns[ii], _ = filterbank.mod_filterbank(signal, fs,
-                                                        self.modf)
+        p_mix = np.asarray(p_mix)
+        p_noise = np.asarray(p_noise)
 
         # set nan values to zero
-        exc_ptns[np.isnan(exc_ptns)] = 0
+        p_mix[np.isnan(p_mix)] = 0
+        p_noise[np.isnan(p_noise)] = 0
 
         # noisefloor cannot exceed the mix, since they exist at the same time
-        exc_ptns[2] = np.minimum(exc_ptns[2], exc_ptns[1])
+        p_noise = np.minimum(p_noise, p_mix)
 
         # the noisefloor restricted to minimum 0.01 reflecting and internal
         # noise threshold
-        exc_ptns[1] = np.maximum(exc_ptns[1], self.noise_floor)
-        exc_ptns[2] = np.maximum(exc_ptns[2], self.noise_floor)
+        p_mix = np.maximum(p_mix, self.noise_floor)
+        p_noise = np.maximum(p_noise, self.noise_floor)
 
         # calculation of snrenv
-        snr_env = (exc_ptns[1] - exc_ptns[2]) / (exc_ptns[2])
+        snr_env = (p_mix - p_noise) / p_noise
         snr_env = np.maximum(snr_env, self.snr_env_limit)
 
-        return snr_env, exc_ptns
+        return snr_env
 
     def _optimal_combination(self, snr_env_lin, bands_above_thres_idx):
         """@todo: Docstring for _optimal_combination.
@@ -144,7 +139,7 @@ class Sepsm(object):
                                 for signal in [clean, mixture, noise]]
 
             downsamp_env = np.empty((3, np.ceil(N / self.downsamp_factor)))
-            for i, signal in enumerate(filtered_signals):
+            for i_sig, signal in enumerate(filtered_signals):
                 # Extract envelope
                 tmp_env = general.hilbert_envelope(signal).squeeze()
 
@@ -152,13 +147,14 @@ class Sepsm(object):
                 tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
                                                          N=1, fs=self.fs)
                 # Downsample the envelope for faster processing
-                downsamp_env[i] = tmp_env[::self.downsamp_factor]
+                downsamp_env[i_sig] = tmp_env[::self.downsamp_factor]
 
-            # Calculate SNRenv for the current channel
-            snr_env_matrix[idx_band], exc_ptns_tmp = self._snr_env(downsamp_env,
-                                                                fs_new)
-            for i_sig in range(3):
-                exc_ptns[i_sig, idx_band, :] = exc_ptns_tmp[i_sig]
+                exc_ptns[i_sig, idx_band], _ = filterbank.mod_filterbank(downsamp_env[ i_sig],
+                                                                         fs_new,
+                                                                         self.modf)
+
+        # Calculate SNRenv
+        snr_env_matrix = self._snr_env(*exc_ptns[-2:])
 
         snr_env = self._optimal_combination(snr_env_matrix, bands_above_thres_idx)
 
