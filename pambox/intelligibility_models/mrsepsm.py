@@ -61,8 +61,6 @@ class MrSepsm(Sepsm):
     def _time_average(self, mr_snr_env):
         return mr_snr_env.mean(axis=-1)
 
-
-
     def _mr_snr_env(self, p_mix, p_noise):
         """Calculate the multi-resolution SNRenv.
 
@@ -122,11 +120,12 @@ class MrSepsm(Sepsm):
         else:
             len_offset = 0
         chan_mod_envs = np.zeros((len(signals),
-                                     len(self.modf),
-                                     downsamp_chan_envs.shape[-1] - len_offset))
-        snr_env_lin = np.zeros((N_cf, N_modf))
-        lt_exc_ptns = np.zeros((3, N_cf, N_modf))
-        mr_snr_env_lin = []
+                                  len(self.modf),
+                                  downsamp_chan_envs.shape[-1] - len_offset))
+        time_av_mr_snr_env_matrix = np.zeros((N_cf, N_modf))
+        lt_exc_ptns = np.zeros((len(signals), N_cf, N_modf))
+        mr_snr_env_matrix = []
+        mr_exc_ptns = []
 
         # find bands above threshold
         filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
@@ -154,18 +153,24 @@ class MrSepsm(Sepsm):
                                               fs_new,
                                               self.modf)
 
-            mr_env_powers = []
+            chan_mr_exc_ptns = []
             for chan_env, mod_envs in izip(downsamp_chan_envs,
                                            chan_mod_envs):
-                mr_env_powers.append(self._mr_env_powers(chan_env, mod_envs))
+                chan_mr_exc_ptns.append(self._mr_env_powers(chan_env, mod_envs))
+            mr_exc_ptns.append(chan_mr_exc_ptns)
 
-            snr_env_lin[idx_band], _, tmp_mr_snr_env_lin \
-                = self._mr_snr_env(*mr_env_powers[-2:])  # Select only the env
+            time_av_mr_snr_env_matrix[idx_band], _, chan_mr_snr_env_matrix \
+                = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the env
             # powers from the mixture and the noise, even if we calculated the
             # envelope powers for the clean speech.
-            mr_snr_env_lin.append(tmp_mr_snr_env_lin)
+            mr_snr_env_matrix.append(chan_mr_snr_env_matrix)
 
-        snr_env = self._optimal_combination(snr_env_lin, bands_above_thres_idx)
+        lt_snr_env_matrix = super(MrSepsm, self)._snr_env(*lt_exc_ptns[-2:])
+        lt_snr_env = self._optimal_combination(lt_snr_env_matrix,
+                                             bands_above_thres_idx)
+
+        snr_env = self._optimal_combination(time_av_mr_snr_env_matrix,
+                                            bands_above_thres_idx)
 
         res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
                                      'bands_above_thres_idx',
@@ -173,18 +178,18 @@ class MrSepsm(Sepsm):
 
         #
         res.snr_env = snr_env
-        res.snr_env_matrix = snr_env_lin
+        res.snr_env_matrix = time_av_mr_snr_env_matrix
         # res.snr_env_matrix = snr_env_matrix
 
         # Output of what is essentially the sEPSM.
-        # res.lt_snr_env = lt_snr_env
-        # res.lt_snr_env_matrix = lt_snr_env_matrix
+        res.lt_snr_env = lt_snr_env
+        res.lt_snr_env_matrix = lt_snr_env_matrix
         res.lt_exc_ptns = lt_exc_ptns
 
 
         # res.mr_snr_env = mr_snr_env
-        res.mr_snr_env_matrix = mr_snr_env_lin
-        # res.mr_exc_ptns = mr_exc_ptns
+        res.mr_snr_env_matrix = mr_snr_env_matrix
+        res.mr_exc_ptns = mr_exc_ptns
 
         res.bands_above_thres_idx = bands_above_thres_idx
         return res
