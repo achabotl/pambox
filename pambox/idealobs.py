@@ -95,12 +95,12 @@ def psy_fn(x, mu=0, sigma=1):
     Outputs:
     pc: array of values between 0 and 100
     """
-    return erfc(-(x - mu) / (sqrt(2) * sigma)) / 2
+    return 100 * erfc(-(x - mu) / (sqrt(2) * sigma)) / 2
 
 
 if __name__ == '__main__':
-    from pylab import plot, figure, show, xlabel, ylabel, legend
-    snr = arange(-9, 3, 1)
+    from pylab import plot, figure, show, xlabel, ylabel, legend, xticks, yticks
+    snr = arange(-12, 5, 1)
     snrenv = 10 ** linspace(-2, 2, len(snr))
     c = IdealObs()
     data = psy_fn(snr, -3.1, 2.13) * 100
@@ -112,10 +112,12 @@ if __name__ == '__main__':
     xlabel('SNR [dB]')
     ylabel('Percent correct')
     legend(loc='upper left')
+    xticks(snr[::2])
+    yticks(range(0,101, 10))
     show()
 
     params = c.get_params()
     print(('Optimized parameters found:\nk = {:.3f}\nq = {:.3f}\n'
-           'sigma_s = {:.3f}\nm = {:.3f}').format(params['k'], params['q'],
+           'sigma_s = {:.4f}\nm = {:.3f}').format(params['k'], params['q'],
                                                   params['sigma_s'],
                                                   params['m']))
