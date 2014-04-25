@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import division, print_function
 from numpy import pi, exp, sin, cos, sqrt, abs, ones
 import numpy as np
