@@ -125,7 +125,7 @@ class Sepsm(object):
         N_cf = len(self.cf)
 
         # find bands above threshold
-        filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
+        _, filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
                                                         self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
