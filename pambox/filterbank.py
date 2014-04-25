@@ -5,7 +5,7 @@ import scipy as sp
 import scipy.signal as ss
 import matplotlib.pyplot as plt
 from scipy import pi
-from numpy.fft import fft, ifft
+from numpy.fft import fft, ifft, rfft, irfft
 from itertools import izip
 
 
@@ -146,8 +146,7 @@ def noctave_filtering(x, center_f, fs, width=3):
     :width: width of the filters, default 3 for 1/3-octave
 
     Returns:
-    :time_sig: array of the filtered signal
-    :spec: nth-octave spectrumt
+    :spec: nth-octave spectrum
 
     """
     # Use numpy's FFT because SciPy's version of rfft (2 real results per
@@ -158,23 +157,24 @@ def noctave_filtering(x, center_f, fs, width=3):
     N = len(x)
     # TODO Use powers of 2 to calculate the power spectrum, and also, possibly
     # use RFFT instead of the complete fft.
-    X = fft(x)
-    X = np.abs(X)
-    X = X ** 2 / N  # Power spectrum
-    X = X[0:np.floor(N / 2) + 1]
-    X[1:] = X[1:] * 2.
+    X = rfft(x)
+    X_pow = np.abs(X) ** 2 / N  # Power spectrum
+    X_pow[1:] = X_pow[1:] * 2.
     bound_f = np.zeros(len(center_f) + 1)
     bound_f[0] = center_f[0] * 2. ** (- 1. / (2. * width))
     bound_f[1:] = center_f * 2. ** (1. / (2. * width))
     bound_f = bound_f[bound_f < fs / 2]
     # Convert from frequencies to vector indexes. Factor of two is because
     # we consider positive frequencies only.
-    bound_idx = np.floor(bound_f / (fs / 2.) * len(X))
+    bound_idx = np.floor(bound_f / (fs / 2.) * len(X_pow))
     # Initialize arrays
     out_rms = np.zeros(len(center_f))
+    out_time = np.zeros((len(center_f), x.shape[-1]), dtype='complex')
     for idx, (l, f) in enumerate(zip(bound_idx[0:], bound_idx[1:])):
-        out_rms[idx] = np.sqrt(np.sum(X[l:f]) / N)
-    return out_rms
+        out_time[idx, l:f] = X[l:f]
+        out_rms[idx] = np.sqrt(np.sum(X_pow[l:f]) / N)
+    out_time = np.real(irfft(out_time, n=N, axis=-1))
+    return out_time, out_rms
 
 
 def noctave_center_freq(lowf, highf, width=3):

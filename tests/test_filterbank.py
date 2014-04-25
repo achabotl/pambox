@@ -13,7 +13,7 @@ def test_third_octave_filtering_of_noise_():
     noise = mat['x'].squeeze()
     target_noise_rms = mat['rms_out'].squeeze()
     center_f = mat['midfreq'].squeeze()
-    rms_out = filterbank.noctave_filtering(noise, center_f, 22050, width=3)
+    _, rms_out = filterbank.noctave_filtering(noise, center_f, 22050, width=3)
     assert_allclose(target_noise_rms, rms_out, rtol=1e-4)
 
 
