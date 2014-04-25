@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Test module for pambox."""
 
 import tests
