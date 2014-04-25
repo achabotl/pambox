@@ -42,7 +42,7 @@ def test_psy_fn():
     x = mat['x'][0]
     mu = 0.
     sigma = 1.0
-    target = mat['p'][0]
+    target = mat['p'][0] * 100
     y = idealobs.psy_fn(x, mu, sigma)
     np.testing.assert_allclose(y, target)
 
