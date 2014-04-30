@@ -246,26 +246,41 @@ class MrSepsm(Sepsm):
                          , ptns
                          , dur=None
                          , db=True
+                         , vmax=None
                         ):
         """
 
         :param res: namedtuple, predictions from the model. Must have a
         `mr_snr_env_matrix` property.
         :param dur:
+        :param vmax: float, maximum value of the colormap. If `None`,
+        the data's maxium value is used. (Default: None)
         :return: self
         """
 
         mf = self.modf
 
+        if vmax is None:
+            vmax = ptns.max()
         if db:
             ptns = np.log10(ptns)
             cbar_label = 'SNRenv [dB]'
+            vmax = np.log10(vmax)
         else:
             ptns = ptns
             cbar_label = 'SNRenv [lin]'
 
         n_mf, n_win = ptns.shape
-        max_ptns = ptns.max()
+
+        if dur is None:
+            dur = n_win / self.modf[-1]
+
+        if fig_subplt is None:
+            fig = plt.plot()
+            subplt = 111
+        else:
+            fig, subplt = fig_subplt
+
         bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
         xlabel = "Time [ms]"
         ylabel = "Modulation filter center frequency [Hz]"
@@ -286,7 +301,7 @@ class MrSepsm(Sepsm):
                       aspect='auto',
                       interpolation='none',
                       extent=extent,
-                      vmax=max_ptns,
+                      vmax=vmax,
                       cmap=bmap)
             ax.grid(False)
             ax.set_yticks([0.5])
