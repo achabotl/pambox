@@ -310,6 +310,7 @@ class MrSepsm(Sepsm):
         cbar = grid.cbar_axes[0].colorbar(im)
         cbar.ax.set_ylabel(cbar_label)
         grid[-1].set_xlabel(xlabel)
+        grid[-1].set_xticks(np.arange(0, dur, 0.2))
         n_ticks = len(grid[-1].get_xticks())
 
         fig.text(0.05, 0.5, ylabel, va='center', rotation=90, size=11)
