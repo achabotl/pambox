@@ -253,6 +253,8 @@ class MrSepsm(Sepsm):
         :param res: namedtuple, predictions from the model. Must have a
         `mr_snr_env_matrix` property.
         :param dur:
+        :param db: bool, display dB values of the modulation power or SNRenv
+        values. (Default: True.)
         :param vmax: float, maximum value of the colormap. If `None`,
         the data's maxium value is used. (Default: None)
         :return: self
