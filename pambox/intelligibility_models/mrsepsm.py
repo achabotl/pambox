@@ -242,7 +242,11 @@ class MrSepsm(Sepsm):
         return im
 
 
-    def plot_mr_exc_ptns(self, ptns, dur=None, db=True):
+    def plot_mr_exc_ptns(self
+                         , ptns
+                         , dur=None
+                         , db=True
+                        ):
         """
 
         :param res: namedtuple, predictions from the model. Must have a
