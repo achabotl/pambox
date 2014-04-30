@@ -247,6 +247,7 @@ class MrSepsm(Sepsm):
                          , dur=None
                          , db=True
                          , vmax=None
+                         , fig_subplt=None
                         ):
         """
 
@@ -278,7 +279,7 @@ class MrSepsm(Sepsm):
             dur = n_win / self.modf[-1]
 
         if fig_subplt is None:
-            fig = plt.plot()
+            fig = plt.figure()
             subplt = 111
         else:
             fig, subplt = fig_subplt
@@ -286,10 +287,11 @@ class MrSepsm(Sepsm):
         bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
         xlabel = "Time [ms]"
         ylabel = "Modulation filter center frequency [Hz]"
-        fig = plt.figure()
-        grid = ImageGrid(fig, 111,
+        grid = ImageGrid(fig, subplt,
                          nrows_ncols=(n_mf, 1),
                          aspect=False,
+                         # axes_pad=0.05,
+                         # add_all=True,
                          share_all=False,
                          cbar_mode='single',
                          cbar_location='right',
