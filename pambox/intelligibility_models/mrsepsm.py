@@ -299,7 +299,10 @@ class MrSepsm(Sepsm):
                          cbar_pad=0.05)
 
         for ax, p, f in izip(grid, ptns[::-1], mf[::-1]):
-            values = p.compressed()
+            try:
+                values = p.compressed()
+            except AttributeError:
+                values = p
             extent = (0, 1, 0, 1)
             im = ax.imshow(values[np.newaxis, :],
                       aspect='auto',
