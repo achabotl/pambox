@@ -28,11 +28,14 @@ class SlidingMrSepsm(MrSepsm):
         n = len(x)
         step = int(step)
         win = int(win)
-        for i in range(0, n, step):
-            # Use python's max to avoid conversion to array.
-            i_beg = max([0, i - win // 2])
-            i_end = min([i + win // 2, n])
-            yield x[i_beg:i_end]
+
+        out = np.ma.masked_all((n // step + 1, win))
+        for ii, i_step in enumerate(range(0, n + 1, step)):
+            i_low = max([0, i_step - win // 2])
+            i_max = min([i_step + win // 2, n])
+            out[ii, :(i_max-i_low)] = x[i_low:i_max]
+            out.mask[ii, :(i_max-i_low)] = False
+        return out
 
     def _mr_env_powers(self, channel_env, filtered_envs):
         len_env = filtered_envs.shape[-1]
