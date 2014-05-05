@@ -124,8 +124,7 @@ class SlidingMrSepsm(MrSepsm):
             mr_exc_ptns.append(chan_mr_exc_ptns)
 
             time_av_mr_snr_env_matrix[idx_band], _, chan_mr_snr_env_matrix \
-                = self._mr_snr_env(
-                *chan_mr_exc_ptns[-2:])  # Select only the env
+                = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the env
             # powers from the mixture and the noise, even if we calculated the
             # envelope powers for the clean speech.
             mr_snr_env_matrix.append(chan_mr_snr_env_matrix)
