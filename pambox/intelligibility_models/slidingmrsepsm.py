@@ -155,29 +155,25 @@ class SlidingMrSepsm(MrSepsm):
         except IndexError:
             sections_snr_env = None
 
-        res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
-                                     'bands_above_thres_idx',
-                                     'mr_snr_env_matrix'])
+        res = {
+            'snr_env': snr_env,
+            'snr_env_matrix': time_av_mr_snr_env_matrix,
+            # .snr_env_matrix': snr_env_matrix
 
-        #
-        res.snr_env = snr_env
-        res.snr_env_matrix = time_av_mr_snr_env_matrix
-        # res.snr_env_matrix = snr_env_matrix
+            # Output of what is essentially the sEPSM.
+            'lt_snr_env': lt_snr_env,
+            'lt_snr_env_matrix': lt_snr_env_matrix,
+            'lt_exc_ptns': lt_exc_ptns,
+            # Outputs of the selection process
+            'sections_snr_env': sections_snr_env,
+            'per_section_snr_env': section_snr_envs,
 
-        # Output of what is essentially the sEPSM.
-        res.lt_snr_env = lt_snr_env
-        res.lt_snr_env_matrix = lt_snr_env_matrix
-        res.lt_exc_ptns = lt_exc_ptns
+            # .mr_snr_env': mr_snr_env
+            'mr_snr_env_matrix': mr_snr_env_matrix,
+            'mr_exc_ptns': mr_exc_ptns,
 
-        # Outputs of the selection process
-        res.sections_snr_env = sections_snr_env
-        res.per_section_snr_env = section_snr_envs
-
-        # res.mr_snr_env = mr_snr_env
-        res.mr_snr_env_matrix = mr_snr_env_matrix
-        res.mr_exc_ptns = mr_exc_ptns
-
-        res.bands_above_thres_idx = bands_above_thres_idx
+            'bands_above_thres_idx': bands_above_thres_idx
+        }
         return res
 
     def snr_env_for_sections(self, snr_envs, sections):
