@@ -58,7 +58,8 @@ class SlidingMrSepsm(MrSepsm):
         for i_modf, (env, win_length) in enumerate(
                 izip(filtered_envs, win_lengths)):
             slices = self._inc_sliding_window(env, win_length, swin_length)
-            mr_env_powers[i_modf, :] = np.var(slices, ddof=1, axis=-1)
+            mr_env_powers[i_modf, :] = np.var(slices, ddof=1,
+                                              axis=-1) / dc_power
         return mr_env_powers
 
     def predict(self, clean, mixture, noise, sections=None):
