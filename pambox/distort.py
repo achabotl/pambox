@@ -190,15 +190,17 @@ class Westermann_crm(object):
 
     """Applies HRTF and BRIR for a given target and masker distance."""
 
-    def __init__(self):
+    def __init__(self, fs=40000):
         """@todo: to be defined1. """
         # Load the binaural impulse responses
         self.dist = np.asarray([0.5, 2, 5, 10])
         self.brir = {}
+        self.fs = fs
         for d in self.dist:
-            d_str = self._normalize_fname(d)
-            fname = '../stimuli/crm/brirs_40k/aud' \
-                    + d_str + 'm.wav'
+            fname = '../stimuli/crm/brirs_{fs}/aud{d_str}m.wav'.format(
+                fs=self.fs,
+                d_str=self._normalize_fname(d)
+            )
             wav = wavfile.read(fname)
             self.brir[d] = np.array(wav[1].astype('float') / 2. ** 15).T
 
