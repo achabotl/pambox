@@ -86,6 +86,12 @@ def test_find_calculate_srt_when_not_found():
     assert None == general.int2srt(x,y, srt=50)
 
 
+def test_find_srt_when_srt_at_index_zero():
+    x = [0, 1]
+    y = [50, 51]
+    assert 0 == general.int2srt(x,y, srt=50)
+
+
 def test_make_same_length_with_padding():
     tests = ((([1], [1, 1]), ([1, 0], [1, 1])),
              (([1, 1], [1, 1]), ([1, 1], [1, 1])),
