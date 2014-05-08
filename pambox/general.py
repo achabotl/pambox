@@ -189,19 +189,26 @@ def write_wav(fname, fs, x):
         scaled = x
     wavfile.write(fname, fs, scaled.astype('int16'))
 
+def make_same_length(a, b, extend_first=True):
+    """Makes two arrays the same length.
 
-def make_same_length(a, b):
-    """Makes two arrays the same length by zero-padding the shortest.
+    Default behavior is to zero-pad the shorted array. It is also possible to
+    cut the second array to the same length as the first.
 
-    :a: 1d array, first vector.
-    :b: 1d array, second vector.
+    :param a: 1d array, first vector.
+    :param b: 1d array, second vector.
+    :param extend_first: bool, optional. Zero-pad the first array if it is the
+    shortest if `True`. Otherwise, cut array `b` to the length of `a`.
 
     :return: tuple of ndarray, both vectors with same length.
     """
     if len(a) < len(b):
-        c = np.zeros_like(b)
-        c[:len(a)] += a
-        return c, b
+        if extend_first:
+            c = np.zeros_like(b)
+            c[:len(a)] += a
+            return c, b
+        else:
+            return a, b[:len(a)]
     else:
         c = np.zeros_like(a)
         c[:len(b)] += b
