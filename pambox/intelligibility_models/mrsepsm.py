@@ -87,20 +87,6 @@ class MrSepsm(Sepsm):
 
         return snr_env_matrix, [p_mix, p_noise], mr_snr_env
 
-
-    def _mr_optimal_combination(self, powers, bands_above_thres_idx):
-        """
-        :powers: multi-resolution envelope modulation powers
-        :mask: bands above threshold
-        """
-        snr_env = 0
-        # Instead of looping over the channel dimensions and the modulation
-        # channel dimensions, just flatten the list.
-        for each in chain.from_iterable(powers):
-            snr_env += each.sum() ** 2
-        snr_env = np.sqrt(snr_env)
-        return snr_env
-
     def predict(self, clean, mixture, noise):
 
         fs_new = self.fs / self.downsamp_factor
