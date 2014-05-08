@@ -31,7 +31,7 @@ def mod_filterbank(signal, fs, modf):
     X = fft(signal)
     X_mag = np.abs(X)
     X_power = np.square(X_mag) / N  # power spectrum
-    X_power_pos = X_power[0:np.floor(N / 2) + 1]
+    X_power_pos = X_power[0:np.floor(N / 2).astype('int') + 1]
     # take positive frequencies only and multiply by two to get the same total
     # energy
     X_power_pos[1:] = X_power_pos[1:] * 2
@@ -69,7 +69,7 @@ def mod_filterbank(signal, fs, modf):
     filtered_envs = np.zeros_like(X_filt, dtype='float')
 
     for k, (w, TF) in enumerate(izip(Wcf, TFs)):
-        Vout[k] = X_power_pos * w[:np.floor(N / 2) + 1]
+        Vout[k] = X_power_pos * w[:np.floor(N / 2).astype('int') + 1]
         # Integration estimated as a sum from f > 0
         # integrate envelope power in the passband of the filter. Index goes
         # from 2:end since integration is for f>0
@@ -166,7 +166,7 @@ def noctave_filtering(x, center_f, fs, width=3):
     bound_f = bound_f[bound_f < fs / 2]
     # Convert from frequencies to vector indexes. Factor of two is because
     # we consider positive frequencies only.
-    bound_idx = np.floor(bound_f / (fs / 2.) * len(X_pow))
+    bound_idx = np.floor(bound_f / (fs / 2.) * len(X_pow)).astype('int')
     # Initialize arrays
     out_rms = np.zeros(len(center_f))
     out_time = np.zeros((len(center_f), x.shape[-1]), dtype='complex')
