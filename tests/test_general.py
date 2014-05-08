@@ -84,3 +84,15 @@ def test_find_calculate_srt_when_not_found():
     x = np.arange(10)
     y = 2 * x + 4
     assert None == general.int2srt(x,y, srt=50)
+
+
+def test_make_same_length_with_padding():
+    tests = ((([1], [1, 1]), ([1, 0], [1, 1])),
+             (([1, 1], [1, 1]), ([1, 1], [1, 1])),
+             (([1, 1], [1]), ([1, 1], [1, 0])),
+             (([1], [1, 1], False), ([1], [1])),
+    )
+
+    for inputs, targets in tests:
+        np.testing.assert_allclose(general.make_same_length(*inputs),
+                                   targets)
