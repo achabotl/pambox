@@ -194,7 +194,7 @@ class Sepsm(object):
 
         return self
 
-    def _plot_mod_matrix(self, mat, ax=None, vmax=None):
+    def _plot_mod_matrix(self, mat, ax=None, vmin=None, vmax=None):
         """Plot a matrix of values values as a heat map.
 
         :mat: ndarray, modulation power or SNRenv values
@@ -223,17 +223,35 @@ class Sepsm(object):
         im = ax.imshow(mat, origin='lower',
                        interpolation='none',
                        cmap=bmap,
+                       vmin=vmin,
                        vmax=vmax,
                        aspect='auto')
         return im
 
-    def plot_snr_env_matrix(self, res):
-        data = np.log10(res.snr_env_matrix)
-        im = self._plot_mod_matrix(data)
+    def plot_snr_env_matrix(self, res, ax=None, vmin=None, vmax=None):
+        if not ax:
+            fig, ax = plt.subplots()
+        data = 10 * np.log10(res['snr_env_matrix'])
+        data[np.isinf(data)] = np.nan
+        if vmin is None:
+            vmin = np.nanmin(data)
+        if vmax is None:
+            vmax = np.nanmax(data)
+        im = self._plot_mod_matrix(data, ax=ax, vmin=vmin, vmax=vmax)
         cb = plt.colorbar(im)
         cb.set_label(r"SNRenv [dB]")
+        ax.set_xlabel('Modulation frequency [Hz]')
+        ax.set_ylabel('Channel frequency [Hz]')
 
-    def plot_exc_ptns(self, res, db=True):
+        ax.set_xticks(range(len(self.modf))[::2])
+        ax.set_xticklabels(self.modf[::2])
+        ax.set_yticks(range(len(self.cf))[::3])
+        ax.set_yticklabels(self.cf[::3])
+
+        return ax
+
+    def plot_exc_ptns(self, res, db=True, attr='exc_ptns', vmin=None,
+                      vmax=None):
         """Plot the excitation patterns from a prediction.
 
         :res: namedtuple, results from an sEPSM prediction. The namedtuple
@@ -245,29 +263,33 @@ class Sepsm(object):
         cf = self.cf
         mf = self.modf
         if db:
-            data = np.log10(res.exc_ptns)
+            data = 10 * np.log10(res[attr])
         else:
-            data = res.exc_ptns
-        vmax = data.max()
+            data = res['exc_ptns']
+        if not vmax:
+            vmax = data.max()
+        if not vmin:
+            vmin = np.maximum(-30, data.min())
 
         xlabel = 'Modulation frequency [Hz]'
         ylabel = 'Channel frequency [Hz]'
         titles = ['Clean', 'Mixture', 'Noise']
         n_subs = data.shape[0]
 
-        fig = plt.figure()
+        fig = plt.figure(1, figsize=(10, 5), dpi=300)
         grid = ImageGrid(fig, 111,
                          nrows_ncols=(1, n_subs),
-                         axes_pad=0.1,
+                         axes_pad=0.2,
                          share_all=True,
                          cbar_location='right',
+                         aspect=False,
                          cbar_mode='single',
                          cbar_size='7%',
                          cbar_pad=0.05)
         fig.subplots_adjust(wspace=0.05)
 
         for ax, exc_ptns in izip(grid, data):
-            im = self._plot_mod_matrix(exc_ptns, ax=ax, vmax=vmax)
+            im = self._plot_mod_matrix(exc_ptns, ax=ax, vmin=vmin, vmax=vmax)
 
         for ax in grid:
             ax.set_xticks(range(len(mf))[::2])
@@ -278,7 +300,14 @@ class Sepsm(object):
         for ax, title in izip(grid, titles[-n_subs:]):
             ax.set_title(title)
 
-        grid.cbar_axes[0].colorbar(im)
+        if 'exc_ptns' in attr:
+            cbar_label = 'Modulation power [dB]'
+        else:
+            cbar_label = 'SNRenv [dB]'
+
+        cbar =  grid.cbar_axes[0].colorbar(im)
+        cbar.set_label_text(cbar_label)
+
         grid[0].set_ylabel(ylabel)
         fig.text(0.5, 0.05, xlabel, ha='center', size=11)
         return self
@@ -308,5 +337,5 @@ class Sepsm(object):
         axes[-1].set_xlabel('Time [ms]')
         fig.text(0.05, 0.5, 'Filter center frequency [Hz]',
                  va='center', rotation=90, size=11)
-        return self
+        return fig
 
