@@ -61,3 +61,19 @@ def test_get_params():
     p = {'k': 1, 'q': 2, 'sigma_s': 0.5, 'm': 800}
     c = idealobs.IdealObs(**p)
     assert p == c.get_params()
+
+
+def test_fit_obs_set_m_and_sigma_s(data, snrenv):
+    c = idealobs.IdealObs()
+
+    tests = (((1.42765076, 0.390529, 0.6, 12), (0.6, 12)),
+             ((3.6590, 0.10341, 0.6, 8000), (0.6, 8000)),
+             ((3.7464, 0.05159, -1.2144e-4, 8000), (None, 8000)))
+
+    for target, values in tests:
+        sigma_s, m = values
+        c.fit_obs(snrenv, data, sigma_s=sigma_s, m=m)
+        params = c.get_params()
+        res = [params['k'], params['q'], params['sigma_s'], params['m']]
+        np.testing.assert_allclose(res, target, rtol=1e-3)
+
