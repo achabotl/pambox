@@ -241,12 +241,22 @@ def int2srt(x, y, srt=50.0):
     :y: y values
     :srt: value of `y` at which the interception is calculated.
 
+    Raises
+    ------
+    ValueError: inputs of different lenghts.
+
     """
     x = np.asarray(x)
     y = np.asarray(y)
+
+    if x.shape != y.shape:
+        raise ValueError('Inputs of different lenghts.')
     srt = np.float(srt)
     idx = np.nonzero(np.diff(y >= srt))[0]
-    if idx:
+    if not idx and y[0] == srt:
+        return x[0]
+
+    if len(idx) >= 1:
         srt = x[idx] + (srt - y[idx]) * (x[idx + 1] - x[idx]) \
             / (y[idx + 1] - y[idx])
     else:
