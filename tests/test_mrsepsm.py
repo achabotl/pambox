@@ -66,10 +66,11 @@ def test_complete_mr_sepsm(mr, mat_complete):
     mix = mat_complete['test']
     noise = mat_complete['noise']
 
+
     res = mr.predict(mix, mix, noise)
 
     assert_allclose(
-        res.snr_env
+        res['snr_env']
         , mat_complete['tmp']['SNRenv'].astype('float')
         , rtol=0.01
     )

@@ -160,12 +160,12 @@ class Sepsm(object):
 
         snr_env = self._optimal_combination(snr_env_matrix, bands_above_thres_idx)
 
-        res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
-                                     'bands_above_thres_idx'])
-        res.snr_env = snr_env
-        res.snr_env_matrix = snr_env_matrix
-        res.exc_ptns = exc_ptns
-        res.bands_above_thres_idx = bands_above_thres_idx
+        res = {
+            'snr_env': snr_env,
+            'snr_env_matrix': snr_env_matrix,
+            'exc_ptns': exc_ptns,
+            'bands_above_thres_idx': bands_above_thres_idx
+        }
 
         return res
 
