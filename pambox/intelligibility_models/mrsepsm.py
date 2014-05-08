@@ -175,26 +175,22 @@ class MrSepsm(Sepsm):
         snr_env = self._optimal_combination(time_av_mr_snr_env_matrix,
                                             bands_above_thres_idx)
 
-        res = namedtuple('Results', ['snr_env', 'snr_env_matrix', 'exc_ptns',
-                                     'bands_above_thres_idx',
-                                     'mr_snr_env_matrix'])
+        res = {
+            'snr_env': snr_env,
+            'snr_env_matrix': time_av_mr_snr_env_matrix,
+            # .snr_env_matrix': snr_env_matrix
 
-        #
-        res.snr_env = snr_env
-        res.snr_env_matrix = time_av_mr_snr_env_matrix
-        # res.snr_env_matrix = snr_env_matrix
+            # Output of what is essentially the sEPSM.
+            'lt_snr_env': lt_snr_env,
+            'lt_snr_env_matrix': lt_snr_env_matrix,
+            'lt_exc_ptns': lt_exc_ptns,
 
-        # Output of what is essentially the sEPSM.
-        res.lt_snr_env = lt_snr_env
-        res.lt_snr_env_matrix = lt_snr_env_matrix
-        res.lt_exc_ptns = lt_exc_ptns
+            # .mr_snr_env': mr_snr_env
+            'mr_snr_env_matrix': mr_snr_env_matrix,
+            'mr_exc_ptns': mr_exc_ptns,
 
-
-        # res.mr_snr_env = mr_snr_env
-        res.mr_snr_env_matrix = mr_snr_env_matrix
-        res.mr_exc_ptns = mr_exc_ptns
-
-        res.bands_above_thres_idx = bands_above_thres_idx
+            'bands_above_thres_idx': bands_above_thres_idx
+        }
         return res
 
     @staticmethod
