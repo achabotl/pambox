@@ -29,20 +29,44 @@ class IdealObs(object):
     def get_params(self):
         return {'k': self.k, 'q': self.q, 'sigma_s': self.sigma_s, 'm': self.m}
 
-    def fit_obs(self, snrenv, pcdata):
+    def fit_obs(self, snrenv, pcdata, sigma_s=None, m=None):
         """Find the optimal parameters for the ideal observer.
         snrenv: the linear SNRenv values that are to be converted to percent
             correct.
         pcdata: the data, in percentage of correctly understood tokens.
         """
-        errfc = lambda p, snr, data: self._snrenv_to_pc(snrenv, p[0], p[1],
-                                                        p[2], self.m) - data
-        p0 = [self.k, self.q, self.sigma_s]
+
+        if not m:
+            m = self.m
+        else:
+            self.m = m
+
+        if sigma_s:
+            errfc = lambda p, snr, data: self._snrenv_to_pc(snrenv,
+                                                            p[0],
+                                                            p[1],
+                                                            sigma_s,
+                                                            m) - data
+            p0 = [self.k, self.q]
+        else:
+            errfc = lambda p, snr, data: self._snrenv_to_pc(snrenv,
+                                                            p[0],
+                                                            p[1],
+                                                            p[2],
+                                                            m) - data
+            p0 = [self.k, self.q, self.sigma_s]
+
+
         res = leastsq(errfc, p0, args=(snrenv, pcdata))[0]
-        self.k, self.q, self.sigma_s = res
+        if sigma_s:
+            self.k, self.q = res
+            self.sigma_s = sigma_s
+        else:
+            self.k, self.q, self.sigma_s = res
         return self
 
-    def _snrenv_to_pc(self, snrenv, k, q, sigma_s, m):
+    @staticmethod
+    def _snrenv_to_pc(snrenv, k=None, q=None, sigma_s=None, m=None):
         """Convert SNR_env values to a percent correct using a ideal observer
 
         Uses specified parameters of the ideal observer so that we can do the
@@ -52,6 +76,14 @@ class IdealObs(object):
         ----------
         snrenv : array_like
             linear values of SNRenv
+        k : float
+            k parameter
+        q : float
+            q parameter
+        sigma_s : float
+            sigma_s parameter
+        m : float
+            m parameter, number of words in the vocabulary.
 
         Returns
         -------
