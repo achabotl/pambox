@@ -51,12 +51,12 @@ class BinauralMrSepsm(MrSepsm):
         be_mask = self._get_bands_above_threshold(binaural_res)
         be_snr_env = MrSepsm._optimal_combination(self, be_matrix, be_mask)
 
-        res = namedtuple('Results', ['be_snr_env', 'ears', 'be_matrix',
-                                     'be_above_thres'])
-        res.be_snr_env = be_snr_env
-        res.be_matrix = be_matrix
-        res.be_above_thres = be_mask
-        res.ears = ears_res
+        res = {
+            'be_snr_env': be_snr_env,
+            'be_matrix': be_matrix,
+            'be_above_thres': be_mask,
+            'ears': ears_res
+        }
         return res  # Results for each ear's sEPSM model.
 
     def _better_ear(self, res):
@@ -68,11 +68,11 @@ class BinauralMrSepsm(MrSepsm):
             contains the better ear SNRenv.
 
         """
-        be_snr_env = np.zeros_like(res[0].snr_env_matrix)
+        be_snr_env = np.zeros_like(res[0]['snr_env_matrix'])
         for ii in range(2):
-            idx = res[ii].bands_above_thres_idx
+            idx = res[ii]['bands_above_thres_idx']
             be_snr_env[idx] = \
-                np.maximum(be_snr_env[idx], res[ii].snr_env_matrix[idx])
+                np.maximum(be_snr_env[idx], res[ii]['snr_env_matrix'][idx])
         return be_snr_env
 
     def _get_bands_above_threshold(self, res):
@@ -87,6 +87,6 @@ class BinauralMrSepsm(MrSepsm):
         at = {}
         for ii in range(2):
             at[ii] = np.zeros((len(self.cf), len(self.modf)))
-            at[ii][res[ii].bands_above_thres_idx] = 1
+            at[ii][res[ii]['bands_above_thres_idx']] = 1
         all_above_thres = np.logical_or(at[0], at[1])
         return all_above_thres
