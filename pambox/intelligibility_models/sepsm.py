@@ -139,7 +139,8 @@ class Sepsm(object):
                                                            self.cf[idx_band])
                                 for signal in [clean, mixture, noise]]
 
-            downsamp_env = np.empty((3, np.ceil(N / self.downsamp_factor)))
+            downsamp_env = np.empty((3,
+                                     np.ceil(N / self.downsamp_factor).astype('int')))
             for i_sig, signal in enumerate(filtered_signals):
                 # Extract envelope
                 tmp_env = general.hilbert_envelope(signal).squeeze()

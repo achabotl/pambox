@@ -30,8 +30,9 @@ class MrSepsm(Sepsm):
     def _mr_env_powers(self, channel_env, filtered_envs):
         len_env = filtered_envs.shape[-1]
         win_durations = 1. / np.asarray(self.modf, dtype='float')
-        win_lengths = np.floor(win_durations * self.fs / self.downsamp_factor)
-        n_segments = np.ceil(len_env / win_lengths)
+        win_lengths = np.floor(win_durations * self.fs / self
+                               .downsamp_factor).astype('int')
+        n_segments = np.ceil(len_env / win_lengths).astype('int')
 
         # DC power used for normalization. Divided by 2 such that a fully
         # modulated signal has # an AC-power of 1.
@@ -43,7 +44,7 @@ class MrSepsm(Sepsm):
         for i_modf, (n_seg, env, win_length) in enumerate(
                 izip(n_segments, filtered_envs, win_lengths)):
             n_complete_seg = n_seg - 1
-            last_idx = n_complete_seg * win_length
+            last_idx = int(n_complete_seg * win_length)
             # Reshape to n_seg x win_length so that we can calculate the
             # variance in a single operation
             tmp_env = env[:last_idx].reshape((-1, win_length))
@@ -115,7 +116,8 @@ class MrSepsm(Sepsm):
             signals = (clean, mixture, noise)
 
         downsamp_chan_envs = np.zeros((len(signals),
-                                       np.ceil(N / self.downsamp_factor)))
+                                       np.ceil(N / self.downsamp_factor)
+                                       .astype('int')))
         if (downsamp_chan_envs.shape[-1] % 2) == 0:
             len_offset = 1
         else:
