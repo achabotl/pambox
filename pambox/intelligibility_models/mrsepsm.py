@@ -239,15 +239,16 @@ class MrSepsm(Sepsm):
             ax.set_yticklabels([f])
         return im
 
-
     def plot_mr_exc_ptns(self
                          , ptns
                          , dur=None
                          , db=True
+                         , vmin=None
                          , vmax=None
                          , fig_subplt=None
+                         , attr='exc_ptns'
                         ):
-        """
+        """Plot multi-naurresolution representation of envelope powers.
 
         :param res: namedtuple, predictions from the model. Must have a
         `mr_snr_env_matrix` property.
@@ -261,15 +262,22 @@ class MrSepsm(Sepsm):
 
         mf = self.modf
 
-        if vmax is None:
-            vmax = ptns.max()
+        if 'exc_ptns' in attr:
+            cbar_label = 'Modulation power'
+        else:
+            cbar_label = 'SNRenv'
+
         if db:
-            ptns = np.log10(ptns)
-            cbar_label = 'SNRenv [dB]'
-            vmax = np.log10(vmax)
+            ptns = 10 * np.log10(ptns)
+            cbar_label = cbar_label + ' [dB]'
         else:
             ptns = ptns
-            cbar_label = 'SNRenv [lin]'
+            cbar_label = cbar_label + ' [lin]'
+
+        if vmax is None:
+            vmax = ptns.max()
+        if vmin is None:
+            vmin = ptns.min()
 
         n_mf, n_win = ptns.shape
 
@@ -300,21 +308,26 @@ class MrSepsm(Sepsm):
             values = p.compressed()
             extent = (0, 1, 0, 1)
             im = ax.imshow(values[np.newaxis, :],
-                      aspect='auto',
-                      interpolation='none',
-                      extent=extent,
-                      vmax=vmax,
-                      cmap=bmap)
+                           aspect='auto',
+                           interpolation='none',
+                           extent=extent,
+                           vmin=vmin,
+                           vmax=vmax,
+                           cmap=bmap)
             ax.grid(False)
-            ax.set_yticks([0.5])
+            # ax.set_yticks([0.5])
             ax.set_yticklabels([f])
 
         cbar = grid.cbar_axes[0].colorbar(im)
         cbar.ax.set_ylabel(cbar_label)
+
+        xticks_labels = np.arange(0, dur, 0.2)
+        xticks = np.linspace(0, 1, len(xticks_labels))
+        grid[-1].set_xticks(xticks)
+        grid[-1].set_xticklabels(xticks_labels)
         grid[-1].set_xlabel(xlabel)
-        grid[-1].set_xticks(np.arange(0, dur, 0.2))
-        n_ticks = len(grid[-1].get_xticks())
 
         fig.text(0.05, 0.5, ylabel, va='center', rotation=90, size=11)
+        return fig
 
 
