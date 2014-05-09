@@ -60,6 +60,24 @@ def test_envelope_extraction():
     np.testing.assert_allclose(envelope, target, atol=1e-3)
 
 
+def test_hilbert_env_on_2d_array_with_last_dimension():
+    tests = (([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
+              [0, 1, 2, 1, 0]),
+             ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
+              [0, 1, 2, 1, 0]),
+             ([[0., 1.], [0., 1.]],
+              [[0, 1], [0, 1]]),
+             ([[0.5, 1., 0.5], [2.5, 3.16227766, 1.5]],
+              [[0, 1, 0], [2, 3, 0]]),
+    )
+
+    for target, x in tests:
+        env = general.hilbert_envelope(x)
+        np.testing.assert_allclose(env, target,
+                                   err_msg="Input was {}".format(x))
+
+
+
 # Can't be done programmatically, because the exact third-octave spacing is not
 # exactly the same as the one commonly used.
 @pytest.mark.xfail(run=False, reason="Real 3rd-oct != common ones")

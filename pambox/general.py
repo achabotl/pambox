@@ -78,16 +78,17 @@ def rms(x, ac=False):
 def hilbert_envelope(signal):
     """Calculate the hilbert envelope of a signal
 
-    Also does the FFT on the -1 axis.
+    :param signal: array_like, signal on which to calculate the hilbert
+    envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
     :returns: ndarray of the same shape as the input.
     """
     signal = np.asarray(signal)
-    N_orig = signal.shape[-1]
+    n_orig = signal.shape[-1]
     # Next power of 2.
-    N = next_pow_2(N_orig)
+    N = next_pow_2(n_orig)
     y_h = sp.signal.hilbert(signal, N)
     # Return signal with same dimensions as original
-    return np.abs(y_h[..., :N_orig])
+    return np.abs(y_h[..., :n_orig])
 
 
 def next_pow_2(x):
