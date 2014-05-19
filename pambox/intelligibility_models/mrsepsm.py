@@ -155,11 +155,12 @@ class MrSepsm(Sepsm):
             mr_snr_env_matrix.append(chan_mr_snr_env_matrix)
 
         lt_snr_env_matrix = super(MrSepsm, self)._snr_env(*lt_exc_ptns[-2:])
-        lt_snr_env = self._optimal_combination(lt_snr_env_matrix,
+        lt_snr_env = super(MrSepsm, self)._optimal_combination(
+            lt_snr_env_matrix,
                                              bands_above_thres_idx)
 
-        snr_env = self._optimal_combination(time_av_mr_snr_env_matrix,
-                                            bands_above_thres_idx)
+        snr_env = self._optimal_combination(
+            time_av_mr_snr_env_matrix, bands_above_thres_idx)
 
         res = {
             'snr_env': snr_env,
@@ -178,6 +179,29 @@ class MrSepsm(Sepsm):
             'bands_above_thres_idx': bands_above_thres_idx
         }
         return res
+
+    def _optimal_combination(self, snr_env_lin, bands_above_thres_idx):
+        """
+        Combines SNRenv across audio and modulation channels.
+
+        Only modulation channels below 1/4 of the audio center frequency are
+        considered.
+
+        :param snr_env: ndarray, linear values of SNRenv
+        :param bands_above_thres_idx: ndarray, index of audio channels above
+        threshold.
+        :returns: float, SNRenv value.
+
+        """
+        # Acceptable modulation frequencies
+        ma = (np.tile(np.asarray(self.modf), (len(self.cf), 1)).T
+              >= np.asarray(self.cf)).T
+        snr_env_lin[ma] = 0.
+        snr_env = np.sqrt(np.sum(snr_env_lin[bands_above_thres_idx] ** 2,
+                                 axis=-1))
+        snr_env = np.sqrt(np.sum(snr_env ** 2))
+        return snr_env
+
 
     @staticmethod
     def _plot_mr_matrix(mat, x=None, y=None, fig=None, subplot_pos=111):
