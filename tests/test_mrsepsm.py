@@ -68,8 +68,6 @@ def test_complete_mr_sepsm(mr, mat_complete):
 
 
     res = mr.predict(mix, mix, noise)
-    print(mat_complete['tmp']['SNRenv'].astype('float'))
-    print(res.snr_env)
 
     assert_allclose(
         res['snr_env']
