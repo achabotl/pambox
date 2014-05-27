@@ -187,22 +187,41 @@ def overlap_and_add(powers, phases, len_window, shift_size):
 
 
 class Westermann_crm(object):
-
     """Applies HRTF and BRIR for a given target and masker distance."""
 
     def __init__(self, fs=40000):
-        """@todo: to be defined1. """
-        # Load the binaural impulse responses
         self.dist = np.asarray([0.5, 2, 5, 10])
-        self.brir = {}
         self.fs = fs
+        self.brir = self._load_brirs()
+        self.delays = self._find_delay()
+
+    def _load_brirs(self):
+        """
+        Loads BRIRs from file.
+
+        :return: dict, BRIRs
+        """
+        brirs = {}
         for d in self.dist:
             fname = '../stimuli/crm/brirs_{fs}/aud{d_str}m.wav'.format(
                 fs=self.fs,
                 d_str=self._normalize_fname(d)
             )
             wav = wavfile.read(fname)
-            self.brir[d] = np.array(wav[1].astype('float') / 2. ** 15).T
+            brirs[d] = np.array(wav[1].astype('float') / 2. ** 15).T
+        return brirs
+
+    def _find_delay(self):
+        """
+        Calculates the delay of the direct sound, in samples.
+
+        :return: dict, delay in samples for each BRIR.
+        """
+        delays = {}
+        for k, v in self.brir.iteritems():
+            x = np.mean(v, axis=0)
+            delays[k] = x.argmax()
+        return delays
 
     def _normalize_fname(self, d):
         if d > 1:
@@ -211,17 +230,27 @@ class Westermann_crm(object):
             d_str = str(d).replace('.', '')
         return d_str
 
-    def apply(self, x, m, tdist, mdist):
-        """@todo: Docstring for apply.
+    def apply(self, x, m, tdist, mdist, align=True):
+        """
+        Applies the "Westermann" distortion to a target and masker.
+
+        Applies the BRIR of the required distance to the target. If the
+        target and masker are not co-located, the masker is equalized before
+        applying the BRIR, so that both the target and masker will have the
+        same average spectrum after the BRIR filtering.
+
+        By default, the delay introduced by the BRIR is compensated for,
+        such that the maxiumum of the BRIR happen simulatenously.
 
         :x: N array, mono clean speech signal
         :m: N array, mono masker signal
         :tdist: float, target distance, in meters
         :mdist: float, masker distance, in meters
+        :align: bool, compensate for the delay in the BRIRs with distance (
+        default is `True`).
         :returns: (2xN array, 2xN array), filtered signal and filterd masker
 
         """
-
         if tdist not in self.dist or mdist not in self.dist:
             raise ValueError('The distance values are incorrect.')
 
@@ -233,20 +262,47 @@ class Westermann_crm(object):
             m = [m, m]
         else:
             # Load the equalization filter
-            eqfilt_name = 't' + self._normalize_fname(tdist) + \
-                          'm_m' + self._normalize_fname(mdist) + 'm.mat'
+            eqfilt_name = 't{}m_m{}m.mat'.format(self._normalize_fname(tdist),
+                                                 self._normalize_fname(mdist))
 
+            eqfilt_path = '../stimuli/crm/eqfilts_{}/{}'.format(self.fs,
+                                                                eqfilt_name)
             try:
-                eqfilt = sp.io.loadmat('../stimuli/crm/eqfilts/' + eqfilt_name,
-                                       squeeze_me=True)
+                eqfilt = sp.io.loadmat(eqfilt_path, squeeze_me=True)
             except IOError:
-                raise IOError('Cannot file file %s' % '../stimuli/crm/eqfilts/'
-                              + eqfilt_name)
+                raise IOError('Cannot file file %s' % eqfilt_path)
             m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
 
         out_m = np.asarray([fftfilt(b, chan) for b, chan
                             in izip(self.brir[mdist], m)])
-        return out_x, out_m
+
+        if align:
+            i_x, i_m = self._calc_aligned_idx(tdist, mdist)
+        else:
+            i_x = 0
+            i_m = 0
+
+        return out_x[:, i_x:], out_m[:, i_m:]
+
+    def _calc_aligned_idx(self, tdist, mdist):
+        """
+        Calculates the index of the required delay to align the max of the
+        BRIRs
+
+        :param tdist: float, distance to target, in meters
+        :param mdist: float, distance to masker, in meters
+        :return: tuple, index of the target and masker.
+
+        """
+        # location of earliest peak
+        m_is_shortest = np.argmin([self.delays[tdist], self.delays[mdist]])
+        if m_is_shortest:
+            i_x = self.delays[tdist] - self.delays[mdist]
+            i_m = 0
+        else:
+            i_x = 0
+            i_m = self.delays[mdist] - self.delays[tdist]
+        return i_x, i_m
 
 
 def noise_from_signal(x, fs=40000, keep_env=False):
