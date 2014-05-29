@@ -36,6 +36,7 @@ class Sepsm(object):
         self.noise_floor = noise_floor
         self.snr_env_limit = snr_env_limit
         self.ht_diffuse = self._default_ht_diffuse
+        self.name = 'Sepsm'
 
     def _peripheral_filtering(self, signal, center_f):
         g = auditory.GammatoneFilterbank(center_f, self.fs)
@@ -57,7 +58,7 @@ class Sepsm(object):
 
         """
         noise_rms_db = 20 * np.log10(x)
-        # convert to spectrum level according to ANSI 1997
+        # convert to spectrum level according to SII - ANSI 1997
         noise_spec_level_corr = noise_rms_db \
                                 - 10.0 * np.log10(sp.asarray(self.cf) * 0.231)
         max_idx = min(len(noise_spec_level_corr), len(self.ht_diffuse))
@@ -110,6 +111,15 @@ class Sepsm(object):
         snr_env = np.sqrt(np.sum(snr_env ** 2))
         return snr_env
 
+    def _env_extraction(self, signal):
+        # Extract envelope
+        tmp_env = general.hilbert_envelope(signal).squeeze()
+        # Low-pass filtering
+        tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
+                                                 N=1, fs=self.fs)
+        # Downsample the envelope for faster processing
+        return tmp_env[::self.downsamp_factor]
+
     def predict(self, clean, mixture, noise):
         """Predicts intelligibility
 
@@ -126,10 +136,9 @@ class Sepsm(object):
 
         # find bands above threshold
         _, filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
-                                                        self.fs, width=3)
+                                                           self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
-        snr_env_matrix = np.zeros((N_cf, N_modf))
         exc_ptns = np.zeros((3, N_cf, N_modf))
         # For each band above threshold,
         # (actually, for debug purposes, maybe I should keep all...)
@@ -139,17 +148,9 @@ class Sepsm(object):
                                                            self.cf[idx_band])
                                 for signal in [clean, mixture, noise]]
 
-            downsamp_env = np.empty((3,
-                                     np.ceil(N / self.downsamp_factor).astype('int')))
+            downsamp_env = np.empty((3, np.ceil(N / self.downsamp_factor).astype('int')))
             for i_sig, signal in enumerate(filtered_signals):
-                # Extract envelope
-                tmp_env = general.hilbert_envelope(signal).squeeze()
-
-                # Low-pass filtering
-                tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
-                                                         N=1, fs=self.fs)
-                # Downsample the envelope for faster processing
-                downsamp_env[i_sig] = tmp_env[::self.downsamp_factor]
+                downsamp_env[i_sig] = self._env_extraction(signal)
 
                 exc_ptns[i_sig, idx_band], _ = filterbank.mod_filterbank(downsamp_env[ i_sig],
                                                                          fs_new,
@@ -158,7 +159,8 @@ class Sepsm(object):
         # Calculate SNRenv
         snr_env_matrix = self._snr_env(*exc_ptns[-2:])
 
-        snr_env = self._optimal_combination(snr_env_matrix, bands_above_thres_idx)
+        snr_env = self._optimal_combination(snr_env_matrix,
+                                            bands_above_thres_idx)
 
         res = {
             'snr_env': snr_env,
