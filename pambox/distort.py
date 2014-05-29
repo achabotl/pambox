@@ -220,7 +220,7 @@ class Westermann_crm(object):
         delays = {}
         for k, v in self.brir.iteritems():
             x = np.mean(v, axis=0)
-            delays[k] = x.argmax()
+            delays[k] = np.abs(x).argmax()
         return delays
 
     def _normalize_fname(self, d):
