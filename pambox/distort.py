@@ -230,6 +230,18 @@ class Westermann_crm(object):
             d_str = str(d).replace('.', '')
         return d_str
 
+    def _load_eqfilt(self, tdist, mdist):
+        # Load the equalization filter
+        eqfilt_name = 't{}m_m{}m.mat'.format(self._normalize_fname(tdist),
+                                             self._normalize_fname(mdist))
+        eqfilt_path = '../stimuli/crm/eqfilts_{}/{}'.format(self.fs,
+                                                            eqfilt_name)
+        try:
+            eqfilt = sp.io.loadmat(eqfilt_path, squeeze_me=True)
+        except IOError:
+            raise IOError('Cannot file file %s' % eqfilt_path)
+        return eqfilt
+
     def apply(self, x, m, tdist, mdist, align=True):
         """
         Applies the "Westermann" distortion to a target and masker.
@@ -261,16 +273,7 @@ class Westermann_crm(object):
         if tdist == mdist:
             m = [m, m]
         else:
-            # Load the equalization filter
-            eqfilt_name = 't{}m_m{}m.mat'.format(self._normalize_fname(tdist),
-                                                 self._normalize_fname(mdist))
-
-            eqfilt_path = '../stimuli/crm/eqfilts_{}/{}'.format(self.fs,
-                                                                eqfilt_name)
-            try:
-                eqfilt = sp.io.loadmat(eqfilt_path, squeeze_me=True)
-            except IOError:
-                raise IOError('Cannot file file %s' % eqfilt_path)
+            eqfilt = self._load_eqfilt(tdist, mdist)
             m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
 
         out_m = np.asarray([fftfilt(b, chan) for b, chan
