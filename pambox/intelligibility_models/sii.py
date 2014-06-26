@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
-from numpy import maximum, minimum, log10, sum, asarray, zeros, ones
+from itertools import izip
+
+import numpy as np
+from numpy import log10, sum, asarray, zeros, ones
 
 
 class Sii(object):
