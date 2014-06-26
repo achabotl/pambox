@@ -79,7 +79,115 @@ def rms(x, ac=False, axis=-1):
         return np.linalg.norm(x / np.sqrt(x.shape[axis]), axis=axis)
 
 
-def hilbert_envelope(signal):
+def hilbert(x, N=None, axis=-1):
+    """
+    Compute the analytic signal, using the Hilbert transform.
+
+    The transformation is done along the last axis by default.
+
+    Parameters
+    ----------
+    x : array_like
+        Signal data.  Must be real.
+    N : int, optional
+        Number of Fourier components.  Default: ``x.shape[axis]``
+    axis : int, optional
+        Axis along which to do the transformation.  Default: -1.
+
+    Returns
+    -------
+    xa : ndarray
+        Analytic signal of `x`, of each 1-D array along `axis`
+
+    Notes
+    -----
+
+    **NOTE**: This code is a copy-paste from the Scipy codebase. By
+    redefining it here, it is possible to take advantage of the speed
+    increase provided by  using the MKL's FFT part of Enthough's distribution.
+
+    The analytic signal ``x_a(t)`` of signal ``x(t)`` is:
+
+    .. math:: x_a = F^{-1}(F(x) 2U) = x + i y
+
+    where `F` is the Fourier transform, `U` the unit step function,
+    and `y` the Hilbert transform of `x`. [1]_
+
+    In other words, the negative half of the frequency spectrum is zeroed
+    out, turning the real-valued signal into a complex signal.  The Hilbert
+    transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
+    original signal from ``np.real(hilbert(x))``.
+
+    References
+    ----------
+    .. [1] Wikipedia, "Analytic signal".
+           http://en.wikipedia.org/wiki/Analytic_signal
+
+    License
+    -------
+    This code was copied from Scipy. . The following license
+    applies
+    for this
+    function:
+
+    Copyright (c) 2001, 2002 Enthought, Inc.
+    All rights reserved.
+
+    Copyright (c) 2003-2012 SciPy Developers.
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+      a. Redistributions of source code must retain the above copyright notice,
+         this list of conditions and the following disclaimer.
+      b. Redistributions in binary form must reproduce the above copyright
+         notice, this list of conditions and the following disclaimer in the
+         documentation and/or other materials provided with the distribution.
+      c. Neither the name of Enthought nor the names of the SciPy Developers
+         may be used to endorse or promote products derived from this software
+         without specific prior written permission.
+
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS
+    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+    THE POSSIBILITY OF SUCH DAMAGE.
+
+    """
+    x = np.asarray(x)
+    if np.iscomplexobj(x):
+        raise ValueError("x must be real.")
+    if N is None:
+        N = x.shape[axis]
+    if N <= 0:
+        raise ValueError("N must be positive.")
+
+    Xf = fft(x, N, axis=axis)
+    h = zeros(N)
+    if N % 2 == 0:
+        h[0] = h[N // 2] = 1
+        h[1:N // 2] = 2
+    else:
+        h[0] = 1
+        h[1:(N + 1) // 2] = 2
+
+    if len(x.shape) > 1:
+        ind = [np.newaxis] * x.ndim
+        ind[axis] = slice(None)
+        h = h[ind]
+    x = ifft(Xf * h, axis=axis)
+    return x
+
+
+def hilbert_envelope(signal, axis=None):
     """Calculate the hilbert envelope of a signal
 
     :param signal: array_like, signal on which to calculate the hilbert
