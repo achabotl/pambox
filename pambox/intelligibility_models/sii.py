@@ -4,9 +4,6 @@ from numpy import maximum, minimum, log10, sum, asarray, zeros, ones
 
 
 class Sii(object):
-
-
-class Sii(object):
     """
     Speech intelligibility index model.
 
@@ -126,7 +123,7 @@ class Sii(object):
         V = E - 24.
 
         # 4.3.2.2
-        B = maximum(V, N)
+        B = np.fmax(V, N)
 
         # Calculate slope parameter Ci (4.3.2.3 Eq. 7)
         C = 0.6 * (B + 10. * log10(self.f) - 6.353) - 80.
@@ -139,22 +136,22 @@ class Sii(object):
         for i in range(1, 18):
             Z[i] = 10. * log10(10 ** (0.1 * N[i])
                                + sum(10. ** (0.1 * (B[0:i] + 3.32 * C[0:i]
-
                                                     * log10(0.89 * self.f[i]
                                                             / self.f[0:i])))))
         # Disturbance Spectrum Level (4.5)
-        D = maximum(Z, self.X)
+        D = np.fmax(Z, self.X)
 
         # Level Distortion Factor (4.6 Eq. 11)
         L = 1. - (E - self._speech_spectrum('normal') - 10.) / 160.
-        L = minimum(1, L)
+        L = np.fmin(1., L)
 
         # 4.7.1 Eq. 12
         K = (E - D + 15.) / 30.
-        K = minimum(1, maximum(0, K))
+        K = np.fmin(1., np.fmax(0., K))
 
         # Band Audibility Function (7.7.2 Eq. 13)
         A = L * K
 
         # Speech Intelligibility Index (4.8 Eq. 14)
-        return sum(self._band_importance(self.I) * A)
+        out = sum(self._band_importance(self.I) * A)
+        return np.fmax(out, 0)
