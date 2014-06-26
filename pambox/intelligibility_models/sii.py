@@ -5,30 +5,32 @@ from numpy import maximum, minimum, log10, sum, asarray, zeros, ones
 
 class Sii(object):
 
-    """Docstring for Sii. """
+
+class Sii(object):
+    """
+    Speech intelligibility index model.
+
+    Set the hearing threshold and the type of band importance function.
+
+    Arguments for 'I':
+        A scalar having a value of either 0, 1, 2, 3, 4, 5, or 6. The
+        Band-importance functions associated with each scalar are
+            0: Average speech as specified in Table 3 (DEFAULT)
+            1: various nonsense syllable tests where most English phonemes
+               occur equally often (as specified in Table B.2)
+            2: CID-22 (as specified in Table B.2)
+            3: NU6 (as specified in Table B.2)
+            4: Diagnostic Rhyme test (as specified in Table B.2)
+            5: short passages of easy reading material (as specified in
+               Table B.2)
+            6: SPIN (as specified in Table B.2)
+
+    :param T: array_like, hearing threshold. 18 values in dB HL
+    :param I: int, band importance function selector
+
+    """
 
     def __init__(self, T=zeros(18), I=0):
-        """Set the hearing threshold and the type of band importance function.
-
-
-        Arguments for 'I':
-            A scalar having a value of either 1, 2, 3, 4, 5, 6, or 7. The
-            Band-importance functions associated with each scalar are
-                1: Average speech as specified in Table 3 (DEFAULT)
-                2: various nonsense syllable tests where most English phonemes
-                   occur equally often (as specified in Table B.2)
-                3: CID-22 (as specified in Table B.2)
-                4: NU6 (as specified in Table B.2)
-                5: Diagnostic Rhyme test (as specified in Table B.2)
-                6: short passages of easy reading material (as specified in
-                   Table B.2)
-                7: SPIN (as specified in Table B.2)
-
-        :param T: array_like, hearing threshold. 18 values in dB HL
-        :param I: int, band importance function selector
-
-        """
-
         T = asarray(T)
 
         if len(T) != 18:
