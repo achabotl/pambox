@@ -5,8 +5,13 @@ import scipy as sp
 import scipy.signal as ss
 import matplotlib.pyplot as plt
 from scipy import pi
-from numpy.fft import fft, ifft, rfft, irfft
 from itertools import izip
+try:
+    np.use_fastnumpy
+    from numpy.fft import fft, ifft, rfft, irfft
+except AttributeError:
+    from scipy.fftpack import fft, ifft
+    from numpy.fft import rfft, irfft
 
 
 def mod_filterbank(signal, fs, modf):
