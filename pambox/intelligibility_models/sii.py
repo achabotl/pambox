@@ -119,6 +119,9 @@ class Sii(object):
         :param N: array_like, noise level
         """
 
+        E[np.isnan(E)] = 0
+        N[np.isnan(N)] = 0
+
         # Self-Speech Masking Spectrum (4.3.2.1 Eq. 5)
         V = E - 24.
 
