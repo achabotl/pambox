@@ -11,7 +11,7 @@ except AttributeError:
     from scipy.fftpack import fft, ifft
 
 
-def dbspl(x, ac=False, offset=100.0):
+def dbspl(x, ac=False, offset=100.0, axis=-1):
     """RMS value of signal (in dB)
 
     DBSPL(x) computes the SPL (sound pressure level) of the input signal
@@ -33,7 +33,7 @@ def dbspl(x, ac=False, offset=100.0):
     :signal. offset: float, reference to convert between RMS and dB SPL.
     """
     x = np.asarray(x)
-    return 20. * np.log10(rms(x, ac)) + float(offset)
+    return 20. * np.log10(rms(x, ac=ac, axis=axis)) + float(offset)
 
 
 def setdbspl(x, lvl, ac=False, offset=100.0):
@@ -60,23 +60,30 @@ def setdbspl(x, lvl, ac=False, offset=100.0):
 
     """
     x = np.asarray(x)
-    return x / rms(x, ac) * 10. ** ((lvl - float(offset)) / 20.)
+    return (x.T / rms(x, ac, axis=axis)
+            * 10. ** ((lvl - float(offset)) / 20.)).T
 
 
-def rms(x, ac=False):
+def rms(x, ac=False, axis=-1):
     """RMS value of a signal.
 
     :x: signal
-    :ac: bool, default: True
-        consider only the AC component of the signal
+    :ac: bool, default: False
+        Consider only the AC component of the signalG
+    :axis: int
+        Axis on which to calculate the RMS value. The default is to calculate
+        the RMS on the last dimensions, i.e. axis = -1.
     :rms: rms value
 
     """
     x = np.asarray(x)
+    if not x.ndim > 1:
+        axis = -1
     if ac:
-        return np.linalg.norm((x - np.mean(x)) / np.sqrt(x.shape[-1]))
+        return np.linalg.norm((x - np.mean(x, axis=axis))
+                              / np.sqrt(x.shape[axis]), axis=axis)
     else:
-        return np.linalg.norm(x / np.sqrt(x.shape[-1]))
+        return np.linalg.norm(x / np.sqrt(x.shape[axis]), axis=axis)
 
 
 def hilbert_envelope(signal):
