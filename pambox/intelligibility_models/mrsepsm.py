@@ -25,10 +25,12 @@ class MrSepsm(Sepsm):
                  snr_env_limit=0.001,
                  snr_env_ceil=None,
                  min_win=None,
-                 ):
+                 name='MrSepsm'
+        ):
         Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                        snr_env_limit)
         self.min_win = min_win
+        self.name = name
         self.snr_env_ceil = snr_env_ceil
 
     def _mr_env_powers(self, channel_env, filtered_envs):
