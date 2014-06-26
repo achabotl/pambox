@@ -22,10 +22,12 @@ class MrSepsm(Sepsm):
                  modf=_default_modf,
                  downsamp_factor=10,
                  noise_floor=0.001,
-                 snr_env_limit=0.001):
-        """@todo: to be defined1. """
+                 snr_env_limit=0.001,
+                 snr_env_ceil=None,
+                 ):
         Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                        snr_env_limit)
+        self.snr_env_ceil = snr_env_ceil
 
     def _mr_env_powers(self, channel_env, filtered_envs):
         len_env = filtered_envs.shape[-1]
@@ -82,6 +84,8 @@ class MrSepsm(Sepsm):
         # calculation of snrenv
         mr_snr_env = (p_mix - p_noise) / p_noise
         mr_snr_env = np.maximum(mr_snr_env, self.snr_env_limit)
+        if self.snr_env_ceil is not None:
+            mr_snr_env = np.minimum(mr_snr_env, self.snr_env_ceil)
 
         snr_env_matrix = self._time_average(mr_snr_env)
 
