@@ -32,12 +32,40 @@ def noise_65dB():
     return x_65 / 2. ** 15
 
 
+def test_dbspl():
+    tests = ((([0], True, 0, -1), -np.inf),
+             (([1], False, 0, -1), 0),
+             (([1], False, 100, -1), 100),
+             (([1], True, 0, -1), -np.inf),
+             (([10], False, 0, -1), 20),
+             (([10, 10], False, 0, -1), 20),
+             (([10, 10], False, 0, 1), [20, 20]),
+            )
+    for (x, ac, offset, axis), target in tests:
+        np.testing.assert_allclose(general.dbspl(x, ac=ac, offset=offset,
+                                                 axis=axis), target)
+
 def test_rms_do_ac():
     assert general.rms([0,1,2,3,4,5,6], ac=True) == 2
 
 
 def test_rms():
-    assert general.rms([0,1,2,3,4,5,6]) == 3.6055512754639891
+    tests = ((([0], True, -1), 0),
+             (([1], True, -1), 0),
+             (([1], False, -1), 1),
+             (([-1], False, -1), 1),
+             (([-1], True, -1), 0),
+             (([10, 10], False, -1), 10),
+             (([10, 10], True, -1), 0),
+             (([[0, 1],[0, 1]], True, -1), [0.5, 0.5]),
+             (([[0, 1],[0, 1]], False, -1), [0.70710678, 0.70710678]),
+             (([[0, 1],[0, 1]], True, 0), [0, 0]),
+             (([[0, 1],[0, 1]], False, 0), [0, 1]),
+             (([[0, 1],[0, 1]], True, 1), [0.5, 0.5]),
+             (([[0, 1],[0, 1]], False, 1), [0.70710678, 0.70710678]),
+    )
+    for (x, ac, axis), target in tests:
+        np.testing.assert_allclose(general.rms(x, ac=ac, axis=axis), target)
 
 
 def test_set_level(noise_raw, noise_65dB):
