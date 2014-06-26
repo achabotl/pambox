@@ -115,7 +115,7 @@ class Sii(object):
             raise ValueError("Vocal error string not recognized.")
         return self.Ei[:, efforts[vcl_effort]]
 
-    def predict(self, E, N=-50*ones(18)):
+    def predict(self, E, N=-50 * ones(18)):
         """o
 
         :param E: array_like, speech level
@@ -123,13 +123,13 @@ class Sii(object):
         """
 
         # Self-Speech Masking Spectrum (4.3.2.1 Eq. 5)
-        V = E - 24
+        V = E - 24.
 
         # 4.3.2.2
         B = maximum(V, N)
 
         # Calculate slope parameter Ci (4.3.2.3 Eq. 7)
-        C = 0.6 * (B + 10 * log10(self.f) - 6.353) - 80
+        C = 0.6 * (B + 10. * log10(self.f) - 6.353) - 80.
 
         # Initialize Equivalent Masking Spectrum Level (4.3.2.4)
         Z = zeros(18)
@@ -137,20 +137,20 @@ class Sii(object):
 
         # Calculate Equivalent Masking Spectrum Level (4.3.2.5 Eq. 9)
         for i in range(1, 18):
-            Z[i] = 10 * log10(10 ** (0.1 * N[i])
-                              + sum(10 ** (0.1 * (B[0:(i)] + 3.32 * C[0:(i)]
-                                                  * log10(0.89 * self.f[i]
-                                                          / self.f[0:(i)])))))
+            Z[i] = 10. * log10(10 ** (0.1 * N[i])
+                               + sum(10. ** (0.1 * (B[0:i] + 3.32 * C[0:i]
 
+                                                    * log10(0.89 * self.f[i]
+                                                            / self.f[0:i])))))
         # Disturbance Spectrum Level (4.5)
         D = maximum(Z, self.X)
 
         # Level Distortion Factor (4.6 Eq. 11)
-        L = 1 - (E - self._speech_spectrum('normal') - 10) / 160
+        L = 1. - (E - self._speech_spectrum('normal') - 10.) / 160.
         L = minimum(1, L)
 
         # 4.7.1 Eq. 12
-        K = (E - D + 15) / 30
+        K = (E - D + 15.) / 30.
         K = minimum(1, maximum(0, K))
 
         # Band Audibility Function (7.7.2 Eq. 13)
