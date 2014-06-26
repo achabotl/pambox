@@ -24,14 +24,18 @@ class MrSepsm(Sepsm):
                  noise_floor=0.001,
                  snr_env_limit=0.001,
                  snr_env_ceil=None,
+                 min_win=None,
                  ):
         Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                        snr_env_limit)
+        self.min_win = min_win
         self.snr_env_ceil = snr_env_ceil
 
     def _mr_env_powers(self, channel_env, filtered_envs):
         len_env = filtered_envs.shape[-1]
         win_durations = 1. / np.asarray(self.modf, dtype='float')
+        if self.min_win is not None:
+            win_durations[win_durations < self.min_win] = self.min_win
         win_lengths = np.floor(win_durations * self.fs / self
                                .downsamp_factor).astype('int')
         n_segments = np.ceil(len_env / win_lengths).astype('int')
