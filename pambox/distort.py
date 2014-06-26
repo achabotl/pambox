@@ -7,7 +7,12 @@ from itertools import izip
 from scipy.io import wavfile
 from pambox import general
 from pambox.general import fftfilt
-from numpy.fft import fft, ifft, rfft, irfft
+try:
+    np.use_fastnumpy
+    from numpy.fft import fft, ifft, rfft, irfft
+except AttributeError:
+    from scipy.fftpack import fft, ifft
+    from numpy.fft import rfft, irfft
 
 
 def mix_noise(clean, noise, sent_level, snr=None):
