@@ -4,7 +4,11 @@ import numpy as np
 import scipy as sp
 from scipy.io import wavfile
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
-from numpy.fft import fft, ifft
+try:
+    np.use_fastnumpy
+    from numpy.fft import fft, ifft
+except AttributeError:
+    from scipy.fftpack import fft, ifft
 
 
 def dbspl(x, ac=False, offset=100.0):
