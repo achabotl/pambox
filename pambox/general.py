@@ -37,28 +37,21 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
 
 
 def setdbspl(x, lvl, ac=False, offset=100.0):
-    """Set level of signal in dB SPL
+    """Sets the level of signal in dB SPL.
 
-    SETDBSPL(insig,lvl) sets the SPL (sound pressure level) of the signal
-    insig to lvl dB, using the convention that a pure tone with an RMS value
-    of 1 corresponds to 100 dB SPL.
-
-    If the input is an array, it is assumed that each row is a signal.
-
-    SETDBSPL(insig,lvl,ac=True) does the same, but considers only the AC
-    component of the signal (i.e. the mean is removed).
-
-    References:
-      B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
-      Press, 5th edition, 2003.
-
-
-    :x: @todo
-    :lvl: @todo
-    :ac: @todo
-    :returns: @todo
-
+    :x: array_like
+        Signal.
+    :lvl: float
+        Level, in dB SPL at which to set the signal. The level is set in
+        reference to
+    :ac: bool, optional
+        Calculate the AC RMS power of the signal by default (`ac=True`),
+        e.g. the mean is removed. If  `False`, considers the non-RMS power.
+    :offset: float, optional
+        Level, in dB SPL, corresponding to an RMS of 1. By default, an RMS of
+        1 corresponds to 100 dB SPL.
     """
+    axis = -1
     x = np.asarray(x)
     return (x.T / rms(x, ac, axis=axis)
             * 10. ** ((lvl - float(offset)) / 20.)).T
