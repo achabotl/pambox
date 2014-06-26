@@ -195,10 +195,13 @@ def hilbert_envelope(signal, axis=None):
     :returns: ndarray of the same shape as the input.
     """
     signal = np.asarray(signal)
+
+    if axis is None:
+        axis = -1
     n_orig = signal.shape[-1]
     # Next power of 2.
     N = next_pow_2(n_orig)
-    y_h = sp.signal.hilbert(signal, N)
+    y_h = hilbert(signal, N, axis=axis)
     # Return signal with same dimensions as original
     return np.abs(y_h[..., :n_orig])
 
