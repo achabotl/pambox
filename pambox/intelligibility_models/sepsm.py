@@ -17,7 +17,8 @@ except ImportError:
 
 
 class Sepsm(object):
-    """Implement the sEPSM intelligibility model"""
+    """Implement the sEPSM intelligibility model
+    """
 
     _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630,
                           800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
@@ -34,7 +35,27 @@ class Sepsm(object):
                  , noise_floor=0.01
                  , snr_env_limit=0.001
                  ):
-        """@todo: to be defined1. """
+        """@todo: to be defined1.
+
+        Parameters
+        ----------
+        fs : int
+             (Default value = 22050)
+        cf : array_like
+             (Default value = _default_center_cf)
+        modf : array_like
+             (Default value = _default_modf)
+        downsamp_factor : int
+             (Default value = 10)
+        noise_floor : float
+             (Default value = 0.01)
+        snr_env_limit : float
+             (Default value = 0.001)
+
+        Returns
+        -------
+
+        """
         self.fs = fs
         self.cf = cf
         self.modf = modf
@@ -45,6 +66,19 @@ class Sepsm(object):
         self.name = 'Sepsm'
 
     def _peripheral_filtering(self, signal, center_f):
+        """
+
+        Parameters
+        ----------
+        signal : ndarray
+            Signal to filter.
+        center_f : ndarray
+            Center frequencies of the peripheral filters.
+
+        Returns
+        -------
+
+        """
         g = auditory.GammatoneFilterbank(center_f, self.fs)
         y = g.filter(signal)
         return y
@@ -52,16 +86,17 @@ class Sepsm(object):
     def _bands_above_thres(self, x):
         """Select bands above threshold
 
-
-
         Parameters
         ----------
-        x : array_like, rms value of each peripheral channel.
+        x : array_like,
+            RMS value of each peripheral channel.
 
         Returns
         -------
-        idx : array_like, indexes of the bands that are above threshold.
+        ndarray
+            Index of the bands above threshold.
 
+        
         """
         noise_rms_db = 20 * np.log10(x)
         # convert to spectrum level according to SII - ANSI 1997
@@ -73,13 +108,17 @@ class Sepsm(object):
         return idx[b]
 
     def _snr_env(self, p_mix, p_noise):
-        """calculate SNR_env for a signal mixture and a noise.
+        """Calculates SNR_env for a signal mixture and a noise.
 
-        :signals: namedtuple of ndarrays, channel envelopes for the clean
-            speech, mixture and noise alone, in that order
-        :fs: int, sampling frequency at which to do the modulation analysis.
-        :returns: ndarray
-            lin snrenv values
+        Parameters
+        ----------
+        p_mix, p_noise : ndarray
+            Channel envelopes for the clean speech, mixture and noise alone,
+            in that order
+        Returns
+        -------
+        ndarray
+            Linear values of SNRenv.
 
         """
 
@@ -105,11 +144,25 @@ class Sepsm(object):
         return snr_env
 
     def _optimal_combination(self, snr_env, bands_above_thres_idx):
-        """@todo: Docstring for _optimal_combination.
+        """Calculates "optimal combination" of SNRenv above threshold.
 
-        :param snr_env: @todo
-        :type snr_env: @todo
-        :returns: @todo
+        Parameters
+        ----------
+        snr_env : ndarray
+            Linear values of SNRenv.
+        bands_above_thres_idx : ndarray
+            Index values of the bands above threshold
+
+        Returns
+        -------
+        type
+            todo
+
+        Notes
+        -----
+        Combines the SNR values as:
+
+        .. math:: \srqt(\sum_idx SNRenv_idx ^ 2)
 
         """
         snr_env = np.sqrt(np.sum(snr_env[bands_above_thres_idx] ** 2,
@@ -118,6 +171,25 @@ class Sepsm(object):
         return snr_env
 
     def _env_extraction(self, signal):
+        """Extracts the envelope of a time signal.
+
+        Parameters
+        ----------
+        signal : ndarray
+            Input signal.
+
+        Returns
+        -------
+        ndarray
+            Low-pass filtered envelope.
+
+        Notes
+        -----
+        The envelope is extracted by calculating the absolute value of the
+        Hilbert transform, and then by low-pass filtering the envelope at a
+        frequency of 150 Hz using a first order Butterworth filter.
+
+        """
         # Extract envelope
         tmp_env = general.hilbert_envelope(signal).squeeze()
         # Low-pass filtering
@@ -128,11 +200,16 @@ class Sepsm(object):
 
     def predict(self, clean, mixture, noise):
         """Predicts intelligibility
+        
+        Parameters
+        ----------
+        clean, mixture, noise : ndarrays
+            Clean, mixture, and noise signals.
 
-        :clean: @todo
-        :mix: @todo
-        :noise: @todo
-        :returns: @todo
+        Returns
+        -------
+        dict
+            todo
 
         """
         fs_new = self.fs / self.downsamp_factor
@@ -180,10 +257,17 @@ class Sepsm(object):
 
     def plot_bands_above_thres(self, res):
         """Plot bands that were above threshold as a bar chart.
+        
+        Parameters
+        ----------
+        res : dict
+            A `dict` as output by the sEPSM model. The dictionary must have a
+            `bands_above_threshold_idx` key.
 
-        :res: namedtuple, output from the sEPSM prediction. Must have a
-        `bands_above_threshold_idx` member.
-        :return: self
+        Returns
+        -------
+        None
+
         """
         cf = self.cf
         cf_ticks = range(len(cf))
@@ -204,13 +288,22 @@ class Sepsm(object):
         return self
 
     def _plot_mod_matrix(self, mat, ax=None, vmin=None, vmax=None):
-        """Plot a matrix of values values as a heat map.
+        """Plots a matrix of values values as a heat map.
+        
+        Parameters
+        ----------
+        mat : ndarray
+            Modulation power or SNRenv values
+        ax : axes, optional, (Default value = None)
+            Axes where to plot. A new figure and plot will be created by
+            default.
+        vmin, vmax : float, optional, (Default value = None)
+            Minimum and maximum value to normalize the color scale.
 
-        :mat: ndarray, modulation power or SNRenv values
-        :ax: axes where to plot. Will create a new figure and plot by default.
-        :vmin, vmax: scalar, minimum and maximum value to normalize the color
-        scale.
-        :return: image, mpl.AxesImage
+        Returns
+        -------
+
+
         """
         cf = self.cf
         mf = self.modf
@@ -238,6 +331,23 @@ class Sepsm(object):
         return im
 
     def plot_snr_env_matrix(self, res, ax=None, vmin=None, vmax=None):
+        """
+
+        Parameters
+        ----------
+        res :
+            
+        ax :
+             (Default value = None)
+        vmin :
+             (Default value = None)
+        vmax :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if not ax:
             fig, ax = plt.subplots()
         data = 10 * np.log10(res['snr_env_matrix'])
@@ -253,7 +363,7 @@ class Sepsm(object):
         ax.set_ylabel('Channel frequency [Hz]')
 
         ax.set_xticks(range(len(self.modf))[::2])
-        ax.set_xticklabels(self.modf[::2])
+        ax.set_xticklabels([int(x) for x in self.modf[::2]])
         ax.set_yticks(range(len(self.cf))[::3])
         ax.set_yticklabels(self.cf[::3])
 
@@ -262,11 +372,22 @@ class Sepsm(object):
     def plot_exc_ptns(self, res, db=True, attr='exc_ptns', vmin=None,
                       vmax=None):
         """Plot the excitation patterns from a prediction.
+        
+        Parameters
+        ----------
+        res : dict
+            Results from an sEPSM prediction. The dictionay should have a
+            "exc_ptns" key. Otherwise, the key to use can be defined using the
+            `attr` parameter.
+        db : bool, optional, (Default value = `True`)
+             Plot as dB if `True`, otherwise plots linear values.
+        attr : string, optional, (Default value = 'exc_ptns')
+             Dictionary key to use for plotting the excitation patters
+        vmin, vmax : float, optional, (Default = None)
+            Minimum and maximum value to normalize the color scale.
 
-        :res: namedtuple, results from an sEPSM prediction. The namedtuple
-        should have a "exc_ptns" member.
-        :db: bool, plot as decibels (default: True)
-        :return: self
+        Returns
+        -------
 
         """
         cf = self.cf
@@ -302,7 +423,7 @@ class Sepsm(object):
 
         for ax in grid:
             ax.set_xticks(range(len(mf))[::2])
-            ax.set_xticklabels(mf[::2])
+            ax.set_xticklabels([int(x) for x in mf[::2]])
             ax.set_yticks(range(len(cf))[::3])
             ax.set_yticklabels(cf[::3])
 
@@ -318,16 +439,24 @@ class Sepsm(object):
         cbar.set_label_text(cbar_label)
 
         grid[0].set_ylabel(ylabel)
-        fig.text(0.5, 0.05, xlabel, ha='center', size=11)
+        fig.text(0.5, 0.0, xlabel, ha='center', size=17.6)
         return self
 
     def plot_filtered_envs(self, envs, fs, axes=None):
         """Plot the filtered envelopes.
 
-        :envs: ndarray, list of envelopes.
-        :fs: int, sampling frequency of the envelopes
-        :cf: list, center frequency of each filter.
-        :return: self
+        Parameters
+        ----------
+        envs : ndarray
+            List of envelope signals.
+        fs : int
+            Sampling frequency.
+        axes : axes, (Default value = None)
+             Matplotlib axes where to place the plot. Defaults to creating a
+             new figure is `None`.
+
+        Returns
+        -------
 
         """
         mf = self.modf

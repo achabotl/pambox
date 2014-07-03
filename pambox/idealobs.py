@@ -12,8 +12,7 @@ from scipy.special import erfc
 
 
 class IdealObs(object):
-    """
-    Statistical ideal observer.
+    """Statistical ideal observer.
 
     Converts input values (usually SNRenv) to a percentage.
 
@@ -54,11 +53,11 @@ class IdealObs(object):
         self.m = m
 
     def get_params(self):
-        """
-        Returns the parameters of the ideal observer as dict.
+        """Returns the parameters of the ideal observer as dict.
 
         Parameters
         ----------
+        None
 
         Returns
         -------
@@ -68,7 +67,8 @@ class IdealObs(object):
         return {'k': self.k, 'q': self.q, 'sigma_s': self.sigma_s, 'm': self.m}
 
     def fit_obs(self, snrenv, pcdata, sigma_s=None, m=None):
-        """
+        """Finds the parameters of the ideal observer.
+
         Finds the paramaters `k`, `q`, and `sigma_s`, that minimize the
         least-square error between a data set and transformed SNRenv.
 
@@ -77,7 +77,6 @@ class IdealObs(object):
 
         It is also possible to fix the `sigma_s` parameter by passing it as
         an optional argument. Otherwise, it is optimized with `k` and `q`.
-
 
         Parameters
         ----------
@@ -94,6 +93,7 @@ class IdealObs(object):
 
         Returns
         -------
+        self
 
         """
 
@@ -127,8 +127,7 @@ class IdealObs(object):
 
     @staticmethod
     def _snrenv_to_pc(snrenv, k=None, q=None, sigma_s=None, m=None):
-        """
-        Converts SNRenv values to percent correct using an ideal observer.
+        """Converts SNRenv values to percent correct using an ideal observer.
 
         Parameters
         ----------
@@ -158,9 +157,7 @@ class IdealObs(object):
         return norm.cdf(dp, un, np.sqrt(sigma_s ** 2 + sn ** 2)) * 100
 
     def snrenv_to_pc(self, snrenv):
-        """
-        Converts SNRenv values to a percent correct using the parameters of
-        the ideal observer.
+        """Converts SNRenv values to a percent correct.
 
         Parameters
         ----------
@@ -173,15 +170,13 @@ class IdealObs(object):
             Array of intelligibility percentage values, of the same shape as
             `snrenv`.
 
-        
         """
         snrenv = np.asarray(snrenv)
         return self._snrenv_to_pc(snrenv, self.k, self.q, self.sigma_s, self.m)
 
 
 def psy_fn(x, mu=0., sigma=1.):
-    """
-    Calculates a psychometric function with a given mean and variance.
+    """Calculates a psychometric function with a given mean and variance.
 
     Parameters
     ----------

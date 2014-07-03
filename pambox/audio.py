@@ -7,8 +7,7 @@ import pyaudio
 
 
 def play(x, fs=44100, normalize=True):
-    """
-    Plays sound.
+    """Plays sound.
 
     Parameters
     ----------
@@ -31,14 +30,25 @@ def play(x, fs=44100, normalize=True):
 
 
 def _play_sound(x, fs=44100, channels=1, output=1, format_=pyaudio.paFloat32):
-    """
-    Wrapper around PyAudio to play numpy arrays.
+    """Wrapper around PyAudio to play numpy arrays.
 
-    :param x: ndarray, signal
-    :param fs: int, sampling frequency
-    :param channels: int, number of channels
-    :param output: int, ID of the soundcard where to play back.
-    :param format_: pyaudio Format object, Format of the signal data.
+    Parameters
+    ----------
+    x : ndarray
+        Signal
+    fs : int
+        Sampling frequency, default is 44100 Hz.
+    channels : int
+        Number of channels, default is 1.
+    output : int
+        ID of the soundcard where to play back. Default is 1.
+    format_: pyaudio Format object
+        Format of the signal data, the default is `pyaudio.paFloat32`.
+
+    Returns
+    -------
+    None
+
     """
     p = pyaudio.PyAudio()
     stream = p.open(format=format_, channels=channels, rate=fs,

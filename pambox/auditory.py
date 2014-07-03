@@ -13,22 +13,39 @@ FS = np.asarray([22050.])
 
 
 def erbbw(fc):
-    """Auditory filter bandwith
+    """Bandwith or an ERB.
 
-    :fc: @todo
-    :returns: @todo
+    Parameters
+    ----------
+    fc : ndarray
+        Center frequency, or center frequencies, of the filter.
 
+    Returns
+    -------
+    ndarray
+        Equivalent rectangular bandwidth of the filter(s).
     """
     # In Hz, according to Glasberg and Moore (1990)
     return 24.7 + fc / 9.265
 
 
-def lowpass_env_filtering(x, cutoff=150., n=1, fs=FS):
-    """Low-pass filters signal
+def lowpass_env_filtering(x, cutoff=150., n=1, fs=22050):
+    """Low-pass filters a signal using a Butterworth filter.
 
-    :x: @todo
-    :cutoff: @todo
-    :returns: @todo
+    Parameters
+    ----------
+    x : ndarray
+    cutoff : float, optional
+        Cut-off frequency of the low-pass filter, in Hz. The default is 150 Hz.
+    n : int, optional
+        Order of the low-pass filter. The default is 1.
+    fs : float, optional
+        Sampling frequency of the signal to filter. The default is 22050 Hz.
+
+    Returns
+    -------
+    ndarray
+        Low-pass filtered signal.
 
     """
 
@@ -37,26 +54,30 @@ def lowpass_env_filtering(x, cutoff=150., n=1, fs=FS):
 
 
 class GammatoneFilterbank():
-    """
-    GammatoneFilterbank
+    """Gammatone Filterbank
 
-    Input:
-        fs ... float, sampling frequency
-        cf ... ndarray, center frequencies
+    Parameters
+    ----------
+    cf : array_like
+        Center frequencies of the filterbank.
+    fs : float
+        Sampling frequency of the signals to filter.
+    b : float
+        beta of the gammatone filters. The default is `b` = 1.019.
+    order : int
+        Order. The default value is 1.
+    q : float
+        Q-value of the ERB. The default value is 9.26449.
+    min_bw : float
+        Minimum bandwidth of an ERB.
+
+    References
+    ----------
 
     """
 
     def __init__(self, cf, fs, b=1.019, order=1, q=9.26449,
                  min_bw=24.7):
-        """
-
-        :cf: center frequencies of the filterbank
-        :fs: sampling frequency
-        :b: beta of the gammatone filter
-        :order:
-        :q: Q-value of the ERB
-        :min_bw: minimum bandwidth of an ERB
-        """
         try:
             len(cf)
         except TypeError:
@@ -113,11 +134,17 @@ class GammatoneFilterbank():
             b0 * allfilts, b1, b2, gain
 
     def filter(self, x):
-        """
-        Filters a signal along its last dimension.
+        """Filters a signal along its last dimension.
 
-        :param x: ndarray
-        :return:
+        Parameters
+        ----------
+        x : ndarray
+            Signal to filter.
+
+        Returns
+        -------
+        ndarray
+            Filtered signals
         """
 
         a0, a11, a12, a13, a14, a2 = self.a0, self.a11, self.a12, self.a13, \

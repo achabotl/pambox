@@ -11,44 +11,63 @@ except AttributeError:
 
 
 def dbspl(x, ac=False, offset=100.0, axis=-1):
-    """RMS value of signal (in dB)
+    """Computes RMS value of signal in dB.
 
-    DBSPL(x) computes the SPL (sound pressure level) of the input signal
-    measured in dB, using the convention that a pure tone at 100 dB SPL has
-    an RMS value of 1.
+    By default, a signal with an RMS value of 1 will have a level of 100 dB
+    SPL.
 
-    DBSPL(x, ac=True) does the same, but considers only the AC component of the
-    signal (i.e. the mean is removed).
+    Parameters
+    ----------
+    x : array_like
+        Signal for which to caculate the sound-pressure level.
+    ac : bool
+        Consider only the AC component of the signal, i.e. the mean is
+        removed (Default value =  False)
+    offset : float
+        Reference to convert between RMS and dB SPL.  (Default value = 100.0)
+    axis : int
+        Axis on which to compute the SPL value (Default value = -1, last axis)
 
-    See also: setdbspl
+    Returns
+    -------
+    ndarray
+        Sound-pressure levels.
 
-    References:
-      Auditory Modeling Toolbox, Peter L. Soendergaard
+    References
+    ----------
+    .. [1] Auditory Modeling Toolbox, Peter L. Soendergaard
       B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
       Press, 5th edition, 2003.
 
-
-    :x: arraly_like, signal ac: bool, consider only the AC component of the
-    :signal. offset: float, reference to convert between RMS and dB SPL.
+    See also
+    --------
+    `setdbspl`, `rms`.
     """
     x = np.asarray(x)
     return 20. * np.log10(rms(x, ac=ac, axis=axis)) + float(offset)
 
 
 def setdbspl(x, lvl, ac=False, offset=100.0):
-    """Sets the level of signal in dB SPL.
+    """Sets the level of signal in dB SPL, along its last dimension.
 
-    :x: array_like
+    Parameters
+    ----------
+    x : array_like
         Signal.
-    :lvl: float
-        Level, in dB SPL at which to set the signal. The level is set in
-        reference to
-    :ac: bool, optional
+    lvl : float
+        Level, in dB SPL, at which to set the signal.
+    ac : bool
         Calculate the AC RMS power of the signal by default (`ac=True`),
         e.g. the mean is removed. If  `False`, considers the non-RMS power.
-    :offset: float, optional
+        (Default value = False)
+    offset : float
         Level, in dB SPL, corresponding to an RMS of 1. By default, an RMS of
-        1 corresponds to 100 dB SPL.
+        1 corresponds to 100 dB SPL, i.e. the default is 100.
+
+    Returns
+    -------
+    ndarray
+        Signal of the same dimension as the original.
     """
     axis = -1
     x = np.asarray(x)
@@ -57,15 +76,22 @@ def setdbspl(x, lvl, ac=False, offset=100.0):
 
 
 def rms(x, ac=False, axis=-1):
-    """RMS value of a signal.
+    """Calculates the RMS value of a signal.
 
-    :x: signal
-    :ac: bool, default: False
-        Consider only the AC component of the signalG
-    :axis: int
+    Parameters
+    ----------
+    x : array_like
+        Signal.
+    ac : bool
+        Consider only the AC component of the signal. (Default value = False)
+    axis :
         Axis on which to calculate the RMS value. The default is to calculate
         the RMS on the last dimensions, i.e. axis = -1.
-    :rms: rms value
+
+    Returns
+    -------
+    ndarray
+        RMS value of the signal.
 
     """
     x = np.asarray(x)
@@ -79,8 +105,7 @@ def rms(x, ac=False, axis=-1):
 
 
 def hilbert(x, N=None, axis=-1):
-    """
-    Compute the analytic signal, using the Hilbert transform.
+    """Computes the analytic signal using the Hilbert transform.
 
     The transformation is done along the last axis by default.
 
@@ -116,7 +141,6 @@ def hilbert(x, N=None, axis=-1):
     out, turning the real-valued signal into a complex signal.  The Hilbert
     transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
     original signal from ``np.real(hilbert(x))``.
-
     References
     ----------
     .. [1] Wikipedia, "Analytic signal".
@@ -159,7 +183,6 @@ def hilbert(x, N=None, axis=-1):
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
     THE POSSIBILITY OF SUCH DAMAGE.
-
     """
     x = np.asarray(x)
     if np.iscomplexobj(x):
@@ -187,11 +210,20 @@ def hilbert(x, N=None, axis=-1):
 
 
 def hilbert_envelope(signal, axis=None):
-    """Calculate the hilbert envelope of a signal
+    """Calculates the Hilbert envelope of a signal.
 
-    :param signal: array_like, signal on which to calculate the hilbert
-    envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
-    :returns: ndarray of the same shape as the input.
+    Parameters
+    ----------
+    signal :
+        array_like, signal on which to calculate the hilbert
+        envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
+    axis :
+         (Default value = None)
+
+    Returns
+    -------
+    ndarray
+
     """
     signal = np.asarray(signal)
 
@@ -206,13 +238,42 @@ def hilbert_envelope(signal, axis=None):
 
 
 def next_pow_2(x):
-    """Calculate the next power of 2."""
+    """Calculates the next power of 2 of a number.
+
+    Parameters
+    ----------
+    x : float
+        Number for which to calculate the next power of 2.
+
+    Returns
+    -------
+    int
+
+    """
     return int(pow(2, np.ceil(np.log2(x))))
 
 
 def fftfilt(b, x, *n):
-    """Filter the signal x with the FIR filter described by the
-    coefficients in b using the overlap-add method. If the FFT
+    """FIR filtering using the FFT and the overlap-add method.
+
+    Parameters
+    ----------
+    b : array_like
+        Coefficients of the FIR filter.
+    x : array_like
+        Signal to filter.
+    *n : int, optional.
+        Length of the FFT.
+
+    Returns
+    -------
+    ndarray
+        Filtered signal.
+
+    Notes
+    -----
+    Filter the signal x with the FIR filter described by the
+    coefficients in `b` using the overlap-add method. If the FFT
     length n is not specified, it and the overlap-add block length
     are selected so as to minimize the computational cost of
     the filtering operation.
@@ -277,18 +338,27 @@ def fftfilt(b, x, *n):
 
 
 def write_wav(fname, fs, x):
-    """Write floating point numpy array to 16 bit wavfile.
+    """Writes floating point numpy array to 16 bit wavfile.
 
-    Convenience wrapper around the scipy.io.wavfile.write function. The signal
-    so that its maximum value is one.
+    Convenience wrapper around the scipy.io.wavfile.write function. The
+    signal is scaled such that its maximum value is one.
 
     The '.wav' extension is added to the file if it is not part of the
     filename string.
 
-    :fname: string, filename with path.
-    :fs: sampling frequency
-    :x: array_like, N_channel x Length, signal
-    :return: nothing
+    Parameters
+    ----------
+    fname : string
+        Filename with path.
+    fs : int
+        Sampling frequency.
+    x : array_like
+        Signal with the shape N_channels x Length
+
+    Returns
+    -------
+    None
+
     """
     # Make sure that the channels are the second dimension
     fs = np.int(fs)
@@ -304,19 +374,26 @@ def write_wav(fname, fs, x):
         scaled = x
     wavfile.write(fname, fs, scaled.astype('int16'))
 
+
 def make_same_length(a, b, extend_first=True):
-    """
-    Makes two arrays the same length along the last dimension.
+    """Makes two arrays the same length along the last dimension.
 
     Default behavior is to zero-pad the shorted array. It is also possible to
     cut the second array to the same length as the first.
 
-    :param a: array_like, first array
-    :param b:  array_like, second array.
-    :param extend_first: bool, optional. Zero-pad the first array if it is the
-    shortest if `True`. Otherwise, cut array `b` to the length of `a`.
+    Parameters
+    ----------
+    a,b : array_like
+        Arrays to make of the same length.
+    extend_first : bool, optional
+        Zero-pad the first array if it is the shortest if `True`. Otherwise,
+        cut array `b` to the length of `a`. (Default value = True)
 
-    :return: tuple of `ndarrays`, both arrays with same shape length.
+    Returns
+    -------
+    tuple of ndarrays
+        Two arrays with the same length along the last dimension.
+
     """
     a = np.asarray(a)
     b = np.asarray(b)
@@ -334,11 +411,18 @@ def make_same_length(a, b, extend_first=True):
 
 
 def add_signals(a, b):
-    """Add two vectors of different lengths by zero padding the shortest one.
+    """Adds two vectors of different lengths by zero padding the shortest one.
 
-    :a: vector
-    :b: vector
-    :return: vector, of the same length as the longest of the two inputs.
+    Parameters
+    ----------
+    a,b : ndarray
+        Arrays to make of the same length.
+
+    Returns
+    -------
+    ndarray
+        Sum of the signal, of the same length as the longest of the two inputs.
+
     """
     if len(a) < len(b):
         c = b.copy()
@@ -350,18 +434,24 @@ def add_signals(a, b):
 
 
 def int2srt(x, y, srt=50.0):
-    """Find intersection using linear interpolation.
+    """Finds intersection using linear interpolation.
 
     This function finds the x values at which a curve intersects with a
     constant value.
 
-    :x: x values
-    :y: y values
-    :srt: value of `y` at which the interception is calculated.
+    Parameters
+    ----------
+    x : array_like
+        "x" values
+    y : array_like
+        "y" values
+    srt : float
+         Value of `y` at which the interception is calculated. (Default value
+         = 50.0)
 
-    Raises
-    ------
-    ValueError: inputs of different lenghts.
+    Returns
+    -------
+    float
 
     """
     x = np.asarray(x)
@@ -380,20 +470,3 @@ def int2srt(x, y, srt=50.0):
     else:
         srt = None
     return srt
-
-
-def add_signals(a, b):
-    """Add two vectors of different lengths by zero padding the shortest one.
-
-    :a: 1d array, first vector.
-    :b: 1d array, second vector.
-
-    :return: ndarray, sum of both vectors.
-    """
-    if len(a) < len(b):
-        c = b.copy()
-        c[:len(a)] += a
-    else:
-        c = a.copy()
-        c[:len(b)] += b
-    return c
