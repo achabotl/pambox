@@ -13,10 +13,17 @@ def st_tmr(signal, noise, fs):
     Schoenmaker, E and van de Par, S. "Auditory streaming in cocktail parties:
     Better-ear versus binaural processing," AIA-DAGA 2013, Merano.
 
-    :signal: ndarray, mono or stereo speech
-    :noise: @todo
-    :fs: int, sampling frequency
-    :returns: float, TMR distribution, in dB
+    Parameters
+    ----------
+    signal, noise : ndarray,
+        Mono or stereo speech
+    fs : int
+        Sampling frequency
+
+    Returns
+    -------
+    float
+        TMR distribution, in dB.
 
     """
     def stft(x, wnd, framesz, len_overlap):
