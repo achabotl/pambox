@@ -6,11 +6,17 @@ from numpy import log10, sum, asarray, zeros, ones
 
 
 class Sii(object):
-    """
-    Speech intelligibility index model.
+    """Speech intelligibility index model.
 
-    Set the hearing threshold and the type of band importance function.
+    Parameters
+    ----------
+    T : array_like, optional, (Default is 0)
+        Hearing threshold. 18 values in dB HL.
+    I : int, optional, (Default is 0, normal speech)
+        Band importance function selector. See Notes section below.
 
+    Notes
+    -----
     Arguments for 'I':
         A scalar having a value of either 0, 1, 2, 3, 4, 5, or 6. The
         Band-importance functions associated with each scalar are
@@ -24,8 +30,8 @@ class Sii(object):
                Table B.2)
             6: SPIN (as specified in Table B.2)
 
-    :param T: array_like, hearing threshold. 18 values in dB HL
-    :param I: int, band importance function selector
+    References
+    ----------
 
     """
 
@@ -93,6 +99,18 @@ class Sii(object):
                            1.13,   5.07,   11.39,  20.72]).reshape(-1, 4)
 
     def _band_importance(self, test):
+        """Get values of the band importance function.
+
+        Parameters
+        ----------
+        test : int
+            Number of the band importance function to select.
+
+        Returns
+        -------
+        ndarray
+            Band importance function.
+        """
 
         if test not in range(7):
             raise ValueError("Band Importance function must be integer \
@@ -100,13 +118,19 @@ class Sii(object):
         return self.BIArr[:, test].T
 
     def _speech_spectrum(self, vcl_effort):
-        """Return the standard speech spectrum from Table 3.
+        """Returns the standard speech spectrum from Table 3.
 
         The spectrum depends on the vocal effort, possible values are 'normal',
         'raised', 'loud', 'shout'.
 
-        :vcl_effort: string, vocal effort
-        :returns:
+        Parameters
+        ----------
+        vcl_effort : string,
+            Vocal effort
+
+        Returns
+        -------
+        ndarray
 
         """
         efforts = {'normal': 0, 'raised': 1, 'loud': 2, 'shout': 3}
@@ -115,10 +139,19 @@ class Sii(object):
         return self.Ei[:, efforts[vcl_effort]]
 
     def predict(self, E, N=-50 * ones(18)):
-        """o
+        """Predicts intelligibility.
 
-        :param E: array_like, speech level
-        :param N: array_like, noise level
+        Parameters
+        ----------
+        E: array_like
+            Speech level in dB SPL.
+        N: array_like, optional, (Default is -50 dB SPL)
+            Noise level in dB SPL.
+
+        Returns
+        -------
+        ndarray
+            Predicted SII value.
         """
 
         E[np.isnan(E)] = 0
