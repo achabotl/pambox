@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
-from itertools import izip
 
 import numpy as np
 from numpy import log10, sum, asarray, zeros, ones

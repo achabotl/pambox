@@ -3,12 +3,13 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import scipy as sp
-from itertools import izip
+from six.moves import zip
 from scipy.io import wavfile
 from pambox import general
 from pambox.general import fftfilt
+
 try:
-    np.use_fastnumpy
+    _ = np.use_fastnumpy
     from numpy.fft import fft, ifft, rfft, irfft
 except AttributeError:
     from scipy.fftpack import fft, ifft
@@ -28,11 +29,11 @@ def mix_noise(clean, noise, sent_level, snr=None):
     """
 
     # Pick a random section of the noise
-    N = len(clean)
-    nNoise = len(noise)
-    if nNoise > N:
-        startIdx = np.random.randint(nNoise - N)
-        noise = noise[startIdx:startIdx + N]
+    n_clean = len(clean)
+    n_noise = len(noise)
+    if n_noise > n_clean:
+        start_idx = np.random.randint(n_noise - n_clean)
+        noise = noise[start_idx:start_idx + n_clean]
 
     if snr is not None:
         # Get speech level and set noise level accordingly
@@ -54,8 +55,8 @@ def phase_jitter(x, a):
     :returns: ndarray, processed signal
 
     """
-    N = len(x)
-    return x * np.cos(2 * np.pi * a * np.random.random_sample(N))
+    n = len(x)
+    return x * np.cos(2 * np.pi * a * np.random.random_sample(n))
 
 
 def reverb(x, rt):
@@ -69,7 +70,7 @@ def reverb(x, rt):
     pass
 
 
-def spec_sub(x, noise, factor, w=1024/2., padz=1024/2., shift_p=0.5):
+def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
     """Apply spectral subtraction to a signal.
 
     Typical values of the parameters, for a sampling frequency of 44100 Hz
@@ -191,7 +192,7 @@ def overlap_and_add(powers, phases, len_window, shift_size):
     return signal
 
 
-class Westermann_crm(object):
+class WestermannCrm(object):
     """Applies HRTF and BRIR for a given target and masker distance."""
 
     def __init__(self, fs=40000):
@@ -228,7 +229,8 @@ class Westermann_crm(object):
             delays[k] = np.abs(x).argmax()
         return delays
 
-    def _normalize_fname(self, d):
+    @staticmethod
+    def _normalize_fname(d):
         if d > 1:
             d_str = str('%d' % d)
         else:
@@ -282,7 +284,7 @@ class Westermann_crm(object):
             m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
 
         out_m = np.asarray([fftfilt(b, chan) for b, chan
-                            in izip(self.brir[mdist], m)])
+                            in zip(self.brir[mdist], m)])
 
         if align:
             i_x, i_m = self._calc_aligned_idx(tdist, mdist)
@@ -323,13 +325,14 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     :return: ndarray, noise of the same length as the input.
     """
     x = np.asarray(x)
-    N_orig = x.shape[-1]
-    N = general.next_pow_2(N_orig)
-    X = rfft(x, general.next_pow_2(N))
+    n_x = x.shape[-1]
+    n_fft = general.next_pow_2(n_x)
+    X = rfft(x, general.next_pow_2(n_fft))
     # Randomize phase.
-    XN = np.abs(X) * np.exp(2 * np.pi * 1j * np.random.random(X.shape[-1]))
-    n = np.real(irfft(XN, N))
-    out = n[:N_orig]
+    noise_mag = np.abs(X) * np.exp(
+        2 * np.pi * 1j * np.random.random(X.shape[-1]))
+    noise = np.real(irfft(noise_mag, n_fft))
+    out = noise[:n_x]
 
     if keep_env:
         env = np.abs(sp.signal.hilbert(x))

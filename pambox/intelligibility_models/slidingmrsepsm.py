@@ -1,11 +1,8 @@
 from __future__ import division, print_function, absolute_import
-from itertools import izip
-from collections import namedtuple
+from six.moves import zip
 import numpy as np
-import numba
 from pambox.intelligibility_models.mrsepsm import MrSepsm
 from pambox import filterbank, general, auditory
-
 
 
 class SlidingMrSepsm(MrSepsm):

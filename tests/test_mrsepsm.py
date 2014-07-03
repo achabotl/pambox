@@ -3,7 +3,7 @@ from __future__ import division, print_function, absolute_import
 import pytest
 from pambox.intelligibility_models.mrsepsm import MrSepsm
 import scipy.io as sio
-import numpy
+import numpy as np
 from numpy.testing import assert_allclose
 from tests import __DATA_ROOT__
 from itertools import izip
@@ -40,8 +40,11 @@ def test_mr_snr_env(mr, mat):
     """Test calculation of SNRenv for a given channel
     """
     mat = mat
-    od_mix = numpy.load(__DATA_ROOT__ + '/test_mr_sepsm_mr_snr_env_mix')
-    od_noise = numpy.load(__DATA_ROOT__ + '/test_mr_sepsm_mr_snr_env_noise')
+    mat_mix = sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_mr_snr_env_mix.mat')
+    mat_noise = sio.loadmat(__DATA_ROOT__ +
+                            '/test_mr_sepsm_mr_snr_env_noise.mat')
+    od_mix = np.ma.MaskedArray(mat_mix['data'], mat_mix['mask'])
+    od_noise = np.ma.MaskedArray(mat_noise['data'], mat_noise['mask'])
     time_av_snr_env, exc_ptns, mr_snr_env = mr._mr_snr_env(od_mix,
                                                            od_noise)
     assert_allclose(time_av_snr_env, mat['timeAvg_SNRenvs'])
