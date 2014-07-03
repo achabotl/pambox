@@ -19,12 +19,22 @@ except AttributeError:
 def mix_noise(clean, noise, sent_level, snr=None):
     """Mix a signal signal noise at a given signal-to-noise ratio.
 
-    :x: ndarray, clean signal.
-    :noise: ndarray, noise signal.
-    :snr: float, signal-to-noise ratio. If ignored, no noise is mixed, i.e.
-          clean == mix.
-    :returns: tuple, returns the clean signal, the mixture, and the noise
-              alone.
+    Parameters
+    ----------
+    clean : ndarray
+        Clean signal.
+    noise : ndarray
+        Noise signal.
+    sent_level : float
+        Sentence level, in dB SPL.
+    snr :
+        Signal-to-noise ratio at which to mix the signals, in dB. If snr is
+        `None`,  no noise is mixed with the signal (Default value = None)
+
+    Returns
+    -------
+    tuple of ndarrays
+        Returns the clean signal, the mixture, and the noise.
 
     """
 
@@ -37,8 +47,8 @@ def mix_noise(clean, noise, sent_level, snr=None):
 
     if snr is not None:
         # Get speech level and set noise level accordingly
-        #    clean_level = general.dbspl(clean)
-        #    noise = general.setdbspl(noise, clean_level - snr)
+        # clean_level = general.dbspl(clean)
+        # noise = general.setdbspl(noise, clean_level - snr)
         noise = noise / general.rms(noise) * 10 ** ((sent_level - snr) / 20)
         mix = clean + noise
     else:
@@ -48,11 +58,30 @@ def mix_noise(clean, noise, sent_level, snr=None):
 
 
 def phase_jitter(x, a):
-    """Apply phase jitter to a signal.
+    """
+    Apply phase jitter to a signal.
 
-    :x: ndarray, signal.
-    :a: float, phase jitter parameter, between 0 and 1.
-    :returns: ndarray, processed signal
+    The expression of phase jitter is:
+
+    .. math:: y(t) = s(t) * cos(\Phi(t)),
+
+    where :math:`\Phi(t)` is a random process uniformly distributed over
+    :math:`[0, 2\pi\alpha]`. The effect of the jitter when \alpha is 0.5 or 1
+    is to completely destroy the carrier signal, effictively yielding
+    modulated white noise.
+
+    Parameters
+    ----------
+    x : ndarray
+       Signal
+    a : float
+        Phase jitter parameter, typically between 0 and 1, but it can be
+        anything.
+
+    Returns
+    -------
+    ndarray
+        Processed signal of the same dimension as the input signal.
 
     """
     n = len(x)
@@ -60,34 +89,55 @@ def phase_jitter(x, a):
 
 
 def reverb(x, rt):
-    """@todo: Docstring for reverb.
+    """
+    Applies reverberation to a signal.
 
-    :x: @todo
-    :rt: @todo
-    :returns: @todo
+    Parameters
+    ----------
+    x : ndarray
+       Input signal.
+    rt : float
+        Reverberation time
+        
+
+    Returns
+    -------
+    ndarray
+        Processed signal.
 
     """
     pass
 
 
 def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
-    """Apply spectral subtraction to a signal.
+    """
+    Apply spectral subtraction to a signal.
+    
+    The defaul values of the parameters are typical for a sampling frequency of
+    44100 Hz. Note that (W+padz) is the final frame window and hence the fft
+    length (it is normally chose as a power of 2).
 
-    Typical values of the parameters, for a sampling frequency of 44100 Hz
-    W = 1024
-    padz = 1024; %zero padding (pad with padz/2 from the left and padz/2 from
-    the right )Note that (W+padz) is the final frame window and hence the fft
-    length (it is normally chose as a power of 2)
-    shift_p = 0.5 # %Shift percentage is 50%
+    Parameters
+    ----------
+    x : ndarray
+        Input signal
+    noise :
+        Input noise signal
+    factor : float
+        Noise subtraction factor, must be larger than 0.
+    w : int
+        Frame length, in samples. (Default value = 1024 / 2.)
+    padz : int
+        Zero padding (pad with padz/2 from the left and the right) (Default
+        value = 1024 / 2.)
+    shift_p : float
+         Shift percentage (overlap) between each window, in fraction of the
+         window size (Default value = 0.5)
 
-    :x: ndarray, signal
-    :noise: ndarray, noise
-    :factor: float, the over-subtraction factor
-    :w: int, frame length
-    :padz: int, zero padding (pad with padz/2 from the left and the right)
-    :shift_p: float, shift percentage (overlap)
-    :returns: tuple of ndarrays, estimate of clean signal and estimate of
-              noisy signal.
+    Returns
+    -------
+    tuple of ndarrays
+        Estimate of clean signal and estimate of noisy signal.
 
     """
     wnd = np.hanning(w + 2)  # create hanning window with length = W
@@ -122,13 +172,13 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
     # signal:
     Y = fft(y[0])
-    #YY = Y(1:round(end/2)+1,:); # Half window (exploit the symmetry)
+    # YY = Y(1:round(end/2)+1,:); # Half window (exploit the symmetry)
     YY = Y[:, :(len_segment / 2 + 1)]  # Half window (exploit the symmetry)
     YPhase = np.angle(YY)  # Phase
     Y1 = np.abs(YY)  # Spectrum
     Y2 = Y1 ** 2  # Power Spectrum
 
-    #  noise:
+    # noise:
     Y_N = fft(y[1])
     YY_N = Y_N[:, :(len_segment / 2 + 1)]  # Half window (exploit the symmetry)
     Y_NPhase = np.angle(YY_N)  # Phase
@@ -139,10 +189,10 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
     # spectral density in the frame:
     P_N = Y_N2.mean(axis=-1)
 
-    Y_hat = Y2 - factor * P_N[:, np.newaxis]     # subtraction
+    Y_hat = Y2 - factor * P_N[:, np.newaxis]  # subtraction
     Y_hat = np.maximum(Y_hat, 0)  # Make the minima equal zero
     PN_hat = Y_N2 - factor * P_N[:, np.newaxis]  # subtraction for noise alone
-    #PN_hat = np.maximum(PN_hat, 0)
+    # PN_hat = np.maximum(PN_hat, 0)
     PN_hat[Y_hat == 0] = 0
 
     Y_hat[0:2, :] = 0
@@ -157,14 +207,27 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
 
 def overlap_and_add(powers, phases, len_window, shift_size):
-    """Reconstruct a signal with the overlap and add method
+    """
+    Reconstruct a signal with the overlap and add method.
+    
 
-    :powers: array-like,
-    :phases: array-like,
-    :len_window: int, window length
-    :shift_size: int, shift length. For non overlapping signals, in would
-    equal len_frame. For 50% overlapping signals, it would be len_frame/2.
-    :returns: array-like, reconstructed time-domain signal
+    Parameters
+    ----------
+    powers : ndarray
+        Magnitude of the power spectrum of the signal to reconstruct.
+    phases : ndarray
+        Phase of the signal to reconstruct.
+    len_window : int
+        Frame length, in samples.
+    shift_size : int
+        Shift length. For non overlapping signals, in would equal `len_window`.
+        For 50% overlapping signals, it would be `len_window/2`.
+        
+
+    Returns
+    -------
+    ndarray
+        Reconstructed time-domain signal.
 
     """
     len_window = int(len_window)
@@ -196,17 +259,24 @@ class WestermannCrm(object):
     """Applies HRTF and BRIR for a given target and masker distance."""
 
     def __init__(self, fs=40000):
+        """
+
+        Parameters
+        ----------
+        fs : int
+             Samping frequenc of the process. (Default value = 40000)
+
+        Returns
+        -------
+
+        """
         self.dist = np.asarray([0.5, 2, 5, 10])
         self.fs = fs
         self.brir = self._load_brirs()
         self.delays = self._find_delay()
 
     def _load_brirs(self):
-        """
-        Loads BRIRs from file.
-
-        :return: dict, BRIRs
-        """
+        """Loads BRIRs from file."""
         brirs = {}
         for d in self.dist:
             fname = '../stimuli/crm/brirs_{fs}/aud{d_str}m.wav'.format(
@@ -218,11 +288,7 @@ class WestermannCrm(object):
         return brirs
 
     def _find_delay(self):
-        """
-        Calculates the delay of the direct sound, in samples.
-
-        :return: dict, delay in samples for each BRIR.
-        """
+        """Calculates the delay of the direct sound, in samples."""
         delays = {}
         for k, v in self.brir.iteritems():
             x = np.mean(v, axis=0)
@@ -231,6 +297,17 @@ class WestermannCrm(object):
 
     @staticmethod
     def _normalize_fname(d):
+        """
+
+        Parameters
+        ----------
+        d : float
+            
+
+        Returns
+        -------
+
+        """
         if d > 1:
             d_str = str('%d' % d)
         else:
@@ -238,7 +315,22 @@ class WestermannCrm(object):
         return d_str
 
     def _load_eqfilt(self, tdist, mdist):
-        # Load the equalization filter
+        """
+        Returns the equalization filter for the pair of target and masker.
+
+        Parameters
+        ----------
+        tdist : float
+            Target distance in meters. Must be in the set (0.5, 2, 5, 10).
+        mdist :
+            Masker distance in meters. Must be in the set (0.5, 2, 5, 10).
+
+        Returns
+        -------
+        ndarray
+            Equalization filter.
+
+        """
         eqfilt_name = 't{}m_m{}m.mat'.format(self._normalize_fname(tdist),
                                              self._normalize_fname(mdist))
         eqfilt_path = '../stimuli/crm/eqfilts_{}/{}'.format(self.fs,
@@ -250,28 +342,40 @@ class WestermannCrm(object):
         return eqfilt
 
     def apply(self, x, m, tdist, mdist, align=True):
-        """
-        Applies the "Westermann" distortion to a target and masker.
-
+        """Applies the "Westermann" distortion to a target and masker.
+        
         Applies the BRIR of the required distance to the target. If the
         target and masker are not co-located, the masker is equalized before
         applying the BRIR, so that both the target and masker will have the
         same average spectrum after the BRIR filtering.
-
+        
         By default, the delay introduced by the BRIR is compensated for,
         such that the maxiumum of the BRIR happen simulatenously.
 
-        :x: N array, mono clean speech signal
-        :m: N array, mono masker signal
-        :tdist: float, target distance, in meters
-        :mdist: float, masker distance, in meters
-        :align: bool, compensate for the delay in the BRIRs with distance (
-        default is `True`).
-        :returns: (2xN array, 2xN array), filtered signal and filterd masker
+        Parameters
+        ----------
+        x : ndarray
+            Mono clean speech signal of length `N`.
+        m : ndarray
+            Mono masker signal of length `N`.
+        tdist : float
+            Target distance, in meters.
+        mdist : float
+            Masker distance, in meters.
+        align : bool
+            Compensate for the delay in the BRIRs with distance  (default is
+            `True`).
 
+        Returns
+        -------
+        tuple of ndarray
+            Mixture and noise alone, processed by the BRIRs.
+        
         """
         if tdist not in self.dist or mdist not in self.dist:
             raise ValueError('The distance values are incorrect.')
+
+        n_orig = x.shape[-1]
 
         # Filter target with BRIR only
         out_x = np.asarray([fftfilt(b, x) for b in self.brir[tdist]])
@@ -292,16 +396,24 @@ class WestermannCrm(object):
             i_x = 0
             i_m = 0
 
-        return out_x[:, i_x:], out_m[:, i_m:]
+        # Pad with zeros if necessary, so that the lengths stay the same
+        out_x, out_m = general.make_same_length(out_x[:, i_x:], out_m[:, i_m:])
+        return out_x, out_m
 
     def _calc_aligned_idx(self, tdist, mdist):
-        """
-        Calculates the index of the required delay to align the max of the
+        """Calculates the index of the required delay to align the max of the
         BRIRs
 
-        :param tdist: float, distance to target, in meters
-        :param mdist: float, distance to masker, in meters
-        :return: tuple, index of the target and masker.
+        Parameters
+        ----------
+        tdist :
+            float, distance to target, in meters
+        mdist :
+            float, distance to masker, in meters
+            :return: tuple, index of the target and masker.
+
+        Returns
+        -------
 
         """
         # location of earliest peak
@@ -318,11 +430,22 @@ class WestermannCrm(object):
 def noise_from_signal(x, fs=40000, keep_env=False):
     """Create a noise with same spectrum as the input signal.
 
-    :x: vector, speech signal
-    :fs: int, sampling frequency of the signal.
-    :keep_env: bool, apply the envelope of the original signal to the noise
-        (default: False).
-    :return: ndarray, noise of the same length as the input.
+    Parameters
+    ----------
+    x : array_like
+        Input signal.
+    fs : int
+         Sampling frequency of the input signal. (Default value = 40000)
+    keep_env : bool
+         Apply the envelope of the original signal to the noise. (Default
+         value = False)
+
+    Returns
+    -------
+    ndarray
+        Noise signal.
+
+    
     """
     x = np.asarray(x)
     n_x = x.shape[-1]

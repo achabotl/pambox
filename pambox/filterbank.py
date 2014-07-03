@@ -16,11 +16,22 @@ except AttributeError:
 
 def mod_filterbank(signal, fs, modf):
     """Implementation of the EPSM-filterbank.
+    
+    Parameters
+    ----------
+    signal : ndarray
+        Vemporal envelope of a signal
+        
+    fs : int
+        Sampling frequency of the signal.
+    modf : array_like
+        List of the center frequencies of the modulation filterbank.
 
-    :signal: ndarray, temporal envelope of a signal
-    :fs: int, sampling frequency
-    :returns: ndarray, integrated power spectrum at the output of each filter
-              ndarray, filtered time signals.
+    Returns
+    -------
+    tuple of ndarray
+        Integrated power spectrum at the output of each filter
+        Filtered time signals.
 
     """
     modf = np.asarray(modf)
@@ -86,12 +97,22 @@ def mod_filterbank(signal, fs, modf):
 
 
 def mfreqz(b, a=1, fs=22050.0):
-    """Plot the frequency and phase response.
-
-    :b:
-    :a:
+    """Plot the frequency and phase response of an FIR filter.
 
     From http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Parameters
+    ----------
+    b : float
+        Forward terms of the FIR filter.
+    a : float
+        Feedback terms of the FIR filter. (Default value = 1)
+    fs : float
+        Sampling frequency of the filter. (Default value = 22050.0)
+
+    Returns
+    -------
+    None
 
     """
     w, h = ss.freqz(b, a)
@@ -116,12 +137,18 @@ def mfreqz(b, a=1, fs=22050.0):
 
 
 def impz(b, a=1):
-    """Plot step and impulse response.
-
-    :b:
-    :a:
+    """Plot step and impulse response of an FIR filter.
+    
+    b : float
+        Forward terms of the FIR filter.
+    a : float
+        Feedback terms of the FIR filter. (Default value = 1)
 
     From http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Returns
+    -------
+    None
 
     """
     l = len(b)
@@ -145,13 +172,28 @@ def impz(b, a=1):
 
 def noctave_filtering(x, center_f, fs, width=3):
     """Rectangular nth-octave filtering.
-
+    
     :x: signal
     :center_f: ndarray, center frequencies, in Hz
     :width: width of the filters, default 3 for 1/3-octave
 
-    Returns:
-    :spec: nth-octave spectrum
+    Parameters
+    ----------
+    x : array_like
+        Input signal
+    center_f : array_like
+        List of the center frequencies of the filterbank.
+    fs : int
+        Sampling frequency of the input signal.
+    width : float
+         Width of the filters, in fraction of octave. The default value is 3,
+         therefore 1/3-octave.
+
+    Returns
+    -------
+    typle of ndarrays
+         Time signals at the output of the filterbank.
+         RMS power at the output of each filter.
 
     """
     # Use numpy's FFT because SciPy's version of rfft (2 real results per
@@ -184,14 +226,23 @@ def noctave_filtering(x, center_f, fs, width=3):
 
 def noctave_center_freq(lowf, highf, width=3):
     """Calculate exact center N-octave space center frequencies.
-
+    
     In practive, what is often desired is the "simplified" center frequencies,
     so this function is not of much use.
 
-    :lowf: low frequency Hz
-    :highf: high frequency Hz
-    :width: spacing, 3 for third-octave
-    :returns: @todo
+    Parameters
+    ----------
+    lowf : float
+        Lowest frequency.
+    highf : float
+        Highest frequency
+    width : float
+         Number of filters per octave. (Default value = 3)
+
+    Returns
+    -------
+    ndarray
+        List of center frequencies.
 
     """
     n_centers = np.log2(highf / lowf) * width + 1
