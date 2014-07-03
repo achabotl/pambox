@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 from numpy import pi, exp, sin, cos, sqrt, abs, ones
 import numpy as np
 import scipy as sp
@@ -23,18 +23,7 @@ def erbbw(fc):
     return 24.7 + fc / 9.265
 
 
-def gammatone_filtering(signal, center_f=CENTER_F, fs=FS):
-    """Filters a signal using a gammatone filterbank
-
-    :signal: @todo
-    :returns: @todo
-
-    """
-    b, a, _, _, _ = gammatone_make(fs, center_f)
-    return 2 * gammatone_apply(signal, b, a)
-
-
-def lowpass_env_filtering(x, cutoff=150., N=1, fs=FS):
+def lowpass_env_filtering(x, cutoff=150., n=1, fs=FS):
     """Low-pass filters signal
 
     :x: @todo
@@ -43,20 +32,21 @@ def lowpass_env_filtering(x, cutoff=150., N=1, fs=FS):
 
     """
 
-    b, a = sp.signal.butter(N=N, Wn=cutoff * 2. / fs, btype='lowpass')
+    b, a = sp.signal.butter(N=n, Wn=cutoff * 2. / fs, btype='lowpass')
     return sp.signal.lfilter(b, a, x)
 
 
 class GammatoneFilterbank():
-    '''
+    """
     GammatoneFilterbank
 
     Input:
         fs ... float, sampling frequency
         cf ... ndarray, center frequencies
 
-    '''
-    def __init__(self, cf, fs, b=1.019, order=1, Q=9.26449,
+    """
+
+    def __init__(self, cf, fs, b=1.019, order=1, q=9.26449,
                  min_bw=24.7):
         """
 
@@ -64,7 +54,7 @@ class GammatoneFilterbank():
         :fs: sampling frequency
         :b: beta of the gammatone filter
         :order:
-        :Q: Q-value of the ERB
+        :q: Q-value of the ERB
         :min_bw: minimum bandwidth of an ERB
         """
         try:
@@ -73,69 +63,78 @@ class GammatoneFilterbank():
             cf = [cf]
         cf = np.asarray(cf)
         self.fs = fs
-        T = 1 / self.fs
-        self.b, self.erb_order, self.EarQ, self.min_bw = b, order, Q, min_bw
-        erb = ((cf / Q) ** order + min_bw ** order) ** (
+        t = 1 / self.fs
+        self.b, self.erb_order, self.EarQ, self.min_bw = b, order, q, min_bw
+        erb = ((cf / q) ** order + min_bw ** order) ** (
             1 / order)
 
-        B = b * 2 * pi * erb
+        b = b * 2 * pi * erb
 
-        A0 = T
-        A2 = 0
-        B0 = 1
-        B1 = -2 * cos(2 * cf * pi * T) / exp(B * T)
-        B2 = exp(-2 * B * T)
+        a0 = t
+        a2 = 0
+        b0 = 1
+        b1 = -2 * cos(2 * cf * pi * t) / exp(b * t)
+        b2 = exp(-2 * b * t)
 
-        A11 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) + 2 * sqrt(
-            3 + 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
-        A12 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) - 2 * sqrt(
-            3 + 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
-        A13 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) + 2 * sqrt(
-            3 - 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
-        A14 = -(2 * T * cos(2 * cf * pi * T) / exp(B * T) - 2 * sqrt(
-            3 - 2 ** 1.5) * T * sin(2 * cf * pi * T) / exp(B * T)) / 2
+        a11 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) + 2 * sqrt(
+            3 + 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
+        a12 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) - 2 * sqrt(
+            3 + 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
+        a13 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) + 2 * sqrt(
+            3 - 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
+        a14 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) - 2 * sqrt(
+            3 - 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
 
         i = 1j
-        gain = abs((-2 * exp(4 * i * cf * pi * T) * T + \
-                    2 * exp(-(B * T) + 2 * i * cf * pi * T) * T * \
-                    (cos(2 * cf * pi * T) - sqrt(3 - 2 ** (3. / 2)) * \
-                     sin(2 * cf * pi * T))) * \
-                   (-2 * exp(4 * i * cf * pi * T) * T + \
-                    2 * exp(-(B * T) + 2 * i * cf * pi * T) * T * \
-                    (cos(2 * cf * pi * T) + sqrt(3 - 2 ** (3. / 2)) * \
-                     sin(2 * cf * pi * T))) * \
-                   (-2 * exp(4 * i * cf * pi * T) * T + \
-                    2 * exp(-(B * T) + 2 * i * cf * pi * T) * T * \
-                    (cos(2 * cf * pi * T) - \
-                     sqrt(3 + 2 ** (3. / 2)) * sin(2 * cf * pi * T))) * \
-                   (-2 * exp(4 * i * cf * pi * T) * T + 2 * exp(
-                       -(B * T) + 2 * i * cf * pi * T) * T * \
-                    (cos(2 * cf * pi * T) + sqrt(3 + 2 ** (3. / 2)) * sin(
-                        2 * cf * pi * T))) / \
-                   (-2 / exp(2 * B * T) - 2 * exp(4 * i * cf * pi * T) + \
-                    2 * (1 + exp(4 * i * cf * pi * T)) / exp(B * T)) ** 4)
+        gain = abs((-2 * exp(4 * i * cf * pi * t) * t +
+                    2 * exp(-(b * t) + 2 * i * cf * pi * t) * t *
+                    (cos(2 * cf * pi * t) - sqrt(3 - 2 ** (3. / 2)) *
+                     sin(2 * cf * pi * t))) *
+                   (-2 * exp(4 * i * cf * pi * t) * t +
+                    2 * exp(-(b * t) + 2 * i * cf * pi * t) * t *
+                    (cos(2 * cf * pi * t) + sqrt(3 - 2 ** (3. / 2)) *
+                     sin(2 * cf * pi * t))) *
+                   (-2 * exp(4 * i * cf * pi * t) * t +
+                    2 * exp(-(b * t) + 2 * i * cf * pi * t) * t *
+                    (cos(2 * cf * pi * t) -
+                     sqrt(3 + 2 ** (3. / 2)) * sin(2 * cf * pi * t))) *
+                   (-2 * exp(4 * i * cf * pi * t) * t + 2 * exp(
+                       -(b * t) + 2 * i * cf * pi * t) * t *
+                    (cos(2 * cf * pi * t) + sqrt(3 + 2 ** (3. / 2)) * sin(
+                        2 * cf * pi * t))) /
+                   (-2 / exp(2 * b * t) - 2 * exp(4 * i * cf * pi * t) +
+                    2 * (1 + exp(4 * i * cf * pi * t)) / exp(b * t)) ** 4)
 
         allfilts = ones(len(cf))
 
-        self.A0, self.A11, self.A12, self.A13, self.A14, self.A2, self.B0, self.B1, self.B2, self.gain = \
-            A0 * allfilts, A11, A12, A13, A14, A2 * allfilts, B0 * allfilts, B1, B2, gain
-
+        self.a0, self.a11, self.a12, self.a13, self.a14, self.a2, \
+            self.b0, self.b1, self.b2, self.gain = \
+            a0 * allfilts, a11, a12, a13, a14, a2 * allfilts, \
+            b0 * allfilts, b1, b2, gain
 
     def filter(self, x):
-        A0, A11, A12, A13, A14, A2, B0, B1, B2, gain = \
-            self.A0, self.A11, self.A12, self.A13, self.A14, self.A2, self.B0, self.B1, self.B2, self.gain
+        """
+        Filters a signal along its last dimension.
+
+        :param x: ndarray
+        :return:
+        """
+
+        a0, a11, a12, a13, a14, a2 = self.a0, self.a11, self.a12, self.a13, \
+            self.a14, self.a2
+        b0, b1, b2, gain = self.b0, self.b1, self.b2, self.gain
 
         output = np.zeros((gain.shape[0], x.shape[-1]))
         for chan in range(gain.shape[0]):
-            y1 = ss.lfilter([A0[chan] / gain[chan], A11[chan] / gain[chan],
-                             A2[chan] / gain[chan]],
-                            [B0[chan], B1[chan], B2[chan]], x)
-            y2 = ss.lfilter([A0[chan], A12[chan], A2[chan]],
-                            [B0[chan], B1[chan], B2[chan]], y1)
-            y3 = ss.lfilter([A0[chan], A13[chan], A2[chan]],
-                            [B0[chan], B1[chan], B2[chan]], y2)
-            y4 = ss.lfilter([A0[chan], A14[chan], A2[chan]],
-                            [B0[chan], B1[chan], B2[chan]], y3)
+            y1 = ss.lfilter([a0[chan] / gain[chan], a11[chan] / gain[chan],
+                             a2[chan] / gain[chan]],
+                            [b0[chan], b1[chan], b2[chan]], x)
+            y2 = ss.lfilter([a0[chan], a12[chan], a2[chan]],
+                            [b0[chan], b1[chan], b2[chan]], y1)
+            y3 = ss.lfilter([a0[chan], a13[chan], a2[chan]],
+                            [b0[chan], b1[chan], b2[chan]], y2)
+            y4 = ss.lfilter([a0[chan], a14[chan], a2[chan]],
+                            [b0[chan], b1[chan], b2[chan]], y3)
             output[chan, :] = y4
 
         return output

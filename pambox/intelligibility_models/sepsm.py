@@ -4,15 +4,14 @@ import numpy as np
 import scipy as sp
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
-from collections import namedtuple
-from itertools import izip
+from six.moves import zip
 import brewer2mpl
 from pambox import general
 from pambox import filterbank
 from pambox import auditory
 try:
     import seaborn
-except:
+except ImportError:
     pass
 
 
@@ -20,14 +19,21 @@ except:
 class Sepsm(object):
     """Implement the sEPSM intelligibility model"""
 
-    _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-                1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000)
-    _default_ht_diffuse = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8, 3.8, 2.1,
-                  1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0, -3.8, -1.8, 2.5, 6.8)
+    _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630,
+                          800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
+                          6300, 8000)
+    _default_ht_diffuse = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8,
+                           3.8, 2.1, 1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0,
+                           -3.8, -1.8, 2.5, 6.8)
     _default_modf = (1., 2., 4., 8., 16., 32., 64.)
 
-    def __init__(self, fs=22050, cf=_default_center_cf, modf=_default_modf, downsamp_factor=10,
-                 noise_floor=0.01, snr_env_limit=0.001):
+    def __init__(self, fs=22050
+                 , cf=_default_center_cf
+                 , modf=_default_modf
+                 , downsamp_factor=10
+                 , noise_floor=0.01
+                 , snr_env_limit=0.001
+                 ):
         """@todo: to be defined1. """
         self.fs = fs
         self.cf = cf
@@ -60,7 +66,7 @@ class Sepsm(object):
         noise_rms_db = 20 * np.log10(x)
         # convert to spectrum level according to SII - ANSI 1997
         noise_spec_level_corr = noise_rms_db \
-                                - 10.0 * np.log10(sp.asarray(self.cf) * 0.231)
+            - 10.0 * np.log10(sp.asarray(self.cf) * 0.231)
         max_idx = min(len(noise_spec_level_corr), len(self.ht_diffuse))
         b = noise_spec_level_corr[:max_idx] > self.ht_diffuse[:max_idx]
         idx = np.arange(len(noise_rms_db))
@@ -98,7 +104,7 @@ class Sepsm(object):
 
         return snr_env
 
-    def _optimal_combination(self, snr_env_lin, bands_above_thres_idx):
+    def _optimal_combination(self, snr_env, bands_above_thres_idx):
         """@todo: Docstring for _optimal_combination.
 
         :param snr_env: @todo
@@ -106,7 +112,7 @@ class Sepsm(object):
         :returns: @todo
 
         """
-        snr_env = np.sqrt(np.sum(snr_env_lin[bands_above_thres_idx] ** 2,
+        snr_env = np.sqrt(np.sum(snr_env[bands_above_thres_idx] ** 2,
                                  axis=-1))
         snr_env = np.sqrt(np.sum(snr_env ** 2))
         return snr_env
@@ -116,7 +122,7 @@ class Sepsm(object):
         tmp_env = general.hilbert_envelope(signal).squeeze()
         # Low-pass filtering
         tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
-                                                 N=1, fs=self.fs)
+                                                 n=1, fs=self.fs)
         # Downsample the envelope for faster processing
         return tmp_env[::self.downsamp_factor]
 
@@ -130,16 +136,16 @@ class Sepsm(object):
 
         """
         fs_new = self.fs / self.downsamp_factor
-        N = len(clean)
-        N_modf = len(self.modf)
-        N_cf = len(self.cf)
+        n = len(clean)
+        n_modf = len(self.modf)
+        n_cf = len(self.cf)
 
         # find bands above threshold
         _, filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
                                                            self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
-        exc_ptns = np.zeros((3, N_cf, N_modf))
+        exc_ptns = np.zeros((3, n_cf, n_modf))
         # For each band above threshold,
         # (actually, for debug purposes, maybe I should keep all...)
         for idx_band in bands_above_thres_idx:
@@ -148,13 +154,14 @@ class Sepsm(object):
                                                            self.cf[idx_band])
                                 for signal in [clean, mixture, noise]]
 
-            downsamp_env = np.empty((3, np.ceil(N / self.downsamp_factor).astype('int')))
+            downsamp_env = \
+                np.empty((3, np.ceil(n / self.downsamp_factor).astype('int')))
             for i_sig, signal in enumerate(filtered_signals):
                 downsamp_env[i_sig] = self._env_extraction(signal)
 
-                exc_ptns[i_sig, idx_band], _ = filterbank.mod_filterbank(downsamp_env[ i_sig],
-                                                                         fs_new,
-                                                                         self.modf)
+                exc_ptns[i_sig, idx_band], _ = \
+                    filterbank.mod_filterbank(downsamp_env[i_sig], fs_new,
+                                              self.modf)
 
         # Calculate SNRenv
         snr_env_matrix = self._snr_env(*exc_ptns[-2:])
@@ -210,7 +217,7 @@ class Sepsm(object):
 
         xlabel = 'Modulation frequency [Hz]'
         ylabel = 'Channel frequency [Hz]'
-        bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
+        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
 
         if ax is None:
             f, ax = plt.subplots()
@@ -290,7 +297,7 @@ class Sepsm(object):
                          cbar_pad=0.05)
         fig.subplots_adjust(wspace=0.05)
 
-        for ax, exc_ptns in izip(grid, data):
+        for ax, exc_ptns in zip(grid, data):
             im = self._plot_mod_matrix(exc_ptns, ax=ax, vmin=vmin, vmax=vmax)
 
         for ax in grid:
@@ -299,7 +306,7 @@ class Sepsm(object):
             ax.set_yticks(range(len(cf))[::3])
             ax.set_yticklabels(cf[::3])
 
-        for ax, title in izip(grid, titles[-n_subs:]):
+        for ax, title in zip(grid, titles[-n_subs:]):
             ax.set_title(title)
 
         if 'exc_ptns' in attr:
@@ -307,7 +314,7 @@ class Sepsm(object):
         else:
             cbar_label = 'SNRenv [dB]'
 
-        cbar =  grid.cbar_axes[0].colorbar(im)
+        cbar = grid.cbar_axes[0].colorbar(im)
         cbar.set_label_text(cbar_label)
 
         grid[0].set_ylabel(ylabel)
@@ -330,7 +337,7 @@ class Sepsm(object):
         fig, axes = plt.subplots(n_envs, 1, sharex=True, sharey=False)
         fig.subplots_adjust(hspace=0.05)
 
-        for ax, env, f in izip(axes, envs[::-1], mf[::-1]):
+        for ax, env, f in zip(axes, envs[::-1], mf[::-1]):
             ax.plot(t, env)
             ax.set_yticks([env.mean()])
             ax.set_yticklabels([f])
@@ -340,4 +347,3 @@ class Sepsm(object):
         fig.text(0.05, 0.5, 'Filter center frequency [Hz]',
                  va='center', rotation=90, size=11)
         return fig
-

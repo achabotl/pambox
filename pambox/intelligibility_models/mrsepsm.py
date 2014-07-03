@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import brewer2mpl
-import seaborn as sns
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
-from collections import namedtuple
-from itertools import izip
+from six.moves import zip
 from pambox.intelligibility_models.sepsm import Sepsm
 from pambox import general
 from pambox import filterbank
@@ -26,7 +24,7 @@ class MrSepsm(Sepsm):
                  snr_env_ceil=None,
                  min_win=None,
                  name='MrSepsm'
-        ):
+                 ):
         Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                        snr_env_limit)
         self.min_win = min_win
@@ -50,7 +48,7 @@ class MrSepsm(Sepsm):
         mr_env_powers = np.ma.masked_all((len(self.modf), max(n_segments)))
 
         for i_modf, (n_seg, env, win_length) in enumerate(
-                izip(n_segments, filtered_envs, win_lengths)):
+                zip(n_segments, filtered_envs, win_lengths)):
             n_complete_seg = n_seg - 1
             last_idx = int(n_complete_seg * win_length)
             # Reshape to n_seg x win_length so that we can calculate the
@@ -68,15 +66,17 @@ class MrSepsm(Sepsm):
 
         return mr_env_powers
 
-    def _time_average(self, mr_snr_env):
+    @staticmethod
+    def _time_average(mr_snr_env):
         return mr_snr_env.mean(axis=-1)
 
     def _mr_snr_env(self, p_mix, p_noise):
         """Calculate the multi-resolution SNRenv.
 
-        :param mr_env_powers_mix:
-        :param mr_env_powers_noise:
-        :returns: tuple( ndarray, list), time-average of the mr-SNRenv, and mr-SNRenv.
+        :param p_mix:
+        :param p_noise:
+        :returns: tuple( ndarray, list), time-average of the mr-SNRenv,
+        and mr-SNRenv.
         """
 
         # noisefloor cannot exceed the mix, since they exist at the same time
@@ -100,9 +100,9 @@ class MrSepsm(Sepsm):
     def predict(self, clean, mixture, noise):
 
         fs_new = self.fs / self.downsamp_factor
-        N = len(clean)
-        N_modf = len(self.modf)
-        N_cf = len(self.cf)
+        n_clean = len(clean)
+        n_modf = len(self.modf)
+        n_cf = len(self.cf)
 
         # Process only the mixture and noise if the clean speech is the same
         # as the noise.
@@ -112,7 +112,7 @@ class MrSepsm(Sepsm):
             signals = (clean, mixture, noise)
 
         downsamp_chan_envs = np.zeros((len(signals),
-                                       np.ceil(N / self.downsamp_factor)
+                                       np.ceil(n_clean / self.downsamp_factor)
                                        .astype('int')))
         if (downsamp_chan_envs.shape[-1] % 2) == 0:
             len_offset = 1
@@ -121,20 +121,20 @@ class MrSepsm(Sepsm):
         chan_mod_envs = np.zeros((len(signals),
                                   len(self.modf),
                                   downsamp_chan_envs.shape[-1] - len_offset))
-        time_av_mr_snr_env_matrix = np.zeros((N_cf, N_modf))
-        lt_exc_ptns = np.zeros((len(signals), N_cf, N_modf))
+        time_av_mr_snr_env_matrix = np.zeros((n_cf, n_modf))
+        lt_exc_ptns = np.zeros((len(signals), n_cf, n_modf))
         mr_snr_env_matrix = []
         mr_exc_ptns = []
 
         # find bands above threshold
         _, filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
-                                                        self.fs, width=3)
+                                                           self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_rms_mix)
 
         for idx_band in bands_above_thres_idx:
             channel_envs = \
-                    [self._peripheral_filtering(signal, self.cf[idx_band])
-                     for signal in signals]
+                [self._peripheral_filtering(signal, self.cf[idx_band])
+                 for signal in signals]
 
             for i_sig, channel_env in enumerate(channel_envs):
                 # Extract envelope
@@ -142,7 +142,7 @@ class MrSepsm(Sepsm):
 
                 # Low-pass filtering
                 tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
-                                                         N=1, fs=self.fs)
+                                                         n=1, fs=self.fs)
                 # Downsample the envelope for faster processing
                 downsamp_chan_envs[i_sig] = tmp_env[::self.downsamp_factor]
 
@@ -153,21 +153,20 @@ class MrSepsm(Sepsm):
                                               self.modf)
 
             chan_mr_exc_ptns = []
-            for chan_env, mod_envs in izip(downsamp_chan_envs,
-                                           chan_mod_envs):
+            for chan_env, mod_envs in zip(downsamp_chan_envs,
+                                          chan_mod_envs):
                 chan_mr_exc_ptns.append(self._mr_env_powers(chan_env, mod_envs))
             mr_exc_ptns.append(chan_mr_exc_ptns)
 
             time_av_mr_snr_env_matrix[idx_band], _, chan_mr_snr_env_matrix \
-                = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the env
-            # powers from the mixture and the noise, even if we calculated the
-            # envelope powers for the clean speech.
+                = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the
+            # env powers from the mixture and the noise, even if we
+            # calculated the envelope powers for the clean speech.
             mr_snr_env_matrix.append(chan_mr_snr_env_matrix)
 
         lt_snr_env_matrix = super(MrSepsm, self)._snr_env(*lt_exc_ptns[-2:])
         lt_snr_env = super(MrSepsm, self)._optimal_combination(
-            lt_snr_env_matrix,
-                                             bands_above_thres_idx)
+            lt_snr_env_matrix, bands_above_thres_idx)
 
         snr_env = self._optimal_combination(
             time_av_mr_snr_env_matrix, bands_above_thres_idx)
@@ -190,7 +189,7 @@ class MrSepsm(Sepsm):
         }
         return res
 
-    def _optimal_combination(self, snr_env_lin, bands_above_thres_idx):
+    def _optimal_combination(self, snr_env, bands_above_thres_idx):
         """
         Combines SNRenv across audio and modulation channels.
 
@@ -206,12 +205,11 @@ class MrSepsm(Sepsm):
         # Acceptable modulation frequencies
         ma = (np.tile(np.asarray(self.modf), (len(self.cf), 1)).T
               >= np.asarray(self.cf)).T
-        snr_env_lin[ma] = 0.
-        snr_env = np.sqrt(np.sum(snr_env_lin[bands_above_thres_idx] ** 2,
+        snr_env[ma] = 0.
+        snr_env = np.sqrt(np.sum(snr_env[bands_above_thres_idx] ** 2,
                                  axis=-1))
         snr_env = np.sqrt(np.sum(snr_env ** 2))
         return snr_env
-
 
     @staticmethod
     def _plot_mr_matrix(mat, x=None, y=None, fig=None, subplot_pos=111):
@@ -229,7 +227,7 @@ class MrSepsm(Sepsm):
             y = np.arange(n_y)
 
         max_mat = mat.max()
-        bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
+        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
 
         if fig is None:
             fig = plt.figure()
@@ -245,15 +243,15 @@ class MrSepsm(Sepsm):
                          cbar_size='0.5%',
                          cbar_pad=0.05)
 
-        for ax, p, f in izip(grid, mat[::-1], y[::-1]):
+        for ax, p, f in zip(grid, mat[::-1], y[::-1]):
             values = p.compressed()
             extent = (0, 1, 0, 1)
             im = ax.imshow(values[np.newaxis, :],
-                      aspect='auto',
-                      interpolation='none',
-                      extent=extent,
-                      vmax=max_mat,
-                      cmap=bmap)
+                           aspect='auto',
+                           interpolation='none',
+                           extent=extent,
+                           vmax=max_mat,
+                           cmap=bmap)
             ax.grid(False)
             ax.set_yticks([0.5])
             ax.set_yticklabels([f])
@@ -267,10 +265,10 @@ class MrSepsm(Sepsm):
                          , vmax=None
                          , fig_subplt=None
                          , attr='exc_ptns'
-                        ):
+                         ):
         """Plot multi-naurresolution representation of envelope powers.
 
-        :param res: namedtuple, predictions from the model. Must have a
+        :param ptns: namedtuple, predictions from the model. Must have a
         `mr_snr_env_matrix` property.
         :param dur:
         :param db: bool, display dB values of the modulation power or SNRenv
@@ -289,10 +287,10 @@ class MrSepsm(Sepsm):
 
         if db:
             ptns = 10 * np.log10(ptns)
-            cbar_label = cbar_label + ' [dB]'
+            cbar_label += ' [dB]'
         else:
             ptns = ptns
-            cbar_label = cbar_label + ' [lin]'
+            cbar_label += ' [lin]'
 
         if vmax is None:
             vmax = ptns.max()
@@ -310,7 +308,7 @@ class MrSepsm(Sepsm):
         else:
             fig, subplt = fig_subplt
 
-        bmap = brewer2mpl.get_map('PuBu','Sequential', 9).mpl_colormap
+        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
         xlabel = "Time [ms]"
         ylabel = "Modulation filter center frequency [Hz]"
         grid = ImageGrid(fig, subplt,
@@ -324,7 +322,7 @@ class MrSepsm(Sepsm):
                          cbar_size='0.5%',
                          cbar_pad=0.05)
 
-        for ax, p, f in izip(grid, ptns[::-1], mf[::-1]):
+        for ax, p, f in zip(grid, ptns[::-1], mf[::-1]):
             try:
                 values = p.compressed()
             except AttributeError:
@@ -352,5 +350,3 @@ class MrSepsm(Sepsm):
 
         fig.text(0.05, 0.5, ylabel, va='center', rotation=90, size=11)
         return fig
-
-
