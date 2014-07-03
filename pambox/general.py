@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import numpy as np
-import scipy as sp
 from scipy.io import wavfile
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
 try:
-    np.use_fastnumpy
+    _ = np.use_fastnumpy
     from numpy.fft import fft, ifft
 except AttributeError:
     from scipy.fftpack import fft, ifft

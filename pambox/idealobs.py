@@ -117,7 +117,6 @@ class IdealObs(object):
                                                             m) - data
             p0 = [self.k, self.q, self.sigma_s]
 
-
         res = leastsq(errfc, p0, args=(snrenv, pcdata))[0]
         if sigma_s:
             self.k, self.q = res
@@ -142,7 +141,8 @@ class IdealObs(object):
         sigma_s : float
             sigma_s parameter (Default value = None)
         m : float
-            m parameter, number of words in the vocabulary. (Default value = None)
+            m parameter, number of words in the vocabulary. (Default value =
+            None)
 
         Returns
         -------
@@ -151,9 +151,9 @@ class IdealObs(object):
             `snrenv`.
 
         """
-        Un = norm.ppf(1.0 - 1.0 / m)
-        sn = 1.28255 / Un
-        un = Un + 0.577 / Un
+        un = norm.ppf(1.0 - 1.0 / m)
+        sn = 1.28255 / un
+        un += 0.577 / un
         dp = k * snrenv ** q
         return norm.cdf(dp, un, np.sqrt(sigma_s ** 2 + sn ** 2)) * 100
 
@@ -211,14 +211,14 @@ if __name__ == '__main__':
     data = psy_fn(snr, -3.1, 2.13) * 100
     c.fit_obs(snrenv, data)
 
-    figure
+    figure()
     plot(snr, data, 'b--', label='Data')
     plot(snr, c.snrenv_to_pc(snrenv), 'r--', label='Model')
     xlabel('SNR [dB]')
     ylabel('Percent correct')
     legend(loc='upper left')
     xticks(snr[::2])
-    yticks(range(0,101, 10))
+    yticks(range(0, 101, 10))
     show()
 
     params = c.get_params()
