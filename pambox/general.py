@@ -231,8 +231,8 @@ def hilbert_envelope(signal, axis=None):
         axis = -1
     n_orig = signal.shape[-1]
     # Next power of 2.
-    N = next_pow_2(n_orig)
-    y_h = hilbert(signal, N, axis=axis)
+    n = next_pow_2(n_orig)
+    y_h = hilbert(signal, n, axis=axis)
     # Return signal with same dimensions as original
     return np.abs(y_h[..., :n_orig])
 
@@ -286,8 +286,8 @@ def fftfilt(b, x, *n):
     if b.ndim > 1 or x.ndim > 1:
         raise ValueError('The inputs should be one dimensional')
 
-    N_x = len(x)
-    N_b = len(b)
+    n_x = len(x)
+    n_b = len(b)
 
     # Determine the FFT length to use:
     if len(n):
@@ -297,11 +297,11 @@ def fftfilt(b, x, *n):
         n = n[0]
         if n != int(n) or n <= 0:
             raise ValueError('n must be a nonnegative integer')
-        if n < N_b:
-            n = N_b
-        N_fft = 2 ** next_pow_2(n)
+        if n < n_b:
+            n = n_b
+        n_fft = 2 ** next_pow_2(n)
     else:
-        if N_x > N_b:
+        if n_x > n_b:
             # When the filter length is smaller than the signal,
             # choose the FFT length and block size that minimize the
             # FLOPS cost. Since the cost for a length-N FFT is
@@ -310,30 +310,30 @@ def fftfilt(b, x, *n):
             # cost of the overlap-add method for 1 length-N block is
             # N*(1+log2(N)). For the sake of efficiency, only FFT
             # lengths that are powers of 2 are considered:
-            N = 2 ** arange(ceil(log2(N_b)), 27)
-            cost = ceil(N_x / (N - N_b + 1)) * N * (log2(N) + 1)
-            N_fft = N[argmin(cost)]
+            N = 2 ** arange(ceil(log2(n_b)), 27)
+            cost = ceil(n_x / (N - n_b + 1)) * N * (log2(N) + 1)
+            n_fft = N[argmin(cost)]
         else:
             # When the filter length is at least as long as the signal,
             # filter the signal using a single block:
-            N_fft = next_pow_2(N_b + N_x - 1)
+            n_fft = next_pow_2(n_b + n_x - 1)
 
-    N_fft = int(N_fft)
+    n_fft = int(n_fft)
 
     # Compute the block length:
-    L = int(N_fft - N_b + 1)
+    bl = int(n_fft - n_b + 1)
 
     # Compute the transform of the filter:
-    H = fft(b, N_fft)
+    H = fft(b, n_fft)
 
-    y = zeros(N_x, complex)
+    y = zeros(n_x, complex)
     i = 0
-    while i <= N_x:
-        il = min([i + L, N_x])
-        k = min([i + N_fft, N_x])
-        yt = ifft(fft(x[i:il], N_fft) * H, N_fft)  # Overlap..
+    while i <= n_x:
+        il = min([i + bl, n_x])
+        k = min([i + n_fft, n_x])
+        yt = ifft(fft(x[i:il], n_fft) * H, n_fft)  # Overlap..
         y[i:k] = y[i:k] + yt[:k - i]  # and add
-        i += L
+        i += bl
     return np.real(y)
 
 
