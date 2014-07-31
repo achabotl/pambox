@@ -22,7 +22,7 @@ def play(x, fs=44100, normalize=True):
     """
     x = np.asarray(x)
     if normalize:
-        x /= np.abs(x).max()
+        x = x / np.abs(x).max()
     if x.shape[0] == 2:
         x = x.T
     channels = x.ndim
