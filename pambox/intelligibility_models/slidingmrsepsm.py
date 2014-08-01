@@ -89,8 +89,8 @@ class SlidingMrSepsm(MrSepsm):
         mr_exc_ptns = []
 
         # find bands above threshold
-        _, filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
-                                                           self.fs, width=3)
+        filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
+                                                        self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_rms_mix)
 
         for idx_band in bands_above_thres_idx:
