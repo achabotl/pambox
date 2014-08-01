@@ -170,7 +170,7 @@ def impz(b, a=1):
     plt.subplots_adjust(hspace=0.5)
 
 
-def noctave_filtering(x, center_f, fs, width=3):
+def noctave_filtering(x, center_f, fs, width=3, output_time=False):
     """Rectangular nth-octave filtering.
     
     :x: signal
@@ -188,12 +188,19 @@ def noctave_filtering(x, center_f, fs, width=3):
     width : float
          Width of the filters, in fraction of octave. The default value is 3,
          therefore 1/3-octave.
+    output_time : bool, optional
+        If `True`, also outputs the time output of the filtering. The default
+        is to output the RMS value of each band only. Doing the inverse FFT
+        is very costly; setting the argument to `False` prevents from doing
+        that computation.
 
     Returns
     -------
-    typle of ndarrays
-         Time signals at the output of the filterbank.
+    out_rms : ndarray
          RMS power at the output of each filter.
+    out_time : ndarray
+         Time signals at the output of the filterbank. The shape is (`len(
+         center_f) x len(x)`).
 
     """
     # Use numpy's FFT because SciPy's version of rfft (2 real results per
@@ -220,8 +227,11 @@ def noctave_filtering(x, center_f, fs, width=3):
     for idx, (l, f) in enumerate(zip(bound_idx[0:], bound_idx[1:])):
         out_time[idx, l:f] = X[l:f]
         out_rms[idx] = np.sqrt(np.sum(X_pow[l:f]) / n)
-    out_time = np.real(irfft(out_time, n=n, axis=-1))
-    return out_time, out_rms
+    if output_time:
+        out_time = np.real(irfft(out_time, n=n, axis=-1))
+        return out_rms, out_time
+    else:
+        return out_rms
 
 
 def noctave_center_freq(lowf, highf, width=3):
