@@ -218,8 +218,8 @@ class Sepsm(object):
         n_cf = len(self.cf)
 
         # find bands above threshold
-        _, filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
-                                                           self.fs, width=3)
+        filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
+                                                        self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
         exc_ptns = np.zeros((3, n_cf, n_modf))
