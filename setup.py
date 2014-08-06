@@ -47,7 +47,12 @@ setup(
     license='Modified BSD License',
     author='Alexandre Chabot-Leclerc',
     tests_require=['pytest'],
-    install_requires=[],
+    install_requires=['six>=1.4.1',
+                      'numpy>=1.8.0',
+                      'scipy>=0.13.3',
+                      'pandas>=0.13.1',
+                      'matplotlib>=1.3.1'
+                     ],
     cmdclass={'test': PyTest},
     author_email='pambox@alex.alexchabot.net',
     description='A Python toolbox for auditory modeling',

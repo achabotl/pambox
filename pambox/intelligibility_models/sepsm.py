@@ -5,7 +5,6 @@ import scipy as sp
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 from six.moves import zip
-import brewer2mpl
 from pambox import general
 from pambox import filterbank
 from pambox import auditory
@@ -310,7 +309,7 @@ class Sepsm(object):
 
         xlabel = 'Modulation frequency [Hz]'
         ylabel = 'Channel frequency [Hz]'
-        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
+        bmap = plt.get_cmap('PuBu')
 
         if ax is None:
             f, ax = plt.subplots()

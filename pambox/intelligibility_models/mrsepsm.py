@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-import brewer2mpl
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
@@ -332,7 +331,7 @@ class MrSepsm(Sepsm):
             y = np.arange(n_y)
 
         max_mat = mat.max()
-        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
+        bmap = plt.get_cmap('PuBu')
 
         if fig is None:
             fig = plt.figure()
@@ -447,7 +446,7 @@ class MrSepsm(Sepsm):
         else:
             cbar_dict = {}
 
-        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
+        bmap = plt.get_cmap('PuBu')
         xlabel = "Time [s]"
         ylabel = "Modulation frequency [Hz]"
         grid = ImageGrid(fig, subplt,
