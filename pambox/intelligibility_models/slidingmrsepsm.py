@@ -53,7 +53,7 @@ class SlidingMrSepsm(MrSepsm):
         mr_env_powers = np.zeros((len(self.modf), n_segment))
 
         for i_modf, (env, win_length) in enumerate(
-                izip(filtered_envs, win_lengths)):
+                zip(filtered_envs, win_lengths)):
             slices = self._inc_sliding_window(env, win_length, swin_length)
             mr_env_powers[i_modf, :] = np.var(slices, ddof=1,
                                               axis=-1) / dc_power
@@ -62,9 +62,9 @@ class SlidingMrSepsm(MrSepsm):
     def predict(self, clean, mixture, noise, sections=None):
 
         fs_new = self.fs / self.downsamp_factor
-        N = len(clean)
-        N_modf = len(self.modf)
-        N_cf = len(self.cf)
+        n = len(clean)
+        n_modf = len(self.modf)
+        n_cf = len(self.cf)
 
         # Process only the mixture and noise if the clean speech is the same
         # as the noise.
@@ -74,7 +74,7 @@ class SlidingMrSepsm(MrSepsm):
             signals = (clean, mixture, noise)
 
         downsamp_chan_envs = np.zeros((len(signals),
-                                       np.ceil(N / self.downsamp_factor)
+                                       np.ceil(n / self.downsamp_factor)
                                        .astype('int')))
         if (downsamp_chan_envs.shape[-1] % 2) == 0:
             len_offset = 1
@@ -83,8 +83,8 @@ class SlidingMrSepsm(MrSepsm):
         chan_mod_envs = np.zeros((len(signals),
                                   len(self.modf),
                                   downsamp_chan_envs.shape[-1] - len_offset))
-        time_av_mr_snr_env_matrix = np.zeros((N_cf, N_modf))
-        lt_exc_ptns = np.zeros((len(signals), N_cf, N_modf))
+        time_av_mr_snr_env_matrix = np.zeros((n_cf, n_modf))
+        lt_exc_ptns = np.zeros((len(signals), n_cf, n_modf))
         mr_snr_env_matrix = []
         mr_exc_ptns = []
 
@@ -104,7 +104,7 @@ class SlidingMrSepsm(MrSepsm):
 
                 # Low-pass filtering
                 tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
-                                                         N=1, fs=self.fs)
+                                                         n=1, fs=self.fs)
                 # Downsample the envelope for faster processing
                 downsamp_chan_envs[i_sig] = tmp_env[::self.downsamp_factor]
 
@@ -115,15 +115,14 @@ class SlidingMrSepsm(MrSepsm):
                                               self.modf)
 
             chan_mr_exc_ptns = []
-            for chan_env, mod_envs in izip(downsamp_chan_envs,
-                                           chan_mod_envs):
+            for chan_env, mod_envs in zip(downsamp_chan_envs, chan_mod_envs):
                 chan_mr_exc_ptns.append(self._mr_env_powers(chan_env, mod_envs))
             mr_exc_ptns.append(chan_mr_exc_ptns)
 
             time_av_mr_snr_env_matrix[idx_band], _, chan_mr_snr_env_matrix \
-                = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the env
-            # powers from the mixture and the noise, even if we calculated the
-            # envelope powers for the clean speech.
+                = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the
+                # env powers from the mixture and the noise, even if we
+                # calculated the envelope powers for the clean speech.
             mr_snr_env_matrix.append(chan_mr_snr_env_matrix)
 
         # Pick only sections that were selected
@@ -133,7 +132,7 @@ class SlidingMrSepsm(MrSepsm):
                                          len(self.modf),
                                          len(sections)))
 
-            for ii, each in izip(bands_above_thres_idx, mr_snr_env_matrix):
+            for ii, each in zip(bands_above_thres_idx, mr_snr_env_matrix):
                 section_snr_envs[ii] = self.snr_env_for_sections(each,
                                                                  sections)
 
@@ -176,16 +175,16 @@ class SlidingMrSepsm(MrSepsm):
     def snr_env_for_sections(self, snr_envs, sections):
         """Calculate the SNRenv for selected sections of signal.
 
-        :param snr_envs: array_like, multi-resolution SNRenv values for the current
-        channel. Expect an (n_modf, n_windows) array.
-        :param sections: list, pairs of start-stop times, in seconds, delimiting the
-        beginning and end of each section.
-        :return: array_like, time-averaged SNRenv for each section. The output array
-        has the shaped (n_modf, n_sections).
+        :param snr_envs: array_like, multi-resolution SNRenv values for the
+        current channel. Expect an (n_modf, n_windows) array.
+        :param sections: list, pairs of start-stop times, in seconds,
+        delimiting the beginning and end of each section.
+        :return: array_like, time-averaged SNRenv for each section. The
+        output array has the shaped (n_modf, n_sections).
         """
 
-        # The small "unit of time" at this point is the time window for the highest
-        # modulation filter.
+        # The small "unit of time" at this point is the time window for the
+        # highest modulation filter.
         win_dur = 1 / np.max(self.modf)
         n_sections = len(sections)
         sec_snr_env = np.zeros((snr_envs.shape[0], n_sections))
@@ -201,10 +200,9 @@ if __name__ == "__main__":
     from tests import __DATA_ROOT__
     from pprint import pprint
 
-
-    mat_complete =  sio.loadmat(__DATA_ROOT__ +
-                                '/test_mr_sepsm_full_prediction.mat',
-                                squeeze_me=True)
+    mat_complete = sio.loadmat(__DATA_ROOT__ +
+                               '/test_mr_sepsm_full_prediction.mat',
+                               squeeze_me=True)
     mix = mat_complete['test']
     noise = mat_complete['noise']
     fs = 22050
@@ -214,8 +212,13 @@ if __name__ == "__main__":
     sections = [(0.9, 1.5)]
 
     res = smr.predict(mix, mix, noise, sections)
-    pprint(res.snr_env)
-    pprint(res.sections_snr_env)
-    pprint(np.mean(res.per_section_snr_env, axis=-1))
+    print("With sections")
+    pprint(res['snr_env'])
+    pprint(res['sections_snr_env'])
+    # pprint(np.mean(res['per_section_snr_env'], axis=-1))
 
-
+    smr.min_win = 0.02
+    res = smr.predict(mix, mix, noise)
+    print('No Sections, but with minimum window length')
+    pprint(res['snr_env'])
+    pprint(res['sections_snr_env'])
