@@ -41,7 +41,8 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
 
     See also
     --------
-    `setdbspl`, `rms`.
+    setdbspl
+    rms
     """
     x = np.asarray(x)
     return 20. * np.log10(rms(x, ac=ac, axis=axis)) + float(offset)
