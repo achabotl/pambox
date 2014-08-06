@@ -63,12 +63,12 @@ def phase_jitter(x, a):
 
     The expression of phase jitter is:
 
-    .. math:: y(t) = s(t) * cos(\Phi(t)),
+    .. math:: y(t) = s(t) * cos(\\Phi(t)),
 
-    where :math:`\Phi(t)` is a random process uniformly distributed over
-    :math:`[0, 2\pi\alpha]`. The effect of the jitter when \alpha is 0.5 or 1
-    is to completely destroy the carrier signal, effictively yielding
-    modulated white noise.
+    where :math:`\\Phi(t)` is a random process uniformly distributed over
+    :math:`[0, 2 \\pi \\alpha]`. The effect of the jitter when
+    :math:`\\alpha` is 0.5  or 1 is to completely destroy the carrier signal,
+     effictively yielding modulated white noise.
 
     Parameters
     ----------
@@ -136,8 +136,10 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
     Returns
     -------
-    tuple of ndarrays
-        Estimate of clean signal and estimate of noisy signal.
+    clean_estimate : ndarray
+        Estimate of the clean signal.
+    noise_estimate : ndarray
+        Estimate of the noisy signal.
 
     """
     wnd = np.hanning(w + 2)  # create hanning window with length = W
@@ -207,9 +209,7 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
 
 def overlap_and_add(powers, phases, len_window, shift_size):
-    """
-    Reconstruct a signal with the overlap and add method.
-    
+    """Reconstruct a signal with the overlap and add method.
 
     Parameters
     ----------
@@ -256,20 +256,31 @@ def overlap_and_add(powers, phases, len_window, shift_size):
 
 
 class WestermannCrm(object):
-    """Applies HRTF and BRIR for a given target and masker distance."""
+    """Applies HRTF and BRIR for a given target and masker distance.
+
+    Parameters
+    ----------
+    fs : int
+         Samping frequenc of the process. (Default value = 40000)
+
+    Attributes
+    ----------
+    brir : dict
+        Binaural room impulse responses for each distance.
+    delays : dict
+        Delay until the first peak in the BRIR for each distance.
+    dist : ndarray
+        List of the valid distances (0.5, 2, 5, and 10 meters).
+
+    References
+    ----------
+    .. [1] A. Westermann and J. M. Buchholz: Release from masking through
+        spatial separation in distance in hearing impaired listeners.
+        Proceedings of Meetings on Acoustics 19 (2013) 050156.
+
+    """
 
     def __init__(self, fs=40000):
-        """
-
-        Parameters
-        ----------
-        fs : int
-             Samping frequenc of the process. (Default value = 40000)
-
-        Returns
-        -------
-
-        """
         self.dist = np.asarray([0.5, 2, 5, 10])
         self.fs = fs
         self.brir = self._load_brirs()
@@ -368,9 +379,10 @@ class WestermannCrm(object):
 
         Returns
         -------
-        tuple of ndarray
-            Mixture and noise alone, processed by the BRIRs.
-        
+        mix : (2, N) ndarray
+            Mixture processesed by the BRIRs.
+        noise : (2, N)
+            Noise alone processed by the BRIRs.
         """
         if tdist not in self.dist or mdist not in self.dist:
             raise ValueError('The distance values are incorrect.')
@@ -414,7 +426,10 @@ class WestermannCrm(object):
 
         Returns
         -------
-
+        i_x : int
+            Index of earliest peak in the signal.
+        i_m : int
+            Index of the earliest peak in the maskers.
         """
         # location of earliest peak
         m_is_shortest = np.argmin([self.delays[tdist], self.delays[mdist]])
@@ -445,7 +460,6 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     ndarray
         Noise signal.
 
-    
     """
     x = np.asarray(x)
     n_x = x.shape[-1]
