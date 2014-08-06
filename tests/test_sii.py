@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
 from pandas import read_csv
-from pambox.intelligibility_models import Sii
+from pambox.intelligibility_models.sii import Sii
 import numpy as np
 from numpy.testing import assert_allclose
 from tests import __DATA_ROOT__
