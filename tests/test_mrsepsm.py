@@ -6,7 +6,7 @@ import scipy.io as sio
 import numpy as np
 from numpy.testing import assert_allclose
 from tests import __DATA_ROOT__
-from itertools import izip
+from six.moves import zip
 
 
 @pytest.fixture
@@ -31,8 +31,8 @@ def test_mr_sepsm_mr_env_powers(mr, mat):
     mod_channel_envs = mat['tempOutput'].T[0]
 
     mr_env_powers_mix = mr._mr_env_powers(channel_env, mod_channel_envs)
-    for d, target in izip(mr_env_powers_mix,
-                          mat['multiRes_envPower']):
+    for d, target in zip(mr_env_powers_mix,
+                         mat['multiRes_envPower']):
         assert_allclose(d.compressed(), target[0])
 
 
@@ -56,7 +56,11 @@ def test_mr_sepsm_time_averaging_of_short_term_snr_env(mat):
     Given the OrderedDict of multi-resolution SNRenv values, for a given
     channel, average it over time.
     """
-    mr_snr_env = numpy.load(__DATA_ROOT__ + '/test_mr_sepsm_time_average_snr')
+    in_mat = sio.loadmat(__DATA_ROOT__ +
+                            '/test_mr_sepsm_time_average_snr.mat',
+                      squeeze_me=True)
+    mr_snr_env = np.ma.MaskedArray(in_mat['data'], in_mat['mask'])
+
     mr = MrSepsm()
     t_av = mr._time_average(mr_snr_env)
     assert_allclose(t_av, mat['timeAvg_SNRenvs'])

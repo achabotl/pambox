@@ -1,11 +1,38 @@
 language: python
 
 python:
-    - 2.7
-    - 3.4
+  - 2.6
+  - 2.7
+  - 3.3
+  - 3.4
+
+
+before_install:
+
+  # Use utf8 encoding. Should be default, but this is insurance against
+  # future changes
+  - export PYTHONIOENCODING=UTF8
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+
 
 install:
-    - pip install pytest
+  - conda create --yes -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda update --yes conda
+  - source activate test-environment
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  - conda install --yes six
+  - conda install --yes numpy
+  - conda install --yes scipy
+  - conda install --yes pandas
+  - conda install --yes matplotlib
+  - conda install --yes pytest
+  - pip install sphinx numpydoc
 
 script:
-    - py.test
+    - py.test --runslow tests/
