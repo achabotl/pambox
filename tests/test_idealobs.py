@@ -75,5 +75,5 @@ def test_fit_obs_set_m_and_sigma_s(data, snrenv):
         c.fit_obs(snrenv, data, sigma_s=sigma_s, m=m)
         params = c.get_params()
         res = [params['k'], params['q'], params['sigma_s'], params['m']]
-        np.testing.assert_allclose(res, target, rtol=1e-3)
+        np.testing.assert_allclose(res, target, atol=1e-4)
 
