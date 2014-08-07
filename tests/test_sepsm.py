@@ -57,7 +57,6 @@ def test_select_bands_above_threshold(center_f):
     assert_array_equal(bands_above_thres, target)
 
 
-@pytest.mark.slow
 def test_snr_env():
     tests = [[0.001, [[0.], [0.]]],
              [0.001, [[0.0001], [0]]],
