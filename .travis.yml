@@ -1,9 +1,7 @@
 language: python
 
 python:
-  - 2.6
   - 2.7
-  - 3.3
   - 3.4
 
 
@@ -32,7 +30,7 @@ install:
   - conda install --yes pandas
   - conda install --yes matplotlib
   - conda install --yes pytest
-  - pip install sphinx numpydoc
+  - conda list
 
 script:
     - py.test --runslow tests/
