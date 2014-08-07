@@ -1,5 +1,5 @@
 """
-The :mod:`pambox.intelligibility_modesl` module gather speech intelligibility
+The :mod:`pambox.intelligibility_models` module gather speech intelligibility
 models.
 """
 from __future__ import absolute_import
