@@ -14,6 +14,7 @@ def mat_complete():
                        squeeze_me=True)
 
 
+@pytest.mark.slow
 def test_sliding_mr_sepsm_with_section(mat_complete):
     mix = mat_complete['test']
     noise = mat_complete['noise']
@@ -32,6 +33,7 @@ def test_sliding_mr_sepsm_with_section(mat_complete):
     )
 
 
+@pytest.mark.slow
 def test_sliding_mr_sepsm_without_section(mat_complete):
     mix = mat_complete['test']
     noise = mat_complete['noise']

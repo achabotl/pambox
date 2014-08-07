@@ -66,7 +66,7 @@ def test_mr_sepsm_time_averaging_of_short_term_snr_env(mat):
     assert_allclose(t_av, mat['timeAvg_SNRenvs'])
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_complete_mr_sepsm(mr, mat_complete):
     """Test the prediction by the mr-sEPSM
     """
