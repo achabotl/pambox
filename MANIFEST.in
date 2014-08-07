@@ -1,0 +1,13 @@
+include AUTHORS.rst
+include CHANGES.md
+include CONTRIBUTING.md
+include LICENSE.txt
+include MANIFEST.in
+include README.rst
+recursive-include examples *.py *.ipnb
+recursive-include docs *
+recursive-exclude docs *.pyc
+recursive-exclude docs *.pyo
+recursive-exclude examples *.pyc
+recursive-exclude examples *.pyo
+prune docs/_build
