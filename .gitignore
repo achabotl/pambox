@@ -49,3 +49,5 @@ design/*
 
 # PyCharm settings
 .idea
+
+.cache/
