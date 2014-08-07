@@ -58,29 +58,30 @@ def mix_noise(clean, noise, sent_level, snr=None):
 
 
 def phase_jitter(x, a):
-    """
-    Apply phase jitter to a signal.
+    """Apply phase jitter to a signal.
 
     The expression of phase jitter is:
 
-    .. math:: y(t) = s(t) * cos(\\Phi(t)),
+    .. math::
+
+        y(t) = s(t) * cos(\\Phi(t)),
 
     where :math:`\\Phi(t)` is a random process uniformly distributed over
     :math:`[0, 2 \\pi \\alpha]`. The effect of the jitter when
     :math:`\\alpha` is 0.5  or 1 is to completely destroy the carrier signal,
-     effictively yielding modulated white noise.
+    effictively yielding modulated white noise.
 
     Parameters
     ----------
     x : ndarray
-       Signal
+        Signal
     a : float
         Phase jitter parameter, typically between 0 and 1, but it can be
         anything.
 
     Returns
     -------
-    ndarray
+    out : ndarray
         Processed signal of the same dimension as the input signal.
 
     """
@@ -131,8 +132,8 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
         Zero padding (pad with padz/2 from the left and the right) (Default
         value = 1024 / 2.)
     shift_p : float
-         Shift percentage (overlap) between each window, in fraction of the
-         window size (Default value = 0.5)
+        Shift percentage (overlap) between each window, in fraction of the
+        window size (Default value = 0.5)
 
     Returns
     -------
@@ -274,9 +275,9 @@ class WestermannCrm(object):
 
     References
     ----------
-    .. [1] A. Westermann and J. M. Buchholz: Release from masking through
-        spatial separation in distance in hearing impaired listeners.
-        Proceedings of Meetings on Acoustics 19 (2013) 050156.
+    .. [westermann2013release] A. Westermann and J. M. Buchholz: Release from
+        masking through spatial separation in distance in hearing impaired
+        listeners. Proceedings of Meetings on Acoustics 19 (2013) 050156.
 
     """
 

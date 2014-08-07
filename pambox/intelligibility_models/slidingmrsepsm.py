@@ -7,6 +7,8 @@ from pambox import filterbank, general, auditory
 
 class SlidingMrSepsm(MrSepsm):
     """
+    Sliding mr-sEPSM.
+
 
     :param min_win: float, minimum length of a window, in ms. (Default is
     `None`.)
@@ -180,12 +182,21 @@ class SlidingMrSepsm(MrSepsm):
     def snr_env_for_sections(self, snr_envs, sections):
         """Calculate the SNRenv for selected sections of signal.
 
-        :param snr_envs: array_like, multi-resolution SNRenv values for the
-        current channel. Expect an (n_modf, n_windows) array.
-        :param sections: list, pairs of start-stop times, in seconds,
-        delimiting the beginning and end of each section.
-        :return: array_like, time-averaged SNRenv for each section. The
-        output array has the shaped (n_modf, n_sections).
+        Parameters
+        ----------
+
+        snr_envs : array_like
+            Multi-resolution SNRenv values for the current channel. Expect an
+            (n_modf, n_windows) array.
+        sections : list
+            Pairs of start-stop times, in seconds, delimiting the beginning
+            and end of each section.
+
+        Returns
+        -------
+        out : ndarray
+            Time-averaged SNRenv for each section. The output array has the
+            shaped (n_modf, n_sections).
         """
 
         # The small "unit of time" at this point is the time window for the
