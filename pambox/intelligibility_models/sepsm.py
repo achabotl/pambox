@@ -207,8 +207,8 @@ class Sepsm(object):
 
         Returns
         -------
-        dict
-            todo
+        res : dict
+            @todo
 
         """
         fs_new = self.fs / self.downsamp_factor
