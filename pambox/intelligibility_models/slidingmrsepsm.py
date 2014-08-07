@@ -6,12 +6,17 @@ from pambox import filterbank, general, auditory
 
 
 class SlidingMrSepsm(MrSepsm):
+    """
+
+    :param min_win: float, minimum length of a window, in ms. (Default is
+    `None`.)
+    """
     _default_modf = (1., 2., 4., 8., 16., 32., 64., 128., 256.)
 
-
     def __init__(self, fs=22050,
-                 cf=(63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-                1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000),
+                 cf=(63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800,
+                     1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300,
+                     8000),
                  modf=(1., 2., 4., 8., 16., 32., 64., 128., 256.),
                  downsamp_factor=10,
                  noise_floor=0.001,
