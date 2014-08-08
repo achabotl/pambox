@@ -35,7 +35,7 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
 
     References
     ----------
-    .. [1] Auditory Modeling Toolbox, Peter L. Soendergaard
+    .. [amtoolbox] Auditory Modeling Toolbox, Peter L. Soendergaard
       B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
       Press, 5th edition, 2003.
 
@@ -142,17 +142,17 @@ def hilbert(x, N=None, axis=-1):
     out, turning the real-valued signal into a complex signal.  The Hilbert
     transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
     original signal from ``np.real(hilbert(x))``.
+
     References
     ----------
     .. [1] Wikipedia, "Analytic signal".
-           http://en.wikipedia.org/wiki/Analytic_signal
+        http://en.wikipedia.org/wiki/Analytic_signal
 
     License
     -------
-    This code was copied from Scipy. . The following license
-    applies
-    for this
-    function:
+
+    This code was copied from Scipy.
+    The following license applies for this function:
 
     Copyright (c) 2001, 2002 Enthought, Inc.
     All rights reserved.

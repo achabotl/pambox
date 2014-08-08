@@ -18,21 +18,25 @@ class Sii(object):
     Notes
     -----
     Arguments for 'I':
+
         A scalar having a value of either 0, 1, 2, 3, 4, 5, or 6. The
-        Band-importance functions associated with each scalar are
-            0: Average speech as specified in Table 3 (DEFAULT)
-            1: various nonsense syllable tests where most English phonemes
-               occur equally often (as specified in Table B.2)
-            2: CID-22 (as specified in Table B.2)
-            3: NU6 (as specified in Table B.2)
-            4: Diagnostic Rhyme test (as specified in Table B.2)
-            5: short passages of easy reading material (as specified in
-               Table B.2)
-            6: SPIN (as specified in Table B.2)
+        Band-importance functions associated with each scalar are:
+
+        * 0: Average speech as specified in Table 3 (DEFAULT)
+        * 1: various nonsense syllable tests where most English phonemes occur
+            equally often (as specified in Table B.2)
+        * 2: CID-22 (as specified in Table B.2)
+        * 3: NU6 (as specified in Table B.2)
+        * 4: Diagnostic Rhyme test (as specified in Table B.2)
+        * 5: short passages of easy reading material (as specified in
+            Table B.2)
+        * 6: SPIN (as specified in Table B.2)
 
     References
     ----------
-
+    .. [aansi1997sii] American National Standards Institute: American
+        National Standard methods for calculation of the Speech Intelligibility
+        Index (1997).
     """
 
     def __init__(self, T=zeros(18), I=0):
@@ -138,8 +142,9 @@ class Sii(object):
             raise ValueError("Vocal error string not recognized.")
         return self.Ei[:, efforts[vcl_effort]]
 
-    def predict(self, E, N=-50 * ones(18)):
-        """Predicts intelligibility.
+    def predict_spec(self, E, N=-50 * ones(18)):
+        """Predicts intelligibility based on the spectra levels of the speech
+        and the noise.
 
         Parameters
         ----------
