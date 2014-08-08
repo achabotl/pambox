@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+import os.path
 import pytest
 from scipy.io import wavfile
 import numpy as np
 import scipy.io as sio
-from pambox.intelligibility_models import sepsm
+from pambox.speech import sepsm
 from numpy.testing import assert_allclose, assert_array_equal
-from tests import __DATA_ROOT__
+
+
+__DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @pytest.fixture

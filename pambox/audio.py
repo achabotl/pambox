@@ -1,5 +1,6 @@
 """
-Simple wrapper around pyaudio to simplify sound playback
+:mod:`~pambox.audio` provides a imple wrapper around pyaudio to simplify
+sound playback.
 """
 from __future__ import division, print_function
 import numpy as np

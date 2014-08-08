@@ -5,9 +5,8 @@ import scipy as sp
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 from six.moves import zip
-from pambox import general
-from pambox import filterbank
-from pambox import auditory
+from pambox import utils
+from pambox import inner
 try:
     import seaborn
 except ImportError:
@@ -71,7 +70,7 @@ class Sepsm(object):
         -------
 
         """
-        g = auditory.GammatoneFilterbank(center_f, self.fs)
+        g = inner.GammatoneFilterbank(center_f, self.fs)
         y = g.filter(signal)
         return y
 
@@ -185,9 +184,9 @@ class Sepsm(object):
 
         """
         # Extract envelope
-        tmp_env = general.hilbert_envelope(signal).squeeze()
+        tmp_env = utils.hilbert_envelope(signal).squeeze()
         # Low-pass filtering
-        tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
+        tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
                                                  n=1, fs=self.fs)
         # Downsample the envelope for faster processing
         return tmp_env[::self.downsamp_factor]
@@ -212,7 +211,7 @@ class Sepsm(object):
         n_cf = len(self.cf)
 
         # find bands above threshold
-        filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
+        filtered_mix_rms = inner.noctave_filtering(mixture, self.cf,
                                                         self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
@@ -231,7 +230,7 @@ class Sepsm(object):
                 downsamp_env[i_sig] = self._env_extraction(signal)
 
                 exc_ptns[i_sig, idx_band], _ = \
-                    filterbank.mod_filterbank(downsamp_env[i_sig], fs_new,
+                    inner.mod_filterbank(downsamp_env[i_sig], fs_new,
                                               self.modf)
 
         # Calculate SNRenv

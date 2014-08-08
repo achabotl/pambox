@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
+import os.path
 import pytest
 import numpy as np
 import scipy.io as sio
 from pambox import distort
-from pambox import general
-from tests import __DATA_ROOT__
+from pambox import utils
+
+
+__DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @pytest.fixture
@@ -73,12 +76,12 @@ def test_level_adjustment_and_spec_sub_processing():
     target_processed_speech = mat['processed_test']
     target_processed_noise = mat['processed_noise']
 
-    print(general.dbspl(x))
+    print(utils.dbspl(x))
     x = x * 10 ** ((speech_level - file_level) / 20)
-    print(general.dbspl(x))
+    print(utils.dbspl(x))
     np.testing.assert_allclose(x, x_adj)
 
-    noise = noise / general.rms(noise) * 10 ** ((speech_level - snr) / 20)
+    noise = noise / utils.rms(noise) * 10 ** ((speech_level - snr) / 20)
     np.testing.assert_allclose(noise, noise_adj)
 
     mixture = noise + x

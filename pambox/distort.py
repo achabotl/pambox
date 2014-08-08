@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
+"""
+:mod:`pambox.distort` regroups various types of distortions and processings
+that can be applied to signals.
+"""
 from __future__ import division
 from __future__ import print_function
 import numpy as np
 import scipy as sp
-from itertools import izip
+from six.moves import zip
 from scipy.io import wavfile
-from scipy.signal import lfilter
-from pambox import general
-from pambox.general import fftfilt
-from numpy.fft import fft, ifft
+from pambox import utils
+from pambox.utils import fftfilt
+
+try:
+    _ = np.use_fastnumpy
+    from numpy.fft import fft, ifft, rfft, irfft
+except AttributeError:
+    from scipy.fftpack import fft, ifft
+    from numpy.fft import rfft, irfft
 
 
 def mix_noise(clean, noise, sent_level, snr=None):
@@ -42,9 +51,9 @@ def mix_noise(clean, noise, sent_level, snr=None):
 
     if snr is not None:
         # Get speech level and set noise level accordingly
-        # clean_level = general.dbspl(clean)
-        # noise = general.setdbspl(noise, clean_level - snr)
-        noise = noise / general.rms(noise) * 10 ** ((sent_level - snr) / 20)
+        # clean_level = utils.dbspl(clean)
+        # noise = utils.setdbspl(noise, clean_level - snr)
+        noise = noise / utils.rms(noise) * 10 ** ((sent_level - snr) / 20)
         mix = clean + noise
     else:
         mix = clean
@@ -399,7 +408,7 @@ class Westermann_crm(object):
             i_m = 0
 
         # Pad with zeros if necessary, so that the lengths stay the same
-        out_x, out_m = general.make_same_length(out_x[:, i_x:], out_m[:, i_m:])
+        out_x, out_m = utils.make_same_length(out_x[:, i_x:], out_m[:, i_m:])
         return out_x, out_m
 
     def _calc_aligned_idx(self, tdist, mdist):
@@ -451,8 +460,8 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     """
     x = np.asarray(x)
     n_x = x.shape[-1]
-    n_fft = general.next_pow_2(n_x)
-    X = rfft(x, general.next_pow_2(n_fft))
+    n_fft = utils.next_pow_2(n_x)
+    X = rfft(x, utils.next_pow_2(n_fft))
     # Randomize phase.
     noise_mag = np.abs(X) * np.exp(
         2 * np.pi * 1j * np.random.random(X.shape[-1]))

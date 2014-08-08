@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+from matplotlib import pyplot as plt, pyplot
 import numpy as np
 import scipy as sp
+from scipy import signal as ss
 from scipy.io import wavfile
+import scipy.special
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
 from numpy.fft import fft, ifft
 
@@ -373,13 +376,18 @@ def make_same_length(a, b, extend_first=True):
         Two arrays with the same length along the last dimension.
 
     """
-    if len(a) < len(b):
-        c = np.zeros_like(b)
-        c[:len(a)] += a
-        return c, b
+    a = np.asarray(a)
+    b = np.asarray(b)
+    if a.shape[-1] < b.shape[-1]:
+        if extend_first:
+            c = np.zeros_like(b)
+            c[..., :a.shape[-1]] += a
+            return c, b
+        else:
+            return a, b[..., :a.shape[-1]]
     else:
         c = np.zeros_like(a)
-        c[:len(b)] += b
+        c[..., :b.shape[-1]] += b
         return a, c
 
 
@@ -429,11 +437,140 @@ def int2srt(x, y, srt=50.0):
     """
     x = np.asarray(x)
     y = np.asarray(y)
+
+    if x.shape != y.shape:
+        raise ValueError('Inputs of different lenghts.')
     srt = np.float(srt)
     idx = np.nonzero(np.diff(y >= srt))[0]
-    if idx:
+    if not idx and y[0] == srt:
+        return x[0]
+
+    if len(idx) >= 1:
         srt = x[idx] + (srt - y[idx]) * (x[idx + 1] - x[idx]) \
             / (y[idx + 1] - y[idx])
     else:
         srt = None
     return srt
+
+
+def psy_fn(x, mu=0., sigma=1.):
+    """Calculates a psychometric function with a given mean and variance.
+
+    Parameters
+    ----------
+    x : array_like
+        "x" values of the psychometric functions.
+    mu : float, optional
+        Value at which the psychometric function reaches 50%, i.e. the mean
+        of the distribution. (Default value = 0)
+    sigma : float, optional
+        Variance of the psychometric function. (Default value = 1)
+
+    Returns
+    -------
+    pc : ndarray
+        Array of "percent correct", between 0 and 100.
+
+    """
+    x = np.asarray(x)
+    return 100 * sp.special.erfc(-(x - mu) / (np.sqrt(2) * sigma)) / 2
+
+
+def noctave_center_freq(lowf, highf, width=3):
+    """Calculate exact center N-octave space center frequencies.
+
+    In practive, what is often desired is the "simplified" center frequencies,
+    so this function is not of much use.
+
+    Parameters
+    ----------
+    lowf : float
+        Lowest frequency.
+    highf : float
+        Highest frequency
+    width : float
+         Number of filters per octave. (Default value = 3)
+
+    Returns
+    -------
+    ndarray
+        List of center frequencies.
+
+    """
+    n_centers = np.log2(highf / lowf) * width + 1
+    n_octave = np.log2(highf / lowf)
+    return lowf * np.logspace(0, n_octave, num=n_centers, base=2)
+
+
+def impz(b, a=1):
+    """Plot step and impulse response of an FIR filter.
+
+    b : float
+        Forward terms of the FIR filter.
+    a : float
+        Feedback terms of the FIR filter. (Default value = 1)
+
+    From http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Returns
+    -------
+    None
+
+    """
+    l = len(b)
+    impulse = np.repeat(0., l)
+    impulse[0] = 1.
+    x = np.arange(0, l)
+    response = sp.lfilter(b, a, impulse)
+    plt.subplot(211)
+    plt.stem(x, response)
+    plt.ylabel('Amplitude')
+    plt.xlabel(r'n (samples)')
+    plt.title(r'Impulse response')
+    plt.subplot(212)
+    step = sp.cumsum(response)
+    plt.stem(x, step)
+    plt.ylabel('Amplitude')
+    plt.xlabel(r'n (samples)')
+    plt.title(r'Step response')
+    plt.subplots_adjust(hspace=0.5)
+
+
+def mfreqz(b, a=1, fs=22050.0):
+    """Plot the frequency and phase response of an FIR filter.
+
+    From http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Parameters
+    ----------
+    b : float
+        Forward terms of the FIR filter.
+    a : float
+        Feedback terms of the FIR filter. (Default value = 1)
+    fs : float
+        Sampling frequency of the filter. (Default value = 22050.0)
+
+    Returns
+    -------
+    None
+
+    """
+    w, h = ss.freqz(b, a)
+    h_db = 20 * np.log10(abs(h))
+    plt.subplot(211)
+    if fs:
+        f = sp.linspace(0, fs / 2, len(w))
+        plt.plot(f, h_db)
+    else:
+        plt.plot(w / max(w), h_db)
+    plt.ylim(-150, 5)
+    plt.ylabel('Magnitude (db)')
+    plt.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
+    plt.title(r'Frequency response')
+    plt.subplot(212)
+    h_phase = sp.unwrap(sp.arctan2(sp.imag(h), sp.real(h)))
+    plt.plot(w / max(w), h_phase)
+    plt.ylabel('Phase (radians)')
+    plt.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
+    plt.title(r'Phase response')
+    plt.subplots_adjust(hspace=0.5)
