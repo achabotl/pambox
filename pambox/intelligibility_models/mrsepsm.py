@@ -36,9 +36,9 @@ class MrSepsm(Sepsm):
 
     References
     ----------
-    .. [1] S. Jørgensen, S. D. Ewert, and T. Dau: A multi-resolution
-        envelope-power based model for speech intelligibility.. J Acoust Soc Am
-        134 (2013) 436--446.
+    .. [jorgensen2013multi] S. Joergensen, S. D. Ewert, and T. Dau: A
+        multi-resolution envelope-power based model for speech
+        intelligibility. J Acoust Soc Am 134 (2013) 436--446.
 
     """
 
@@ -116,11 +116,12 @@ class MrSepsm(Sepsm):
 
         Parameters
         ----------
-        mr_snr_env :
+        mr_snr_env : ndarray
             
 
         Returns
         -------
+        ndarray
 
         """
         return mr_snr_env.mean(axis=-1)
@@ -310,16 +311,16 @@ class MrSepsm(Sepsm):
         Parameters
         ----------
         mat :
-            param x:
-        y :
-            param ax:
-            :return: (Default value = None)
         x :
-             (Default value = None)
+            (Default value = None)
+        y : array_like
+            (Default value = None)
+        x : arra_like
+            (Default value = None)
         fig :
-             (Default value = None)
+            (Default value = None)
         subplot_pos :
-             (Default value = 111)
+            (Default value = 111)
 
         Returns
         -------
@@ -373,34 +374,35 @@ class MrSepsm(Sepsm):
                          , add_ylabel=True
                          , title=None
                          ):
-        """Plot multi-naurresolution representation of envelope powers.
+        """Plots multi-resolution representation of envelope powers.
 
         Parameters
         ----------
-        ptns :
-            namedtuple, predictions from the model. Must have a
-            `mr_snr_env_matrix` property.
-        dur :
-            param db: bool, display dB values of the modulation power or SNRenv
-            values. (Default: True.)
-        vmax :
-            float, maximum value of the colormap. If `None`,
+        ptns : dict
+            Predictions from the model. Must have a `mr_snr_env_matrix`
+            key.
+        dur : bool
+            Display dB values of the modulation power or SNRenv values. (Default: True.)
+        vmax : float
+            Maximum value of the colormap. If `None`,
             the data's maxium value is used. (Default: None)
-            :return: self
-        db :
-             (Default value = True)
-        vmin :
-             (Default value = None)
-        fig_subplt :
-             (Default value = None)
-        attr :
-             (Default value = 'exc_ptns')
-        add_cbar :
-             (Default value = True)
-        add_ylabel :
-             (Default value = True)
-        title :
-             (Default value = None)
+        db : bool
+            Plot the values in dB. (Default value = True)
+        vmin : float
+            Minimum value of the heatmap. The value will be infered from the
+            data if `None`. (Default value = None)
+        fig_subplt : tuple of (fig, axes)
+            Matplotlib `figure` and `axes` objects where the data should be
+            plotted. If `None` is provided, a new figures with the necessary
+            axes will be created. (Default value = None)
+        attr : string
+            Key to query in the `ptns` dictionary. (Default value = 'exc_ptns')
+        add_cbar : bool
+            Add a colorbar to the figure. (Default value = True)
+        add_ylabel : bool
+            Add a y-label to the axis. (Default value = True)
+        title : bool
+            Add a title to the axis. (Default value = None)
 
         Returns
         -------

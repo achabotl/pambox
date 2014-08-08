@@ -3,15 +3,32 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pambox's documentation!
-==================================
+PAMBOX
+======
 
-Contents:
+`pambox <https://github.com/achabotl/pambox>`_ is a Python toolbox to
+facilitate the development of auditory models, with a focus on speech
+intelligibility prediction models.
+
+
+Installing
+----------
+
+Install PAMBOX with::
+
+    pip install pambox
+
+Contents
+---------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
-   pambox
+   audio/index
+   speech/index
+   distort/index
+   idealobs/index
+   general/index
 
 
 Indices and tables

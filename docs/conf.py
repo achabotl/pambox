@@ -25,7 +25,17 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.viewcode',
+    'numpydoc',
+    'sphinx.ext.autosummary'
+]
+
+# Prevent "toctree contains reference to nonexisting document" warnings
+numpydoc_show_class_members = False
+numpydoc_class_members_toctree = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -58,10 +68,8 @@ except pkg_resources.DistributionNotFound:
     sys.exit(1)
 del pkg_resources
 
-version = '.'.join(release.split('.')[:2])
-
 # The short X.Y version.
-version = ''
+version = '.'.join(release.split('.')[:2])
 # The full version, including alpha/beta/rc tags.
 release = ''
 
@@ -77,7 +85,7 @@ release = ''
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'tests']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -241,7 +249,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'pambox', u'pambox Documentation',
-   u'Author', 'pambox', 'One line description of project.',
+   u'Alexandre Chabot-Leclerc', 'pambox', 'One line description of project.',
    'Miscellaneous'),
 ]
 
