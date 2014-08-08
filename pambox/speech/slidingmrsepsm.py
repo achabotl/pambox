@@ -1,8 +1,9 @@
 from __future__ import division, print_function, absolute_import
 from six.moves import zip
 import numpy as np
-from pambox.intelligibility_models.mrsepsm import MrSepsm
-from pambox import filterbank, general, auditory
+from pambox.speech.mrsepsm import MrSepsm
+from pambox import utils
+from pambox import inner
 
 
 class SlidingMrSepsm(MrSepsm):
@@ -22,7 +23,9 @@ class SlidingMrSepsm(MrSepsm):
                  modf=(1., 2., 4., 8., 16., 32., 64., 128., 256.),
                  downsamp_factor=10,
                  noise_floor=0.001,
-                 snr_env_limit=0.001):
+                 snr_env_limit=0.001,
+                 min_win=None,
+                 name='SlidingMrSepsm'):
         self.mr = super(SlidingMrSepsm,
                         self).__init__(fs=fs,
                                        cf=cf,
@@ -30,6 +33,8 @@ class SlidingMrSepsm(MrSepsm):
                                        downsamp_factor=downsamp_factor,
                                        noise_floor=noise_floor,
                                        snr_env_limit=snr_env_limit)
+        self.min_win = min_win
+        self.name = name
 
     @staticmethod
     def _inc_sliding_window(x, win=2, step=1):
@@ -41,13 +46,15 @@ class SlidingMrSepsm(MrSepsm):
         for ii, i_step in enumerate(range(0, n + 1, step)):
             i_low = max([0, i_step - win // 2])
             i_max = min([i_step + win // 2, n])
-            out[ii, :(i_max-i_low)] = x[i_low:i_max]
-            out.mask[ii, :(i_max-i_low)] = False
+            out[ii, :(i_max - i_low)] = x[i_low:i_max]
+            out.mask[ii, :(i_max - i_low)] = False
         return out
 
     def _mr_env_powers(self, channel_env, filtered_envs):
         len_env = filtered_envs.shape[-1]
         win_durations = 1. / np.asarray(self.modf, dtype='float')
+        if self.min_win is not None:
+            win_durations[win_durations < self.min_win] = self.min_win
         win_lengths = np.floor(win_durations * self.fs / self.downsamp_factor)
         swin_length = win_lengths.min()
         n_segment = np.ceil(len_env / swin_length)
@@ -96,7 +103,7 @@ class SlidingMrSepsm(MrSepsm):
         mr_exc_ptns = []
 
         # find bands above threshold
-        filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
+        filtered_rms_mix = inner.noctave_filtering(mixture, self.cf,
                                                         self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_rms_mix)
 
@@ -107,17 +114,17 @@ class SlidingMrSepsm(MrSepsm):
 
             for i_sig, channel_env in enumerate(channel_envs):
                 # Extract envelope
-                tmp_env = general.hilbert_envelope(channel_env).squeeze()
+                tmp_env = utils.hilbert_envelope(channel_env).squeeze()
 
                 # Low-pass filtering
-                tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
+                tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
                                                          n=1, fs=self.fs)
                 # Downsample the envelope for faster processing
                 downsamp_chan_envs[i_sig] = tmp_env[::self.downsamp_factor]
 
                 # Sub-band modulation filtering
                 lt_exc_ptns[i_sig, idx_band], chan_mod_envs[i_sig] = \
-                    filterbank.mod_filterbank(downsamp_chan_envs[i_sig],
+                    inner.mod_filterbank(downsamp_chan_envs[i_sig],
                                               fs_new,
                                               self.modf)
 
@@ -128,13 +135,13 @@ class SlidingMrSepsm(MrSepsm):
 
             time_av_mr_snr_env_matrix[idx_band], _, chan_mr_snr_env_matrix \
                 = self._mr_snr_env(*chan_mr_exc_ptns[-2:])  # Select only the
-                # env powers from the mixture and the noise, even if we
-                # calculated the envelope powers for the clean speech.
+            # env powers from the mixture and the noise, even if we
+            # calculated the envelope powers for the clean speech.
             mr_snr_env_matrix.append(chan_mr_snr_env_matrix)
 
         # Pick only sections that were selected
         section_snr_envs = None
-        if sections:
+        if sections is not None:
             section_snr_envs = np.zeros((len(self.cf),
                                          len(self.modf),
                                          len(sections)))
@@ -211,7 +218,6 @@ class SlidingMrSepsm(MrSepsm):
 
 
 if __name__ == "__main__":
-
     import scipy.io as sio
     from tests import __DATA_ROOT__
     from pprint import pprint

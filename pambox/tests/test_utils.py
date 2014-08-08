@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
+import os.path
 import pytest
-from pambox import general
+from pambox import utils
 from scipy.io import wavfile
 import numpy as np
 import scipy.io as sio
-from tests import __DATA_ROOT__
+
+
+__DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @pytest.fixture
@@ -42,11 +45,11 @@ def test_dbspl():
              (([10, 10], False, 0, 1), [20, 20]),
             )
     for (x, ac, offset, axis), target in tests:
-        np.testing.assert_allclose(general.dbspl(x, ac=ac, offset=offset,
+        np.testing.assert_allclose(utils.dbspl(x, ac=ac, offset=offset,
                                                  axis=axis), target)
 
 def test_rms_do_ac():
-    assert general.rms([0,1,2,3,4,5,6], ac=True) == 2
+    assert utils.rms([0,1,2,3,4,5,6], ac=True) == 2
 
 
 def test_rms():
@@ -65,17 +68,17 @@ def test_rms():
              (([[0, 1],[0, 1]], False, 1), [0.70710678, 0.70710678]),
     )
     for (x, ac, axis), target in tests:
-        np.testing.assert_allclose(general.rms(x, ac=ac, axis=axis), target)
+        np.testing.assert_allclose(utils.rms(x, ac=ac, axis=axis), target)
 
 
 def test_set_level(noise_raw, noise_65dB):
-    x65 = general.setdbspl(noise_raw, 65)
+    x65 = utils.setdbspl(noise_raw, 65)
     np.testing.assert_allclose(x65, noise_65dB, atol=1e-4)
 
 
 def test_mix_speech_and_noise_0dB(speech_raw, noise_raw, mix_0dB):
-    speech65 = general.setdbspl(speech_raw, 65)
-    noise65 = general.setdbspl(noise_raw, 65)
+    speech65 = utils.setdbspl(speech_raw, 65)
+    noise65 = utils.setdbspl(noise_raw, 65)
     mixed = speech65 + noise65
     np.testing.assert_allclose(mixed, mix_0dB, atol=1e-4)
 
@@ -84,7 +87,7 @@ def test_envelope_extraction():
     mat = sio.loadmat(__DATA_ROOT__ + "/test_envelope.mat")
     x = mat['signal'][0]
     target = mat['envelope'][0]
-    envelope = general.hilbert_envelope(x)
+    envelope = utils.hilbert_envelope(x)
     np.testing.assert_allclose(envelope, target, atol=1e-3)
 
 
@@ -100,7 +103,7 @@ def test_hilbert_env_on_2d_array_with_last_dimension():
     )
 
     for target, x in tests:
-        env = general.hilbert_envelope(x)
+        env = utils.hilbert_envelope(x)
         np.testing.assert_allclose(env, target,
                                    err_msg="Input was {}".format(x))
 
@@ -123,19 +126,19 @@ def test_third_oct_center_freq_bet_63_12500_hz():
 def test_find_calculate_srt_when_found():
     x = np.arange(10)
     y = 20 * x + 4
-    assert 2.3 == general.int2srt(x,y, srt=50)
+    assert 2.3 == utils.int2srt(x,y, srt=50)
 
 
 def test_find_calculate_srt_when_not_found():
     x = np.arange(10)
     y = 2 * x + 4
-    assert None == general.int2srt(x,y, srt=50)
+    assert None == utils.int2srt(x,y, srt=50)
 
 
 def test_find_srt_when_srt_at_index_zero():
     x = [0, 1]
     y = [50, 51]
-    assert 0 == general.int2srt(x,y, srt=50)
+    assert 0 == utils.int2srt(x,y, srt=50)
 
 
 def test_make_same_length_with_padding():
@@ -146,5 +149,14 @@ def test_make_same_length_with_padding():
     )
 
     for inputs, targets in tests:
-        np.testing.assert_allclose(general.make_same_length(*inputs),
+        np.testing.assert_allclose(utils.make_same_length(*inputs),
                                    targets)
+
+def test_psy_fn():
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_psychometric_function.mat')
+    x = mat['x'][0]
+    mu = 0.
+    sigma = 1.0
+    target = mat['p'][0] * 100
+    y = utils.psy_fn(x, mu, sigma)
+    np.testing.assert_allclose(y, target)

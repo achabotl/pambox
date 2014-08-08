@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import
+import os.path
 import pytest
-from pambox.intelligibility_models.mrsepsm import MrSepsm
+from pambox.speech.mrsepsm import MrSepsm
 import scipy.io as sio
 import numpy as np
 from numpy.testing import assert_allclose
-from tests import __DATA_ROOT__
 from six.moves import zip
+
+
+__DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @pytest.fixture

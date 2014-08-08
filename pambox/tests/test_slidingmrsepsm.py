@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import
+import os.path
 from numpy.testing import assert_allclose
 import scipy.io as sio
 import pytest
-from tests import __DATA_ROOT__
+from pambox.speech.slidingmrsepsm import SlidingMrSepsm
 
-from pambox.intelligibility_models.slidingmrsepsm import SlidingMrSepsm
+__DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @pytest.fixture

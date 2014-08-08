@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
+import os.path
 import pytest
 import scipy.io as sio
-from pambox import idealobs
+from pambox import central
 import numpy as np
-from tests import __DATA_ROOT__
+
+__DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @pytest.fixture
@@ -15,7 +17,7 @@ def data():
 
 
 @pytest.fixture
-def idealobs_parameters():
+def central_parameters():
     return (3.74647303e+00, 5.15928999e-02, -9.09197905e-07, 8000.)
 
 
@@ -29,26 +31,16 @@ def snrenv(snr):
     return 10. ** np.linspace(-2, 2, len(snr))
 
 
-def test_fit_obs(data, snrenv, idealobs_parameters):
-    c = idealobs.IdealObs()
+def test_fit_obs(data, snrenv, central_parameters):
+    c = central.IdealObs()
     c.fit_obs(snrenv, data)
     params = c.get_params()
     res = [params['k'], params['q'], params['sigma_s']]
-    np.testing.assert_allclose(res, idealobs_parameters[0:3], atol=1e-5)
+    np.testing.assert_allclose(res, central_parameters[0:3], atol=1e-5)
 
 
-def test_psy_fn():
-    mat = sio.loadmat(__DATA_ROOT__ + '/test_psychometric_function.mat')
-    x = mat['x'][0]
-    mu = 0.
-    sigma = 1.0
-    target = mat['p'][0] * 100
-    y = idealobs.psy_fn(x, mu, sigma)
-    np.testing.assert_allclose(y, target)
-
-
-def test_snr_env_to_pc(snrenv, idealobs_parameters, data):
-    c = idealobs.IdealObs(k=0.81, q=0.5, sigma_s=0.6, m=8000.)
+def test_snr_env_to_pc(snrenv, central_parameters, data):
+    c = central.IdealObs(k=0.81, q=0.5, sigma_s=0.6, m=8000.)
     snrenvs = np.asarray([2.6649636, 6.13623543, 13.1771355, 24.11754981,
                           38.35865445, 55.59566425])
     pc = c.snrenv_to_pc(snrenvs)
@@ -59,12 +51,12 @@ def test_snr_env_to_pc(snrenv, idealobs_parameters, data):
 
 def test_get_params():
     p = {'k': 1, 'q': 2, 'sigma_s': 0.5, 'm': 800}
-    c = idealobs.IdealObs(**p)
+    c = central.IdealObs(**p)
     assert p == c.get_params()
 
 
 def test_fit_obs_set_m_and_sigma_s(data, snrenv):
-    c = idealobs.IdealObs()
+    c = central.IdealObs()
 
     tests = (((1.42765076, 0.390529, 0.6, 12), (0.6, 12)),
              ((3.6590, 0.10341, 0.6, 8000), (0.6, 8000)),

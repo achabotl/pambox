@@ -4,10 +4,9 @@ import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 from six.moves import zip
-from pambox.intelligibility_models.sepsm import Sepsm
-from pambox import general
-from pambox import filterbank
-from pambox import auditory
+from pambox.speech.sepsm import Sepsm
+from pambox import utils
+from pambox import inner
 
 
 class MrSepsm(Sepsm):
@@ -214,8 +213,8 @@ class MrSepsm(Sepsm):
         mr_exc_ptns = []
 
         # find bands above threshold
-        filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
-                                                        self.fs, width=3)
+        filtered_rms_mix = inner.noctave_filtering(mixture, self.cf,
+                                                   self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_rms_mix)
 
         for idx_band in bands_above_thres_idx:
@@ -225,19 +224,19 @@ class MrSepsm(Sepsm):
 
             for i_sig, channel_env in enumerate(channel_envs):
                 # Extract envelope
-                tmp_env = general.hilbert_envelope(channel_env).squeeze()
+                tmp_env = utils.hilbert_envelope(channel_env).squeeze()
 
                 # Low-pass filtering
-                tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
-                                                         n=1, fs=self.fs)
+                tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
+                                                      n=1, fs=self.fs)
                 # Downsample the envelope for faster processing
                 downsamp_chan_envs[i_sig] = tmp_env[::self.downsamp_factor]
 
                 # Sub-band modulation filtering
                 lt_exc_ptns[i_sig, idx_band], chan_mod_envs[i_sig] = \
-                    filterbank.mod_filterbank(downsamp_chan_envs[i_sig],
-                                              fs_new,
-                                              self.modf)
+                    inner.mod_filterbank(downsamp_chan_envs[i_sig],
+                                         fs_new,
+                                         self.modf)
 
             chan_mr_exc_ptns = []
             for chan_env, mod_envs in zip(downsamp_chan_envs,

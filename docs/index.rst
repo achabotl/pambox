@@ -18,17 +18,27 @@ Install PAMBOX with::
 
     pip install pambox
 
+Structure of the toolbox
+------------------------
+
+The structure of the toolbox is inspired by the auditory system. The classes
+and functions are split between a "peripheral" and a "central" part. The
+"peripheral" part contains, obviously, the "outer", "middle",
+and "inner" modules. The "central" part is more general and contains the
+modules and functions for central processes, without much order for now.
+
 Contents
----------
+--------
 
 .. toctree::
    :maxdepth: 2
 
    audio/index
+   periph/index
+   central/index
    speech/index
    distort/index
-   idealobs/index
-   general/index
+   utils/index
 
 
 Indices and tables

@@ -33,4 +33,4 @@ install:
   - conda list
 
 script:
-    - py.test --runslow tests/
+    - py.test --runslow pambox/tests
