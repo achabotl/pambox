@@ -28,6 +28,27 @@ def find_version(*file_paths):
 
 long_description = read('README.rst')
 
+def check_dependencies():
+
+    # Just make sure dependencies exist, I haven't rigorously
+    # tested what the minimal versions that will work are
+    # (help on that would be awesome)
+    try:
+        import numpy
+    except ImportError:
+        raise ImportError("pambox requires numpy")
+    try:
+        import scipy
+    except ImportError:
+        raise ImportError("pambox requires scipy")
+    try:
+        import matplotlib
+    except ImportError:
+        raise ImportError("pambox requires matplotlib")
+    try:
+        import pandas
+    except ImportError:
+        raise ImportError("pambox requires pandas")
 
 class PyTest(TestCommand):
     def finalize_options(self):
