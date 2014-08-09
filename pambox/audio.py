@@ -4,7 +4,10 @@ sound playback.
 """
 from __future__ import division, print_function
 import numpy as np
-import pyaudio
+try:
+    import pyaudio
+except ImportError:
+    raise ImportError("pyaudio is required is you want to use pambox.audio")
 
 
 def play(x, fs=44100, normalize=True):
