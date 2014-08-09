@@ -31,7 +31,7 @@ install:
   - conda install --yes matplotlib
   - conda install --yes pytest
   - conda install --yes coverage
-  - conda install -c https://conda.binstar.org/asmeurer pytest-cov
+  - conda install -c pypi pytest-cov
   - conda list
 
 script:
