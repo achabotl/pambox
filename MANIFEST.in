@@ -1,13 +1,17 @@
+include MANIFEST.in
 include AUTHORS.rst
 include CHANGES.md
 include CONTRIBUTING.md
 include LICENSE.txt
-include MANIFEST.in
 include README.rst
+# All source files
+recursive-include pambox *
+# All docs
 recursive-include examples *.py *.ipnb
 recursive-include docs *
-recursive-exclude docs *.pyc
-recursive-exclude docs *.pyo
-recursive-exclude examples *.pyc
-recursive-exclude examples *.pyo
+include tox.ini
+# Exclude what we don't want
 prune docs/_build
+prune pambox/tests
+prune */__pycache__
+global-exclude *.pyc *~ *.bak *.swp *.pyo
