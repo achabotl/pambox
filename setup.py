@@ -29,6 +29,29 @@ def find_version(*file_paths):
 long_description = read('README.rst')
 
 
+def check_dependencies():
+
+    # Just make sure dependencies exist, I haven't rigorously
+    # tested what the minimal versions that will work are
+    # (help on that would be awesome)
+    try:
+        import numpy
+    except ImportError:
+        raise ImportError("pambox requires numpy")
+    try:
+        import scipy
+    except ImportError:
+        raise ImportError("pambox requires scipy")
+    try:
+        import matplotlib
+    except ImportError:
+        raise ImportError("pambox requires matplotlib")
+    try:
+        import pandas
+    except ImportError:
+        raise ImportError("pambox requires pandas")
+
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -37,42 +60,48 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-
         errcode = pytest.main(self.test_args)
 
 
-setup(
-    name='Pambox',
-    description='A Python toolbox for auditory modeling',
-    author='Alexandre Chabot-Leclerc',
-    author_email='pambox@alex.alexchabot.net',
-    version=find_version('pambox', '__init__.py'),
-    url='https://bitbucket.org/achabotl/pambox',
-    license='Modified BSD License',
-    tests_require=['pytest'],
-    install_requires=['six>=1.4.1',
-                      'numpy>=1.8.0',
-                      'scipy>=0.13.3',
-                      'pandas>=0.13.1',
-                      'matplotlib>=1.3.1'
-    ],
-    cmdclass={'test': PyTest},
-    long_description=long_description,
-    packages=['pambox'],
-    include_package_data=True,
-    platforms='any',
-    test_suite='pambox.test.test_pambox',
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-        'Topic :: Scientific/Engineering',
-        'Operating System :: OS Independent'
-    ],
-    extras_require={
-        'testing': ['pytest']
-    }
-)
+if __name__ == '__main__':
+
+    import sys
+    if not (len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
+            sys.argv[1] in ('--help-commands', 'egg_info', '--version',
+                            'clean'))):
+        check_dependencies()
+
+    setup(
+        name='pambox',
+        description='A Python toolbox for auditory modeling',
+        author='Alexandre Chabot-Leclerc',
+        author_email='pambox@alex.alexchabot.net',
+        version=find_version('pambox', '__init__.py'),
+        url='https://bitbucket.org/achabotl/pambox',
+        license='Modified BSD License',
+        tests_require=['pytest'],
+        install_requires=[
+            'six>=1.4.1',
+        ],
+        cmdclass={'test': PyTest},
+        long_description=long_description,
+        packages=['pambox'],
+        include_package_data=True,
+        platforms='any',
+        test_suite='pambox.tests',
+        classifiers=[
+            'Development Status :: 3 - Alpha',
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: BSD License',
+            'Natural Language :: English',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.4',
+            'Topic :: Scientific/Engineering',
+            'Operating System :: POSIX',
+            'Operating System :: Unix',
+            'Operating System :: MacOS'
+        ],
+        extras_require={
+            'testing': ['pytest']
+        }
+    )
