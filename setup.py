@@ -88,16 +88,18 @@ if __name__ == '__main__':
         packages=['pambox'],
         include_package_data=True,
         platforms='any',
-        test_suite='pambox.test.test_pambox',
+        test_suite='pambox.tests',
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: BSD License',
             'Natural Language :: English',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.4',
             'Topic :: Scientific/Engineering',
-            'Operating System :: OS Independent'
+            'Operating System :: POSIX',
+            'Operating System :: Unix',
+            'Operating System :: MacOS'
         ],
         extras_require={
             'testing': ['pytest']
