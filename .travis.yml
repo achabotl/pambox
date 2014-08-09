@@ -24,6 +24,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
+  - conda install --yes pip
   - conda install --yes six
   - conda install --yes numpy
   - conda install --yes scipy
@@ -31,7 +32,7 @@ install:
   - conda install --yes matplotlib
   - conda install --yes pytest
   - conda install --yes coverage
-  - conda install -c pypi pytest-cov
+  - pip install pytest-cov
   - conda list
 
 script:
