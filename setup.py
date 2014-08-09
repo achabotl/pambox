@@ -72,7 +72,7 @@ if __name__ == '__main__':
         check_dependencies()
 
     setup(
-        name='Pambox',
+        name='pambox',
         description='A Python toolbox for auditory modeling',
         author='Alexandre Chabot-Leclerc',
         author_email='pambox@alex.alexchabot.net',
