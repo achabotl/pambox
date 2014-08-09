@@ -30,7 +30,9 @@ install:
   - conda install --yes pandas
   - conda install --yes matplotlib
   - conda install --yes pytest
+  - conda install --yes coverage
+  - conda install -c https://conda.binstar.org/asmeurer pytest-cov
   - conda list
 
 script:
-    - py.test --runslow pambox/tests
+    - py.test --runslow --cov pambox pambox/tests
