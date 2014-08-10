@@ -23,19 +23,15 @@ def mat():
                        squeeze_me=True)
 
 
-@pytest.fixture
-def mat_complete():
-    return sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_full_prediction.mat',
-                       squeeze_me=True)
+def test_mr_sepsm_mr_env_powers(mr):
+    mat = sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_mr_env_powers.mat',
+                      squeeze_me=True)
+    channel_env = mat['env'].T[0]
+    mod_channel_envs = mat['mod_channel_envs'].T[0]
 
-
-def test_mr_sepsm_mr_env_powers(mr, mat):
-    channel_env = mat['Env'].T[0]
-    mod_channel_envs = mat['tempOutput'].T[0]
-
-    mr_env_powers_mix = mr._mr_env_powers(channel_env, mod_channel_envs)
-    for d, target in zip(mr_env_powers_mix,
-                         mat['multiRes_envPower']):
+    mr_env_powers = mr._mr_env_powers(channel_env, mod_channel_envs)
+    for d, target in zip(mr_env_powers,
+                         mat['mr_env_powers']):
         assert_allclose(d.compressed(), target[0])
 
 
@@ -70,17 +66,23 @@ def test_mr_sepsm_time_averaging_of_short_term_snr_env(mat):
 
 
 @pytest.mark.slow
-def test_complete_mr_sepsm(mr, mat_complete):
+def test_complete_mr_sepsm(mr):
+    mat_complete = sio.loadmat(__DATA_ROOT__ +
+                               '/test_mr_sepsm_full.mat',
+                               squeeze_me=True)
     """Test the prediction by the mr-sEPSM
     """
-    mix = mat_complete['test']
+    mix = mat_complete['mix']
     noise = mat_complete['noise']
-
-
-    res = mr.predict(mix, mix, noise)
-
-    assert_allclose(
-        res['snr_env']
-        , mat_complete['tmp']['SNRenv'].astype('float')
-        , rtol=0.01
+    tests = (
+        (mix, noise, 17.026659110065896),
     )
+
+    for mix, noise, target in tests:
+        res = mr.predict(mix, mix, noise)
+
+        assert_allclose(
+            res['snr_env']
+            , target
+            , rtol=0.01
+        )

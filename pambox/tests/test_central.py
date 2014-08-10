@@ -2,9 +2,9 @@
 from __future__ import division, print_function
 import os.path
 import pytest
-import scipy.io as sio
 from pambox import central
 import numpy as np
+
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -18,7 +18,7 @@ def data():
 
 @pytest.fixture
 def central_parameters():
-    return (3.74647303e+00, 5.15928999e-02, -9.09197905e-07, 8000.)
+    return 3.74647303e+00, 5.15928999e-02, -9.09197905e-07, 8000.
 
 
 @pytest.fixture
@@ -68,4 +68,3 @@ def test_fit_obs_set_m_and_sigma_s(data, snrenv):
         params = c.get_params()
         res = [params['k'], params['q'], params['sigma_s'], params['m']]
         np.testing.assert_allclose(res, target, atol=1e-4)
-
