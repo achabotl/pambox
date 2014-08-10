@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import os.path
+import csv
 import pytest
 from scipy.io import wavfile
 import numpy as np
@@ -12,47 +13,20 @@ from numpy.testing import assert_allclose, assert_array_equal
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
-@pytest.fixture
-def speech_raw():
-    x = wavfile.read(__DATA_ROOT__ + "/test_speech_raw_22050.wav")[1]
-    return x / 2. ** 15
-
-
-@pytest.fixture
-def noise_raw():
-    x = wavfile.read(__DATA_ROOT__ + "/test_noise_raw_22050.wav")[1]
-    return x / 2. ** 15
-
-
-@pytest.fixture
-def mix_0dB():
-    x = wavfile.read(__DATA_ROOT__ + "/test_mix_0dB_22050.wav")[1]
-    return x / 2. ** 15
-
-
-@pytest.fixture
-def noise_65dB():
-    x_65 = wavfile.read(__DATA_ROOT__ + "/test_noise_65dB_22050.wav")[1]
-    return x_65 / 2. ** 15
-
-
-@pytest.fixture
-def center_f():
-    return np.asarray([63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800,
-                       1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
-                       6300, 8000])
-
-
-@pytest.fixture
-def mat_snr_env():
-    return sio.loadmat(__DATA_ROOT__ + '/test_snr_env.mat')
-
-
-def test_select_bands_above_threshold(center_f):
-    mat = sio.loadmat(__DATA_ROOT__ + "/test_bands_above_threshold_v1.mat",
-                      squeeze_me=True)
-    noise_rms = mat['mix_rms_out'].squeeze()
-    target = mat['bands_to_process'].squeeze()
+def test_select_bands_above_threshold():
+    center_f = np.asarray([63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
+                           630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000,
+                           5000, 6300, 8000])
+    noise_rms = [142.598279903563, 596.254784935965, 1319.07476787393,
+                 1931.80860942992, 2180.13918820141, 1714.49937340166,
+                 2009.77926719000, 1130.48579025285, 820.432762207735,
+                 1006.49592779826, 1523.47513285058, 921.921756875459,
+                 791.901475253190, 1508.59965109920, 825.572455447266,
+                 657.161350227808, 626.333420574852, 474.950833753788,
+                 331.591691820142, 206.744689750152, 491.003492858161,
+                 297.383958806200]
+    target = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+              20, 21, 22]
     c = sepsm.Sepsm(cf=center_f)
     bands_above_thres = c._bands_above_thres(noise_rms)
     # Make 1-based to compare with matlab
@@ -82,16 +56,23 @@ def test_snr_env():
         assert_allclose(snrenv, target)
 
 
-@pytest.mark.slow
 def test_sepsm_prediction_snr_min9_db():
-    mat = sio.loadmat(__DATA_ROOT__ + "/test_multChanSNRenv.mat", squeeze_me=True,
-                      struct_as_record=False)
-    target_snr_env = mat['result'].SNRenv
-    mix = mat['stim'][0]
-    noise = mat['stim'][1]
+    with open(os.path.join(__DATA_ROOT__, 'test_full_sepsm.csv')) as csv_file:
+        data_file = csv.reader(csv_file)
+        temp = next(data_file)
+        n_samples = int(temp[0])
+        mix = np.empty(n_samples)
+        noise = np.empty(n_samples)
+
+        for i, (m, n) in enumerate(data_file):
+            mix[i] = np.asarray(m, dtype=np.float)
+            noise[i] = np.asarray(n, dtype=np.float)
+
+    target_snr_env = 9.57297
+
     c = sepsm.Sepsm()
     res = c.predict(mix, mix, noise)
-    assert_allclose(target_snr_env, res['snr_env'], rtol=1e-2)
+    assert_allclose(target_snr_env, res['snr_env'], rtol=1e-3)
 
 
 @pytest.mark.slow

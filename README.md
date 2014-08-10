@@ -3,7 +3,8 @@
 pambox is a Python toolbox to facilitate the development of auditory models,
 with a focus on speech intelligibility prediction models.
 
-The project is maintained by Alexandre Chabot-Leclerc.
+The project is maintained by [Alexandre Chabot-Leclerc](https://twitter
+.com/AlexChabotL).
 
 pambox provides a consistent API for speech intelligibility models, inspired
 by [Scikit-learn](http://scikit-learn.org/), to facilitate comparisons across
