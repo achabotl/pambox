@@ -240,7 +240,9 @@ class Sepsm(object):
                                             bands_above_thres_idx)
 
         res = {
-            'snr_env': snr_env,
+            'p': {
+                'snr_env': snr_env
+            },
             'snr_env_matrix': snr_env_matrix,
             'exc_ptns': exc_ptns,
             'bands_above_thres_idx': bands_above_thres_idx

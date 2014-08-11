@@ -19,5 +19,5 @@ def test_sii():
     for _, E, N, T, I, SII in data.itertuples():
         s = Sii(T=T*np.ones(18), I=I)
         ss = s.predict_spec(E*np.ones(18), N*np.ones(18))
-        assert_allclose(ss, SII, rtol=1e-4)
+        assert_allclose(ss['p']['sii'], SII, rtol=1e-4)
 
