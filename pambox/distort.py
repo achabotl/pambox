@@ -3,12 +3,13 @@
 :mod:`pambox.distort` regroups various types of distortions and processings
 that can be applied to signals.
 """
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
+
 import numpy as np
 import scipy as sp
 from six.moves import zip
 from scipy.io import wavfile
+
 from pambox import utils
 from pambox.utils import fftfilt
 

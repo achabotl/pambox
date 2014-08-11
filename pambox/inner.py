@@ -3,8 +3,9 @@
 :mod:`pambox.periph.inner` regroups processes of the inner.
 """
 from __future__ import division, print_function, absolute_import
-from numpy import pi, exp, sin, cos, sqrt, abs, ones
+
 import numpy as np
+from numpy import pi, exp, sin, cos, sqrt, abs, ones
 from numpy.core.umath import pi
 import scipy as sp
 import scipy.signal as ss
