@@ -55,7 +55,7 @@ def check_dependencies():
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = []
+        self.test_args = ['pambox/tests']
         self.test_suite = True
 
     def run_tests(self):
