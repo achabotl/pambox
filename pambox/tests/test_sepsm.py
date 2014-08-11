@@ -72,7 +72,7 @@ def test_sepsm_prediction_snr_min9_db():
 
     c = sepsm.Sepsm()
     res = c.predict(mix, mix, noise)
-    assert_allclose(target_snr_env, res['snr_env'], rtol=1e-3)
+    assert_allclose(target_snr_env, res['p']['snr_env'], rtol=1e-3)
 
 
 @pytest.mark.slow
@@ -85,4 +85,4 @@ def test_sepsm_predictions_snr_0_kappa_0_8():
         noise = mat['noises'][ii]
         target = mat['results'][ii].SNRenv
         res = c.predict(mix, mix, noise)
-        assert_allclose(target, res['snr_env'], rtol=2e-2)
+        assert_allclose(target, res['p']['snr_env'], rtol=2e-2)

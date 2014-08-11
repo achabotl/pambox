@@ -82,7 +82,7 @@ def test_complete_mr_sepsm(mr):
         res = mr.predict(mix, mix, noise)
 
         assert_allclose(
-            res['snr_env']
+            res['p']['snr_env']
             , target
             , rtol=0.01
         )
