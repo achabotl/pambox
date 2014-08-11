@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+
 from matplotlib import pyplot as plt, pyplot
 import numpy as np
+from numpy import min, log2, ceil, argmin, zeros, arange, complex
+from numpy.fft import fft, ifft
 import scipy as sp
 from scipy import signal as ss
 from scipy.io import wavfile
-import scipy.special
-from numpy import min, log2, ceil, argmin, zeros, arange, complex
-from numpy.fft import fft, ifft
 
 
 def dbspl(x, ac=False, offset=100.0, axis=-1):
