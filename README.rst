@@ -41,11 +41,13 @@ For running tests, you will need `pytest <http://pytest.org/>`__.
 Install
 -------
 
-You can simply do:
+Right now, `pambox` is only avaible through Github. It should be available
+via `pip` soon. To install pambox from source::
 
-::
+    git clone https://github.com/achabotl/pambox.git
+    cd pambox
+    python setup.py install
 
-    pip install pambox
 
 Contributing
 ------------
@@ -58,11 +60,11 @@ You can check out the latest source and install it for development with:
     cd pambox
     python setup.py develop
 
-To run tests, from the root pambox folder, type:
+To run tests (you will need `pytest`), from the root pambox folder, type:
 
 ::
 
-    py.test
+    python setup.py test
 
 License
 -------
