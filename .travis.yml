@@ -31,9 +31,8 @@ install:
   - conda install --yes pandas
   - conda install --yes matplotlib
   - conda install --yes pytest
-  - conda install --yes coverage
-  - pip install pytest-cov
   - conda list
+  - python setup.py install
 
 script:
-    - py.test --runslow --cov pambox pambox/tests
+    - py.test --runslow pambox/tests
