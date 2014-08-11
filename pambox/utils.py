@@ -10,7 +10,7 @@ from scipy import signal as ss
 from scipy.io import wavfile
 
 
-def dbspl(x, ac=False, offset=100.0, axis=-1):
+def dbspl(x, ac=False, offset=0.0, axis=-1):
     """Computes RMS value of signal in dB.
 
     By default, a signal with an RMS value of 1 will have a level of 100 dB
@@ -24,7 +24,7 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
         Consider only the AC component of the signal, i.e. the mean is
         removed (Default value =  False)
     offset : float
-        Reference to convert between RMS and dB SPL.  (Default value = 100.0)
+        Reference to convert between RMS and dB SPL.  (Default value = 0.0)
     axis : int
         Axis on which to compute the SPL value (Default value = -1, last axis)
 
@@ -48,7 +48,7 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
     return 20. * np.log10(rms(x, ac)) + float(offset)
 
 
-def setdbspl(x, lvl, ac=False, offset=100.0):
+def setdbspl(x, lvl, ac=False, offset=0.0):
     """Sets the level of signal in dB SPL, along its last dimension.
 
     Parameters
@@ -63,7 +63,7 @@ def setdbspl(x, lvl, ac=False, offset=100.0):
         (Default value = False)
     offset : float
         Level, in dB SPL, corresponding to an RMS of 1. By default, an RMS of
-        1 corresponds to 100 dB SPL, i.e. the default is 100.
+        1 corresponds to 0 dB SPL, i.e. the default is 0.
 
     Returns
     -------
