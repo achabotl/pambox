@@ -96,8 +96,8 @@ def test_spec_sub_0dB_kappa_0():
     shift = 0.5
     factor = 0
     y_speech, y_noise = distort.spec_sub(signal, noise, factor, w, padz, shift)
-    np.testing.assert_allclose(y_speech, target)
-    np.testing.assert_allclose(y_noise, target_noise)
+    np.testing.assert_allclose(y_speech, target, atol=1e-6)
+    np.testing.assert_allclose(y_noise, target_noise, atol=1e-6)
 
 
 def test_level_adjustment():
