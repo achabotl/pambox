@@ -4,19 +4,46 @@ Speech Intelligibility Models and Experiments
 Introduction
 ------------
 
-The :py:module:`~speech` module groups together speech intelligibility models
- and varios other tools to facilitate the creation of speech intelligibility
- prediction "experiments". Each model presents a standard `predict` function
+The :mod:`~pambox.speech` module groups together speech intelligibility models
+and various other tools to facilitate the creation of speech intelligibility
+prediction "experiments".
 
 
 Speech Intelligibility Models
 -----------------------------
 
-:py:class:`~pambox..Sepsm`
+Each model presents a standard `predict` function that takes the clean speech
+signal, the processed speech (or the mixture of the speech and noise),
+and the noise alone. The reference level is that a signal with an RMS value
+of 1 corresponds to 0 dB SPL.
+
+::
+
+    >>> from pambox.speech import Sepsm
+    >>> s = Sepsm()
+    >>> s.predict_spec(clean, mix, noise)
 
 
-:py:class:`~pambox.speech.MrSepsm`
+For models that do take time signals as inputs,
+such as the :py:class:`~pambox.speech.Sii`, two other types of interfaces are
+defined:
 
+* `predict_spec` if the model takes frequency spectra as its inputs. Once
+  again, the spectra of the clean speech, of the mixture, and of the noise
+  should be provided::
+
+    >>> from pambox.speech import Sii
+    >>> s = Sii()
+    >>> s.predict_spec(clean_spec, mix_spec, noise_spec)
+
+
+* `predict_ir` if the models takes impulse responses as its inputs. The
+  function then takes two inputs, the impulse response to the target,
+  and the concatenated impulse responses to the maskers::
+
+    >>> from pambox.speech import IrModel
+    >>> s = IrModel()
+    >>> s.predict_ir(clean_ir, noise_irs)
 
 
 Speech Materials
