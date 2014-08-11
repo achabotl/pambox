@@ -36,7 +36,10 @@ The main dependencies are `Numpy <http://www.numpy.org/>`__>= 1.8.0,
 codebase for Python 2 and Python 3). Lower versions of these packages
 are likely to work as well but have not been thoroughly tested.
 
-For running tests, you will need `pytest <http://pytest.org/>`__.
+`pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_ is required if you
+want to use the ``audio`` module.
+
+For running tests, you will need `pytest <http://pytest.org/>`_.
 
 Install
 -------
