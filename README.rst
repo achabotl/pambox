@@ -39,7 +39,7 @@ are likely to work as well but have not been thoroughly tested.
 `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_ is required if you
 want to use the ``audio`` module.
 
-For running tests, you will need `pytest <http://pytest.org/>`_.
+For running tests, you will need `pytest <http://pytest.org/>`_ and pytest-cov.
 
 Install
 -------
