@@ -197,4 +197,9 @@ class Sii(object):
 
         # Speech Intelligibility Index (4.8 Eq. 14)
         out = sum(self._band_importance(self.I) * A)
-        return np.fmax(out, 0)
+        res = {
+            'p': {
+                'sii': np.fmax(out, 0)
+            }
+        }
+        return res
