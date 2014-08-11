@@ -41,7 +41,8 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
 
     See also
     --------
-    `setdbspl`, `rms`.
+    setdbspl
+    rms
     """
     x = np.asarray(x)
     return 20. * np.log10(rms(x, ac)) + float(offset)
@@ -137,6 +138,7 @@ def hilbert(x, N=None, axis=-1):
     out, turning the real-valued signal into a complex signal.  The Hilbert
     transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
     original signal from ``np.real(hilbert(x))``.
+
     References
     ----------
     .. [1] Wikipedia, "Analytic signal".
@@ -144,9 +146,7 @@ def hilbert(x, N=None, axis=-1):
 
     License
     -------
-    This code was copied from Scipy. . The following license
-    applies
-    for this
+    This code was copied from Scipy. The following license applies for this
     function:
 
     Copyright (c) 2001, 2002 Enthought, Inc.
