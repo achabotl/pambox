@@ -258,12 +258,14 @@ class MrSepsm(Sepsm):
             time_av_mr_snr_env_matrix, bands_above_thres_idx)
 
         res = {
-            'snr_env': snr_env,
+            'p': {
+                'snr_env': snr_env,
+                'lt_snr_env': lt_snr_env,
+            },
             'snr_env_matrix': time_av_mr_snr_env_matrix,
             # .snr_env_matrix': snr_env_matrix
 
             # Output of what is essentially the sEPSM.
-            'lt_snr_env': lt_snr_env,
             'lt_snr_env_matrix': lt_snr_env_matrix,
             'lt_exc_ptns': lt_exc_ptns,
 
@@ -310,7 +312,6 @@ class MrSepsm(Sepsm):
         Parameters
         ----------
         mat :
-<<<<<<< HEAD
         x :
             (Default value = None)
         y : array_like
@@ -321,18 +322,6 @@ class MrSepsm(Sepsm):
             (Default value = None)
         subplot_pos :
             (Default value = 111)
-=======
-            param x:
-        y :
-            param ax:
-            :return: (Default value = None)
-        x :
-             (Default value = None)
-        fig :
-             (Default value = None)
-        subplot_pos :
-             (Default value = 111)
->>>>>>> bc39394... Convert all docstrings to numpydoc.
 
         Returns
         -------
