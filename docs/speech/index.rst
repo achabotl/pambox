@@ -71,23 +71,58 @@ The :py:class:`~pambox.speech.Material`  class simplifies the
 access to the speech files when doing speech intelligibility prediction
 experiments.
 
-When creating the class, you have to define where the sentences can be found,
-their sampling frequency, their reference level, in dB SPL (the reference is
-that a signal with an RMS value of 1 corresponds to 0 dB SPL),
-as well as the path to a file wher
+When creating the class, you have to define:
+
+* where the sentences can be found
+* their sampling frequency
+* their reference level, in dB SPL (the reference is that a signal with an
+  RMS value of 1 corresponds to 0 dB SPL),
+* as well as the path to a file where the corresponding speech-shaped noise for
+  this particular material can be found.
 
 For example, to create a speech material object for IEEE sentences stored in
 the `../stimuli/ieee` folder::
 
-    sm = SpeechMaterial(
-        fs=25000,
-        root_path='../stimuli/ieee',
-        path_to_ssn='ieee_ssn.wav',
-        ref_level=74
-        name='IEEE'
-        )
+    >>> sm = SpeechMaterial(
+    ...    fs=25000,
+    ...    root_path='../stimuli/ieee',
+    ...    path_to_ssn='ieee_ssn.wav',
+    ...    ref_level=74
+    ...    name='IEEE'
+    ...    )
 
-By default, the :py:attr:`~pambox.speech.speechmaterial.SpeechMaterial.files`
+Each speech file can be loaded using its name::
+
+    >>> x = sm.load_file(sm.list[0])
+
+Or files can be loaded as an iterator::
+
+    >>> all_files = sm.load_files()
+    >>> for x in all_files:
+    ...    # do some processing on `x`
+    ...    pass
+
+
+By default, the list of files is simply all the files found in
+the `root_path`. To overwrite this behavior, simply replace the
+:py:func:`~pambox.speech.Material.files_list` function::
+
+    >>> def new_files_list():
+    ...     return ['file1.wav', 'file2.wav']
+    >>> sm.files_list = new_files_list
+
+It is common that individual sentences of a speech material are not adjusted
+to the exact same level. This is typically done to compensate for differences
+in intelligibility between sentences. In order to keep the inter-sentence
+level difference, it is recommended to use the
+:py:func:`~pambox.speech.Material.set_level` method of the speech material.
+The code below sets the levelo of the first sentence to 65 dB SPL,
+with the reference that a signal with an RMS value of 1 has a level of 0 dB SPL.
+
+    >>> x = sm.load_file(sm.files[0])
+    >>> adjusted_x = sm.set_level(x, 65)
+
+
 
 
 API
