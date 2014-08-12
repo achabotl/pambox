@@ -235,6 +235,8 @@ def overlap_and_add(powers, phases, len_window, shift_size):
         Reconstructed time-domain signal.
 
     """
+    len_window = int(len_window)
+    shift_size = int(shift_size)
     n_frames, len_frame = powers.shape
     spectrum = powers * np.exp(1j * phases)
     signal = np.zeros(n_frames * shift_size + len_window - shift_size)
