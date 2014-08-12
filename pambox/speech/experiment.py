@@ -72,6 +72,7 @@ class Experiment(object):
         self.timestamp_format = timestamp_format
         self.write = write
         self.output_path = output_path
+        self._full_pred_key = 'Full Prediction'
 
 
     def preprocessing(self, target, masker, params):
@@ -234,10 +235,11 @@ class Experiment(object):
             self.write_results(df)
         return df
 
-    def write_results(self, df):
-        """
+    def _write_results(self, df):
+        """Writes results to CSV file.
 
-        Writes results to CSV file.
+        Will drop the column where all the complete model output is stored
+        before writing to disk.
 
         Parameters
         ----------
@@ -251,7 +253,7 @@ class Experiment(object):
         Raises
         ------
         IOError : Raise if the path where to write the CSV file is not
-        accesssible. Additionally, the function tries to save the CSV file to
+        accessible. Additionally, the function tries to save the CSV file to
         the current directory, in order not to loose the simulation data.
 
         """
@@ -327,20 +329,29 @@ class Experiment(object):
 
     @staticmethod
     def snr_to_pc(df, col, fc, out_name='Intelligibility'):
-        """
-        Converts the data in a given column to percent correct.
+        """Converts the data in a given column to percent correct.
 
-        :param col: string, name of the column to convert
-        :param fc: function, takes a float as input and returns a float.
-        :param out_name: str, name of the output column (default:
-        Intelligibility')
+        Parameters
+        ----------
+        col : string
+            Name of the column to convert to intelligibility.
+        fc : function,
+            Takes a float as input and returns a float. The function performs
+            the transformation to intelligibility.
+        out_name : str
+            Name of the output column (default: 'Intelligibility')
+
+        Returns
+        -------
+        df : dataframe
+            Dataframe with the new columns with trans
         """
         df[out_name] = df[col].map(fc)
         return df
 
     @staticmethod
     def get_srt(df):
-        """Convert SRTs to DeltaSRTs.
+        """Converts SRTs to DeltaSRTs.
 
         :return: tuple, srts and DeltaSRTs
         """
