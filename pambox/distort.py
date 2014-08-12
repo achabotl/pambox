@@ -284,7 +284,7 @@ class WestermannCrm(object):
         Proceedings of Meetings on Acoustics 19 (2013) 050156.
     """
 
-        """
+    def __init__(self, fs=40000):
         self.dist = np.asarray([0.5, 2, 5, 10])
         self.fs = fs
         self.brir = self._load_brirs()
