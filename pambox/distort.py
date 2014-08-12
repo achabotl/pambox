@@ -44,11 +44,11 @@ def mix_noise(clean, noise, sent_level, snr=None):
     """
 
     # Pick a random section of the noise
-    N = len(clean)
-    nNoise = len(noise)
-    if nNoise > N:
-        startIdx = np.random.randint(nNoise - N)
-        noise = noise[startIdx:startIdx + N]
+    n_clean = len(clean)
+    n_noise = len(noise)
+    if n_noise > n_clean:
+        start_idx = np.random.randint(n_noise - n_clean)
+        noise = noise[start_idx:start_idx + n_clean]
 
     if snr is not None:
         # Get speech level and set noise level accordingly
@@ -89,8 +89,8 @@ def phase_jitter(x, a):
         Processed signal of the same dimension as the input signal.
 
     """
-    N = len(x)
-    return x * np.cos(2 * np.pi * a * np.random.random_sample(N))
+    n = len(x)
+    return x * np.cos(2 * np.pi * a * np.random.random_sample(n))
 
 
 def reverb(x, rt):
@@ -103,7 +103,7 @@ def reverb(x, rt):
        Input signal.
     rt : float
         Reverberation time
-        
+
 
     Returns
     -------
@@ -117,7 +117,7 @@ def reverb(x, rt):
 def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
     """
     Apply spectral subtraction to a signal.
-    
+
     The defaul values of the parameters are typical for a sampling frequency of
     44100 Hz. Note that (W+padz) is the final frame window and hence the fft
     length (it is normally chose as a power of 2).
@@ -141,8 +141,10 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
     Returns
     -------
-    tuple of ndarrays
-        Estimate of clean signal and estimate of noisy signal.
+    clean_estimate : ndarray
+        Estimate of the clean signal.
+    noise_estimate : ndarray
+        Estimate of the noisy signal.
 
     """
     wnd = np.hanning(w + 2)  # create hanning window with length = W
@@ -212,9 +214,7 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
 
 def overlap_and_add(powers, phases, len_window, shift_size):
-    """
-    Reconstruct a signal with the overlap and add method.
-    
+    """Reconstruct a signal with the overlap and add method.
 
     Parameters
     ----------
@@ -227,7 +227,7 @@ def overlap_and_add(powers, phases, len_window, shift_size):
     shift_size : int
         Shift length. For non overlapping signals, in would equal `len_window`.
         For 50% overlapping signals, it would be `len_window/2`.
-        
+
 
     Returns
     -------
