@@ -299,7 +299,8 @@ class WestermannCrm(object):
                 d_str=self._normalize_fname(d)
             )
             wav = wavfile.read(fname)
-            self.brir[d] = np.array(wav[1].astype('float') / 2. ** 15).T
+            brirs[d] = np.array(wav[1].astype('float') / 2. ** 15).T
+        return brirs
 
     def _find_delay(self):
         """Calculates the delay of the direct sound, in samples."""
