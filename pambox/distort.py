@@ -294,9 +294,10 @@ class WestermannCrm(object):
         """Loads BRIRs from file."""
         brirs = {}
         for d in self.dist:
-            d_str = self._normalize_fname(d)
-            fname = '../stimuli/crm/brirs_40k/aud' \
-                    + d_str + 'm.wav'
+            fname = '../stimuli/crm/brirs_{fs}/aud{d_str}m.wav'.format(
+                fs=self.fs,
+                d_str=self._normalize_fname(d)
+            )
             wav = wavfile.read(fname)
             self.brir[d] = np.array(wav[1].astype('float') / 2. ** 15).T
 
