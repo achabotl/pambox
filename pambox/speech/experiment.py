@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import
 from datetime import datetime
-from itertools import product, islice
-
-import collections
+from itertools import product
 import logging
 import os
 import os.path
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
 from ..utils import make_same_length, setdbspl, int2srt
 
 
@@ -46,28 +46,35 @@ class Experiment(object):
 
     """
 
-    def __init__(self, models, materials, snrs, fixed_level=65,
-                 fixed_target=True, name=None,
-                 write=True,
-                 output_path='./Data/',
-                 timestamp_format="%Y%m%d-%H%M%S"
+    def __init__(
+            self,
+            models,
+            material,
+            snrs,
+            distortion=None,
+            dist_params=(None,),
+            fixed_level=65,
+            fixed_target=True,
+            name=None,
+            write=True,
+            output_path='./Data/',
+            timestamp_format="%Y%m%d-%H%M%S"
     ):
         """@todo: to be defined1. """
-        if isinstance(models, collections.Iterable):
-            self.models = models
-        else:
-            self.models = [models]
+        self.models = models
+        self.material = material
         self.snrs = snrs
-        self.timestamp_format = timestamp_format
-        self.materials = materials
-        self.write = write
-        self.name = name
+        self.distortion = distortion
+        self.dist_params = dist_params
         self.fixed_level = fixed_level
         self.fixed_target = fixed_target
+        self.name = name
+        self.timestamp_format = timestamp_format
+        self.write = write
         self.output_path = output_path
 
 
-    def preprocessing(self, target, masker):
+    def preprocessing(self, target, masker, params):
         """
         Applies preprocessing to the target and masker before setting the
         levels. In this case, the masker is padded with zeros if it is longer
@@ -77,6 +84,11 @@ class Experiment(object):
         :param masker:
         :return:
         """
+
+        if params:
+            target, masker = self.distortion(target, masker, *params)
+
+        # Make target and masker same length
         if target.shape[-1] != masker.shape[-1]:
             target, masker = make_same_length(target, masker,
                                               extend_first=False)
@@ -97,7 +109,7 @@ class Experiment(object):
         :param snr: float
             SNR at which to set the target and masker.
         :return: tuple
-            Level ajusted `target` and `masker`.
+            Level adjusted `target` and `masker`.
         """
 
         target_level = self.fixed_level
@@ -106,25 +118,45 @@ class Experiment(object):
             masker_level -= snr
         else:
             target_level += snr
-        target = setdbspl(target, target_level, offset=0.0)
-        masker = setdbspl(masker, masker_level, offset=0.0)
+        target = setdbspl(target, target_level)
+        masker = setdbspl(masker, masker_level)
         return target, masker
 
-    def append_results(self, df, res, model, snr):
+    def next_masker(self, target):
+        return self.material.ssn(target)
+
+    @staticmethod
+    def append_results(
+            df,
+            res,
+            model,
+            snr,
+            i_target,
+            params
+    ):
         """
         Appends results to a DataFrame
 
-        :param df: dataframe
+        Parameters
+        ----------
+        df : dataframe
             DataFrame where the new results will be appended.
-        :param res: dict
+        res : dict
             Output dictionary from an intelligibility model.
-        :param model: object
+        model: object
             Intelligibility model. Will use it's `name` attribute,
             if available, to add the source model to the DataFrame. Otherwise,
             the `__class__.__name__` attribute will be used.
-        :param snr: float
+        snr : float
             SNR at which the simulation was performed.
-        :return: dataframe
+        i_target : int
+            Number of the target sentence
+        params : object
+            Parameters that were passed to the distortion process.
+
+        Returns
+        -------
+        df : dataframe
             DataFrame with new entry appended.
         """
         try:
@@ -134,8 +166,10 @@ class Experiment(object):
         d = {
             'SNR': snr
             , 'Model': model_name
+            , 'Sentence number': i_target
+            , 'Distortion params': params
         }
-        for name, value in res['preds'].iteritems():
+        for name, value in res['p'].iteritems():
             d['Output'] = name
             d['Value'] = value
             df = df.append(d, ignore_index=True)
@@ -148,35 +182,57 @@ class Experiment(object):
         Parameters
         ----------
         n : int
-            number of conditions.
+            Number of sentences to process.
 
         Returns
         -------
-        df : Pandas data frame with the experimental results.
+        df : pd.Dataframe
+            Pandas dataframe with the experimental results.
 
 
         """
+        try:
+            self.models = iter(self.models)
+        except TypeError:
+            self.models = [self.models]
+
+        targets = self.material.load_files(n)
 
         # Initialize the dataframe in which the results are saved.
         df = pd.DataFrame()
 
-        for ii, (model, snr, pair) in enumerate(product(self.models, self.snrs,
-                                        islice(self.materials, n))):
-            target, masker = pair
+        for ii, ((i_target, target), params, snr, model) \
+                in enumerate(product(
+                enumerate(targets),
+                self.dist_params,
+                self.snrs,
+                self.models
+        )):
+            masker = self.next_masker(target)
 
-            target, masker = self.preprocessing(target, masker)
+            target, masker = self.preprocessing(
+                target,
+                masker,
+                params
+            )
 
             target, masker = self.adjust_levels(target, masker, snr)
 
-            log.info("Simulation # {}\t SNR: {}", ii, snr)
+            log.info("Simulation # {}\t SNR: {}, sentence {}", ii, snr, i_target)
             res = self.prediction(model, target, masker)
 
-            df = self.append_results(df, res, model, snr)
+            df = self.append_results(
+                df,
+                res,
+                model,
+                snr,
+                i_target,
+                params
+            )
 
         if self.write:
             self.write_results(df)
         return df
-
 
     def write_results(self, df):
         """
@@ -211,7 +267,7 @@ class Experiment(object):
         try:
             df.to_csv(output_file)
             log.info('Saved CSV file to location: {}'.format(output_file))
-        except IOError, e:
+        except IOError as e:
             try:
                 alternate_path = os.path.join(os.getcwd(), filename)
                 err_msg = 'Could not write CSV file to path: {}, tried to ' \
@@ -227,7 +283,6 @@ class Experiment(object):
                     pass
         else:
             return output_file
-
 
     @staticmethod
     def prediction(model, target, masker):
@@ -246,7 +301,6 @@ class Experiment(object):
         :return:
         """
         return model.predict(target, target + masker, masker)
-
 
     def plot_results(self, df):
         df = df.ix[self.df['Target distance'] == 0.5, :]
@@ -271,7 +325,8 @@ class Experiment(object):
         plt.xlabel('SNR (dB)')
         plt.ylabel('% Intelligibility')
 
-    def snr_to_pc(self, df, col, fc, out_name='Intelligibility'):
+    @staticmethod
+    def snr_to_pc(df, col, fc, out_name='Intelligibility'):
         """
         Converts the data in a given column to percent correct.
 
@@ -283,7 +338,8 @@ class Experiment(object):
         df[out_name] = df[col].map(fc)
         return df
 
-    def get_srt(self, df):
+    @staticmethod
+    def get_srt(df):
         """Convert SRTs to DeltaSRTs.
 
         :return: tuple, srts and DeltaSRTs
