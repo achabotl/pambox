@@ -260,20 +260,29 @@ def overlap_and_add(powers, phases, len_window, shift_size):
     return signal
 
 
-class Westermann_crm(object):
+class WestermannCrm(object):
+    """Applies HRTF and BRIR for a given target and masker distance.
 
-    """Applies HRTF and BRIR for a given target and masker distance."""
+    Parameters
+    ----------
+    fs : int
+         Samping frequenc of the process. (Default value = 40000)
 
-    def __init__(self, fs=40000):
-        """
+    Attributes
+    ----------
+    brir : dict
+        Binaural room impulse responses for each distance.
+    delays : dict
+        Delay until the first peak in the BRIR for each distance.
+    dist : ndarray
+        List of the valid distances (0.5, 2, 5, and 10 meters).
 
-        Parameters
-        ----------
-        fs : int
-             Samping frequenc of the process. (Default value = 40000)
-
-        Returns
-        -------
+    References
+    ----------
+    .. [1] A. Westermann and J. M. Buchholz: Release from masking through
+        spatial separation in distance in hearing impaired listeners.
+        Proceedings of Meetings on Acoustics 19 (2013) 050156.
+    """
 
         """
         self.dist = np.asarray([0.5, 2, 5, 10])
@@ -306,7 +315,6 @@ class Westermann_crm(object):
         Parameters
         ----------
         d : float
-            
 
         Returns
         -------
@@ -347,12 +355,12 @@ class Westermann_crm(object):
 
     def apply(self, x, m, tdist, mdist, align=True):
         """Applies the "Westermann" distortion to a target and masker.
-        
+
         Applies the BRIR of the required distance to the target. If the
         target and masker are not co-located, the masker is equalized before
         applying the BRIR, so that both the target and masker will have the
         same average spectrum after the BRIR filtering.
-        
+
         By default, the delay introduced by the BRIR is compensated for,
         such that the maxiumum of the BRIR happen simulatenously.
 
@@ -372,11 +380,11 @@ class Westermann_crm(object):
 
         Returns
         -------
-        tuple of ndarray
-            Mixture and noise alone, processed by the BRIRs.
-        
+        mix : (2, N) ndarray
+            Mixture processesed by the BRIRs.
+        noise : (2, N)
+            Noise alone processed by the BRIRs.
         """
-
         if tdist not in self.dist or mdist not in self.dist:
             raise ValueError('The distance values are incorrect.')
 
@@ -428,7 +436,10 @@ class Westermann_crm(object):
 
         Returns
         -------
-
+        i_x : int
+            Index of earliest peak in the signal.
+        i_m : int
+            Index of the earliest peak in the maskers.
         """
         # location of earliest peak
         m_is_shortest = np.argmin([self.delays[tdist], self.delays[mdist]])
@@ -459,7 +470,6 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     ndarray
         Noise signal.
 
-    
     """
     x = np.asarray(x)
     n_x = x.shape[-1]
