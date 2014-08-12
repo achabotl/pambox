@@ -399,17 +399,8 @@ class WestermannCrm(object):
         if tdist == mdist:
             m = [m, m]
         else:
-            # Load the equalization filter
-            eqfilt_name = 't' + self._normalize_fname(tdist) + \
-                        'm_m' + self._normalize_fname(mdist) + 'm.mat'
-
-            try:
-                eqfilt = sp.io.loadmat('../stimuli/crm/eqfilts/' + eqfilt_name,
-                                    squeeze_me=True)
-            except IOError:
-                raise IOError('Cannot file file %s' % '../stimuli/crm/eqfilts/'
-                            + eqfilt_name)
-            m = [fftfilt(b, m) for b in [eqfilt['br'], eqfilt['bl']]]
+            eqfilt = self._load_eqfilt(tdist, mdist)
+            m = [fftfilt(b, m) for b in [eqfilt['bl'], eqfilt['br']]]
 
         out_m = np.asarray([fftfilt(b, chan) for b, chan
                             in zip(self.brir[mdist], m)])
