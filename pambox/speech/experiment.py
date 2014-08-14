@@ -101,18 +101,18 @@ class Experiment(object):
         :return:
         """
 
-        if params:
-            target, masker = self.distortion(target, masker, *params)
-
         # Make target and masker same length
         if target.shape[-1] != masker.shape[-1]:
             target, masker = make_same_length(target, masker,
                                               extend_first=False)
+
         if params:
             if isinstance(params, dict):
                 target, masker = self.distortion(target, masker, **params)
             else:
                 target, masker = self.distortion(target, masker, *params)
+
+        target, masker = self.adjust_levels(target, masker, snr)
         return target, target + masker, masker
 
     def adjust_levels(self, target, masker, snr):
@@ -254,10 +254,9 @@ class Experiment(object):
                 params
             )
 
-            target, masker = self.adjust_levels(target, masker, snr)
-
-            log.info("Simulation # {}\t SNR: {}, sentence {}", ii, snr, i_target)
-            res = self.prediction(model, target, masker)
+            log.info("Simulation # %s\t SNR: %s, sentence %s", ii, snr,
+                     i_target)
+            res = self.prediction(model, target, mix, masker)
 
             df = self.append_results(
                 df,
