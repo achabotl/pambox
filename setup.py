@@ -34,6 +34,11 @@ long_description = read('README.rst')
 
 def check_dependencies():
 
+    import os
+    on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+    if on_rtd:
+        return
+
     # Just make sure dependencies exist, I haven't rigorously
     # tested what the minimal versions that will work are
     # (help on that would be awesome)
