@@ -49,3 +49,10 @@ design/*
 
 # PyCharm settings
 .idea
+
+.cache/
+
+# Todo files
+todo.taskpaper
+
+docs/_build

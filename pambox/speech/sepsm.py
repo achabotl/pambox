@@ -5,19 +5,31 @@ import scipy as sp
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 from six.moves import zip
-import brewer2mpl
-from pambox import general
-from pambox import filterbank
-from pambox import auditory
+from pambox import central
+from pambox import inner
 try:
     import seaborn
 except ImportError:
     pass
 
 
-
 class Sepsm(object):
     """Implement the sEPSM intelligibility model
+
+    Parameters
+    ----------
+    fs : int
+         (Default value = 22050)
+    cf : array_like
+         (Default value = _default_center_cf)
+    modf : array_like
+         (Default value = _default_modf)
+    downsamp_factor : int
+         (Default value = 10)
+    noise_floor : float
+         (Default value = 0.01)
+    snr_env_limit : float
+         (Default value = 0.001)
     """
 
     _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630,
@@ -35,27 +47,6 @@ class Sepsm(object):
                  , noise_floor=0.01
                  , snr_env_limit=0.001
                  ):
-        """@todo: to be defined1.
-
-        Parameters
-        ----------
-        fs : int
-             (Default value = 22050)
-        cf : array_like
-             (Default value = _default_center_cf)
-        modf : array_like
-             (Default value = _default_modf)
-        downsamp_factor : int
-             (Default value = 10)
-        noise_floor : float
-             (Default value = 0.01)
-        snr_env_limit : float
-             (Default value = 0.001)
-
-        Returns
-        -------
-
-        """
         self.fs = fs
         self.cf = cf
         self.modf = modf
@@ -79,7 +70,7 @@ class Sepsm(object):
         -------
 
         """
-        g = auditory.GammatoneFilterbank(center_f, self.fs)
+        g = inner.GammatoneFilterbank(center_f, self.fs)
         y = g.filter(signal)
         return y
 
@@ -155,14 +146,16 @@ class Sepsm(object):
 
         Returns
         -------
-        type
-            todo
+        snr_env : float
+
 
         Notes
         -----
         Combines the SNR values as:
 
-        .. math:: \srqt(\sum_idx SNRenv_idx ^ 2)
+        .. math::
+
+            \srqt(\sum_idx SNRenv_idx ^ 2)
 
         """
         snr_env = np.sqrt(np.sum(snr_env[bands_above_thres_idx] ** 2,
@@ -191,9 +184,9 @@ class Sepsm(object):
 
         """
         # Extract envelope
-        tmp_env = general.hilbert_envelope(signal).squeeze()
+        tmp_env = inner.hilbert_envelope(signal).squeeze()
         # Low-pass filtering
-        tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
+        tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
                                                  n=1, fs=self.fs)
         # Downsample the envelope for faster processing
         return tmp_env[::self.downsamp_factor]
@@ -208,8 +201,8 @@ class Sepsm(object):
 
         Returns
         -------
-        dict
-            todo
+        res : dict
+            @todo
 
         """
         fs_new = self.fs / self.downsamp_factor
@@ -218,7 +211,7 @@ class Sepsm(object):
         n_cf = len(self.cf)
 
         # find bands above threshold
-        filtered_mix_rms = filterbank.noctave_filtering(mixture, self.cf,
+        filtered_mix_rms = inner.noctave_filtering(mixture, self.cf,
                                                         self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
 
@@ -237,8 +230,8 @@ class Sepsm(object):
                 downsamp_env[i_sig] = self._env_extraction(signal)
 
                 exc_ptns[i_sig, idx_band], _ = \
-                    filterbank.mod_filterbank(downsamp_env[i_sig], fs_new,
-                                              self.modf)
+                    central.mod_filterbank(downsamp_env[i_sig], fs_new,
+                                           self.modf)
 
         # Calculate SNRenv
         snr_env_matrix = self._snr_env(*exc_ptns[-2:])
@@ -247,7 +240,9 @@ class Sepsm(object):
                                             bands_above_thres_idx)
 
         res = {
-            'snr_env': snr_env,
+            'p': {
+                'snr_env': snr_env
+            },
             'snr_env_matrix': snr_env_matrix,
             'exc_ptns': exc_ptns,
             'bands_above_thres_idx': bands_above_thres_idx
@@ -310,7 +305,7 @@ class Sepsm(object):
 
         xlabel = 'Modulation frequency [Hz]'
         ylabel = 'Channel frequency [Hz]'
-        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
+        bmap = plt.get_cmap('PuBu')
 
         if ax is None:
             f, ax = plt.subplots()
@@ -335,14 +330,17 @@ class Sepsm(object):
 
         Parameters
         ----------
-        res :
-            
-        ax :
-             (Default value = None)
-        vmin :
-             (Default value = None)
-        vmax :
-             (Default value = None)
+        res : dict
+            Output of the :py:func:`predict` function.
+        ax : ax object
+             Matplotlib axis where the data should be plotted. A new axis
+             will be created if the value is `None`. (Default value = None)
+        vmin : float, optional
+             Minimum value of the heatmanp. The minimum value will be infered
+             from the data if `None`. (Default value = None)
+        vmax : float, optional
+             Maxiumum value of the heatmanp. The maximum value will be infered
+             from the data if `None`. (Default value = None)
 
         Returns
         -------

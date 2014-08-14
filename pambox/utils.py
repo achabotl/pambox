@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+
+from matplotlib import pyplot as plt
 import numpy as np
-from scipy.io import wavfile
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
-try:
-    _ = np.use_fastnumpy
-    from numpy.fft import fft, ifft
-except AttributeError:
-    from scipy.fftpack import fft, ifft
+from numpy.fft import fft, ifft
+import scipy as sp
+from scipy import signal as ss
+from scipy.io import wavfile
 
 
-def dbspl(x, ac=False, offset=100.0, axis=-1):
+def dbspl(x, ac=False, offset=0.0, axis=-1):
     """Computes RMS value of signal in dB.
 
     By default, a signal with an RMS value of 1 will have a level of 100 dB
@@ -24,7 +24,7 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
         Consider only the AC component of the signal, i.e. the mean is
         removed (Default value =  False)
     offset : float
-        Reference to convert between RMS and dB SPL.  (Default value = 100.0)
+        Reference to convert between RMS and dB SPL.  (Default value = 0.0)
     axis : int
         Axis on which to compute the SPL value (Default value = -1, last axis)
 
@@ -41,13 +41,14 @@ def dbspl(x, ac=False, offset=100.0, axis=-1):
 
     See also
     --------
-    `setdbspl`, `rms`.
+    setdbspl
+    rms
     """
     x = np.asarray(x)
-    return 20. * np.log10(rms(x, ac=ac, axis=axis)) + float(offset)
+    return 20. * np.log10(rms(x, ac)) + float(offset)
 
 
-def setdbspl(x, lvl, ac=False, offset=100.0):
+def setdbspl(x, lvl, ac=False, offset=0.0):
     """Sets the level of signal in dB SPL, along its last dimension.
 
     Parameters
@@ -62,17 +63,15 @@ def setdbspl(x, lvl, ac=False, offset=100.0):
         (Default value = False)
     offset : float
         Level, in dB SPL, corresponding to an RMS of 1. By default, an RMS of
-        1 corresponds to 100 dB SPL, i.e. the default is 100.
+        1 corresponds to 0 dB SPL, i.e. the default is 0.
 
     Returns
     -------
     ndarray
         Signal of the same dimension as the original.
     """
-    axis = -1
     x = np.asarray(x)
-    return (x.T / rms(x, ac, axis=axis)
-            * 10. ** ((lvl - float(offset)) / 20.)).T
+    return x / rms(x, ac) * 10. ** ((lvl - float(offset)) / 20.)
 
 
 def rms(x, ac=False, axis=-1):
@@ -95,8 +94,6 @@ def rms(x, ac=False, axis=-1):
 
     """
     x = np.asarray(x)
-    if not x.ndim > 1:
-        axis = -1
     if ac:
         return np.linalg.norm((x - np.mean(x, axis=axis))
                               / np.sqrt(x.shape[axis]), axis=axis)
@@ -141,6 +138,7 @@ def hilbert(x, N=None, axis=-1):
     out, turning the real-valued signal into a complex signal.  The Hilbert
     transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
     original signal from ``np.real(hilbert(x))``.
+
     References
     ----------
     .. [1] Wikipedia, "Analytic signal".
@@ -148,9 +146,7 @@ def hilbert(x, N=None, axis=-1):
 
     License
     -------
-    This code was copied from Scipy. . The following license
-    applies
-    for this
+    This code was copied from Scipy. The following license applies for this
     function:
 
     Copyright (c) 2001, 2002 Enthought, Inc.
@@ -198,43 +194,7 @@ def hilbert(x, N=None, axis=-1):
         h[0] = h[N // 2] = 1
         h[1:N // 2] = 2
     else:
-        h[0] = 1
-        h[1:(N + 1) // 2] = 2
-
-    if len(x.shape) > 1:
-        ind = [np.newaxis] * x.ndim
-        ind[axis] = slice(None)
-        h = h[ind]
-    x = ifft(Xf * h, axis=axis)
-    return x
-
-
-def hilbert_envelope(signal, axis=None):
-    """Calculates the Hilbert envelope of a signal.
-
-    Parameters
-    ----------
-    signal :
-        array_like, signal on which to calculate the hilbert
-        envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
-    axis :
-         (Default value = None)
-
-    Returns
-    -------
-    ndarray
-
-    """
-    signal = np.asarray(signal)
-
-    if axis is None:
-        axis = -1
-    n_orig = signal.shape[-1]
-    # Next power of 2.
-    n = next_pow_2(n_orig)
-    y_h = hilbert(signal, n, axis=axis)
-    # Return signal with same dimensions as original
-    return np.abs(y_h[..., :n_orig])
+        return np.linalg.norm(x / np.sqrt(x.shape[-1]))
 
 
 def next_pow_2(x):
@@ -286,8 +246,8 @@ def fftfilt(b, x, *n):
     if b.ndim > 1 or x.ndim > 1:
         raise ValueError('The inputs should be one dimensional')
 
-    n_x = len(x)
-    n_b = len(b)
+    N_x = len(x)
+    N_b = len(b)
 
     # Determine the FFT length to use:
     if len(n):
@@ -297,11 +257,11 @@ def fftfilt(b, x, *n):
         n = n[0]
         if n != int(n) or n <= 0:
             raise ValueError('n must be a nonnegative integer')
-        if n < n_b:
-            n = n_b
-        n_fft = 2 ** next_pow_2(n)
+        if n < N_b:
+            n = N_b
+        N_fft = 2 ** next_pow_2(n)
     else:
-        if n_x > n_b:
+        if N_x > N_b:
             # When the filter length is smaller than the signal,
             # choose the FFT length and block size that minimize the
             # FLOPS cost. Since the cost for a length-N FFT is
@@ -310,30 +270,30 @@ def fftfilt(b, x, *n):
             # cost of the overlap-add method for 1 length-N block is
             # N*(1+log2(N)). For the sake of efficiency, only FFT
             # lengths that are powers of 2 are considered:
-            N = 2 ** arange(ceil(log2(n_b)), 27)
-            cost = ceil(n_x / (N - n_b + 1)) * N * (log2(N) + 1)
-            n_fft = N[argmin(cost)]
+            N = 2 ** arange(ceil(log2(N_b)), 27)
+            cost = ceil(N_x / (N - N_b + 1)) * N * (log2(N) + 1)
+            N_fft = N[argmin(cost)]
         else:
             # When the filter length is at least as long as the signal,
             # filter the signal using a single block:
-            n_fft = next_pow_2(n_b + n_x - 1)
+            N_fft = next_pow_2(N_b + N_x - 1)
 
-    n_fft = int(n_fft)
+    N_fft = int(N_fft)
 
     # Compute the block length:
-    bl = int(n_fft - n_b + 1)
+    L = int(N_fft - N_b + 1)
 
     # Compute the transform of the filter:
-    H = fft(b, n_fft)
+    H = fft(b, N_fft)
 
-    y = zeros(n_x, complex)
+    y = zeros(N_x, complex)
     i = 0
-    while i <= n_x:
-        il = min([i + bl, n_x])
-        k = min([i + n_fft, n_x])
-        yt = ifft(fft(x[i:il], n_fft) * H, n_fft)  # Overlap..
+    while i <= N_x:
+        il = min([i + L, N_x])
+        k = min([i + N_fft, N_x])
+        yt = ifft(fft(x[i:il], N_fft) * H, N_fft)  # Overlap..
         y[i:k] = y[i:k] + yt[:k - i]  # and add
-        i += bl
+        i += L
     return np.real(y)
 
 
@@ -374,12 +334,8 @@ def write_wav(fname, fs, x):
         scaled = x
     wavfile.write(fname, fs, scaled.astype('int16'))
 
-
 def make_same_length(a, b, extend_first=True):
-    """Makes two arrays the same length along the last dimension.
-
-    Default behavior is to zero-pad the shorted array. It is also possible to
-    cut the second array to the same length as the first.
+    """Make two vectors the same length.
 
     Parameters
     ----------
@@ -470,3 +426,126 @@ def int2srt(x, y, srt=50.0):
     else:
         srt = None
     return srt
+
+
+def psy_fn(x, mu=0., sigma=1.):
+    """Calculates a psychometric function with a given mean and variance.
+
+    Parameters
+    ----------
+    x : array_like
+        "x" values of the psychometric functions.
+    mu : float, optional
+        Value at which the psychometric function reaches 50%, i.e. the mean
+        of the distribution. (Default value = 0)
+    sigma : float, optional
+        Variance of the psychometric function. (Default value = 1)
+
+    Returns
+    -------
+    pc : ndarray
+        Array of "percent correct", between 0 and 100.
+
+    """
+    x = np.asarray(x)
+    return 100 * sp.special.erfc(-(x - mu) / (np.sqrt(2) * sigma)) / 2
+
+
+def noctave_center_freq(lowf, highf, width=3):
+    """Calculate exact center N-octave space center frequencies.
+
+    In practive, what is often desired is the "simplified" center frequencies,
+    so this function is not of much use.
+
+    Parameters
+    ----------
+    lowf : float
+        Lowest frequency.
+    highf : float
+        Highest frequency
+    width : float
+         Number of filters per octave. (Default value = 3)
+
+    Returns
+    -------
+    ndarray
+        List of center frequencies.
+
+    """
+    n_centers = np.log2(highf / lowf) * width + 1
+    n_octave = np.log2(highf / lowf)
+    return lowf * np.logspace(0, n_octave, num=n_centers, base=2)
+
+
+def impz(b, a=1):
+    """Plot step and impulse response of an FIR filter.
+
+    b : float
+        Forward terms of the FIR filter.
+    a : float
+        Feedback terms of the FIR filter. (Default value = 1)
+
+    From http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Returns
+    -------
+    None
+
+    """
+    l = len(b)
+    impulse = np.repeat(0., l)
+    impulse[0] = 1.
+    x = np.arange(0, l)
+    response = sp.lfilter(b, a, impulse)
+    plt.subplot(211)
+    plt.stem(x, response)
+    plt.ylabel('Amplitude')
+    plt.xlabel(r'n (samples)')
+    plt.title(r'Impulse response')
+    plt.subplot(212)
+    step = sp.cumsum(response)
+    plt.stem(x, step)
+    plt.ylabel('Amplitude')
+    plt.xlabel(r'n (samples)')
+    plt.title(r'Step response')
+    plt.subplots_adjust(hspace=0.5)
+
+
+def mfreqz(b, a=1, fs=22050.0):
+    """Plot the frequency and phase response of an FIR filter.
+
+    From http://mpastell.com/2010/01/18/fir-with-scipy/
+
+    Parameters
+    ----------
+    b : float
+        Forward terms of the FIR filter.
+    a : float
+        Feedback terms of the FIR filter. (Default value = 1)
+    fs : float
+        Sampling frequency of the filter. (Default value = 22050.0)
+
+    Returns
+    -------
+    None
+
+    """
+    w, h = ss.freqz(b, a)
+    h_db = 20 * np.log10(abs(h))
+    plt.subplot(211)
+    if fs:
+        f = sp.linspace(0, fs / 2, len(w))
+        plt.plot(f, h_db)
+    else:
+        plt.plot(w / max(w), h_db)
+    plt.ylim(-150, 5)
+    plt.ylabel('Magnitude (db)')
+    plt.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
+    plt.title(r'Frequency response')
+    plt.subplot(212)
+    h_phase = sp.unwrap(sp.arctan2(sp.imag(h), sp.real(h)))
+    plt.plot(w / max(w), h_phase)
+    plt.ylabel('Phase (radians)')
+    plt.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
+    plt.title(r'Phase response')
+    plt.subplots_adjust(hspace=0.5)

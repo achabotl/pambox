@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-import brewer2mpl
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 from six.moves import zip
-from pambox.intelligibility_models.sepsm import Sepsm
-from pambox import general
-from pambox import filterbank
-from pambox import auditory
+from pambox.speech.sepsm import Sepsm
+from pambox import central
+from pambox import inner
 
 
 class MrSepsm(Sepsm):
@@ -37,9 +35,9 @@ class MrSepsm(Sepsm):
 
     References
     ----------
-    .. [1] S. Jørgensen, S. D. Ewert, and T. Dau: A multi-resolution
-        envelope-power based model for speech intelligibility.. J Acoust Soc Am
-        134 (2013) 436--446.
+    .. [jorgensen2013multi] S. Joergensen, S. D. Ewert, and T. Dau: A
+        multi-resolution envelope-power based model for speech
+        intelligibility. J Acoust Soc Am 134 (2013) 436--446.
 
     """
 
@@ -117,11 +115,12 @@ class MrSepsm(Sepsm):
 
         Parameters
         ----------
-        mr_snr_env :
-            
+        mr_snr_env : ndarray
+
 
         Returns
         -------
+        ndarray
 
         """
         return mr_snr_env.mean(axis=-1)
@@ -214,8 +213,8 @@ class MrSepsm(Sepsm):
         mr_exc_ptns = []
 
         # find bands above threshold
-        filtered_rms_mix = filterbank.noctave_filtering(mixture, self.cf,
-                                                        self.fs, width=3)
+        filtered_rms_mix = inner.noctave_filtering(mixture, self.cf,
+                                                   self.fs, width=3)
         bands_above_thres_idx = self._bands_above_thres(filtered_rms_mix)
 
         for idx_band in bands_above_thres_idx:
@@ -225,19 +224,19 @@ class MrSepsm(Sepsm):
 
             for i_sig, channel_env in enumerate(channel_envs):
                 # Extract envelope
-                tmp_env = general.hilbert_envelope(channel_env).squeeze()
+                tmp_env = inner.hilbert_envelope(channel_env).squeeze()
 
                 # Low-pass filtering
-                tmp_env = auditory.lowpass_env_filtering(tmp_env, 150.0,
-                                                         n=1, fs=self.fs)
+                tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
+                                                      n=1, fs=self.fs)
                 # Downsample the envelope for faster processing
                 downsamp_chan_envs[i_sig] = tmp_env[::self.downsamp_factor]
 
                 # Sub-band modulation filtering
                 lt_exc_ptns[i_sig, idx_band], chan_mod_envs[i_sig] = \
-                    filterbank.mod_filterbank(downsamp_chan_envs[i_sig],
-                                              fs_new,
-                                              self.modf)
+                    central.mod_filterbank(downsamp_chan_envs[i_sig],
+                                           fs_new,
+                                           self.modf)
 
             chan_mr_exc_ptns = []
             for chan_env, mod_envs in zip(downsamp_chan_envs,
@@ -259,12 +258,14 @@ class MrSepsm(Sepsm):
             time_av_mr_snr_env_matrix, bands_above_thres_idx)
 
         res = {
-            'snr_env': snr_env,
+            'p': {
+                'snr_env': snr_env,
+                'lt_snr_env': lt_snr_env,
+            },
             'snr_env_matrix': time_av_mr_snr_env_matrix,
             # .snr_env_matrix': snr_env_matrix
 
             # Output of what is essentially the sEPSM.
-            'lt_snr_env': lt_snr_env,
             'lt_snr_env_matrix': lt_snr_env_matrix,
             'lt_exc_ptns': lt_exc_ptns,
 
@@ -311,16 +312,16 @@ class MrSepsm(Sepsm):
         Parameters
         ----------
         mat :
-            param x:
-        y :
-            param ax:
-            :return: (Default value = None)
         x :
-             (Default value = None)
+            (Default value = None)
+        y : array_like
+            (Default value = None)
+        x : arra_like
+            (Default value = None)
         fig :
-             (Default value = None)
+            (Default value = None)
         subplot_pos :
-             (Default value = 111)
+            (Default value = 111)
 
         Returns
         -------
@@ -332,7 +333,7 @@ class MrSepsm(Sepsm):
             y = np.arange(n_y)
 
         max_mat = mat.max()
-        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
+        bmap = plt.get_cmap('PuBu')
 
         if fig is None:
             fig = plt.figure()
@@ -374,34 +375,35 @@ class MrSepsm(Sepsm):
                          , add_ylabel=True
                          , title=None
                          ):
-        """Plot multi-naurresolution representation of envelope powers.
+        """Plots multi-resolution representation of envelope powers.
 
         Parameters
         ----------
-        ptns :
-            namedtuple, predictions from the model. Must have a
-            `mr_snr_env_matrix` property.
-        dur :
-            param db: bool, display dB values of the modulation power or SNRenv
-            values. (Default: True.)
-        vmax :
-            float, maximum value of the colormap. If `None`,
+        ptns : dict
+            Predictions from the model. Must have a `mr_snr_env_matrix`
+            key.
+        dur : bool
+            Display dB values of the modulation power or SNRenv values. (Default: True.)
+        vmax : float
+            Maximum value of the colormap. If `None`,
             the data's maxium value is used. (Default: None)
-            :return: self
-        db :
-             (Default value = True)
-        vmin :
-             (Default value = None)
-        fig_subplt :
-             (Default value = None)
-        attr :
-             (Default value = 'exc_ptns')
-        add_cbar :
-             (Default value = True)
-        add_ylabel :
-             (Default value = True)
-        title :
-             (Default value = None)
+        db : bool
+            Plot the values in dB. (Default value = True)
+        vmin : float
+            Minimum value of the heatmap. The value will be infered from the
+            data if `None`. (Default value = None)
+        fig_subplt : tuple of (fig, axes)
+            Matplotlib `figure` and `axes` objects where the data should be
+            plotted. If `None` is provided, a new figures with the necessary
+            axes will be created. (Default value = None)
+        attr : string
+            Key to query in the `ptns` dictionary. (Default value = 'exc_ptns')
+        add_cbar : bool
+            Add a colorbar to the figure. (Default value = True)
+        add_ylabel : bool
+            Add a y-label to the axis. (Default value = True)
+        title : bool
+            Add a title to the axis. (Default value = None)
 
         Returns
         -------
@@ -447,7 +449,7 @@ class MrSepsm(Sepsm):
         else:
             cbar_dict = {}
 
-        bmap = brewer2mpl.get_map('PuBu', 'Sequential', 9).mpl_colormap
+        bmap = plt.get_cmap('PuBu')
         xlabel = "Time [s]"
         ylabel = "Modulation frequency [Hz]"
         grid = ImageGrid(fig, subplt,

@@ -1,9 +1,15 @@
 """
-Simple wrapper around pyaudio to simplify sound playback
+:mod:`~pambox.audio` provides a simple wrapper around `pyaudio` to simplify
+sound playback.
 """
 from __future__ import division, print_function
+
 import numpy as np
-import pyaudio
+
+try:
+    import pyaudio
+except ImportError:
+    raise ImportError("pyaudio is required is you want to use pambox.audio")
 
 
 def play(x, fs=44100, normalize=True):
@@ -16,8 +22,17 @@ def play(x, fs=44100, normalize=True):
     fs : int (optional
         Sampling frequency. The default is 44100 Hz.
     normalize : bool
-        Normalize the signal such that the maximumal (absolute value) is 1 to
+        Normalize the signal such that the maximum (absolute value) is 1 to
         prevent clipping.
+
+    Examples
+    --------
+
+    To playback a numpy array:
+
+    >>> from pambox import audio
+    >>> import numpy as np
+    >>> audio.play(np.random.randn(10000))
 
     """
     x = np.asarray(x)
