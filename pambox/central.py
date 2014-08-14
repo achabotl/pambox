@@ -4,8 +4,14 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy as np
-from numpy.core.umath import pi
-from scipy.fftpack import fft, ifft
+from numpy import pi
+
+try:
+    _ = np.use_fastnumpy
+    from numpy.fft import fft, ifft, rfft, irfft
+except AttributeError:
+    from scipy.fftpack import fft, ifft
+    from numpy.fft import rfft, irfft
 from scipy.optimize import leastsq
 from scipy.stats import norm
 

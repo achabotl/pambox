@@ -5,8 +5,7 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy as np
-from numpy import exp, sin, cos, sqrt, abs, ones
-from numpy.core.umath import pi
+from numpy import exp, sin, cos, sqrt, abs, ones, pi
 import scipy as sp
 import scipy.signal as ss
 

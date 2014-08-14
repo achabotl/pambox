@@ -28,7 +28,7 @@ Dependencies
 ------------
 
 pambox is tested to work under Python 2.7 and Python 3.4 (thanks to
-``six``). Only Mac OS X (10.9) has been tested thoroughly).
+``six``). Only Mac OS X (10.9) has been tested thoroughly.
 
 The main dependencies are `Numpy <http://www.numpy.org/>`_ >= 1.8.0,
 `Scipy <http://scipy.org/scipylib/>`_ >=0.14.0,

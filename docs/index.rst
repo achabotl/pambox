@@ -1,7 +1,7 @@
 .. pambox documentation master file, created by
-   sphinx-quickstart on Wed Jan 22 17:15:54 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+sphinx-quickstart on Wed Jan 22 17:15:54 2014.
+You can adapt this file completely to your liking, but it should at least
+contain the root `toctree` directive.
 
 pambox
 ======
@@ -12,10 +12,9 @@ intelligibility prediction models.
 
 The Grand Idea is for `pambox` to be a repository of published auditory models,
 as well as a simple and powerful tool for developing auditory models.
-Components should be reusable and easier to modify.
-The current focus is to include speech intelligibility prediction models to
-the toolbox, using a standard interface for all models. This should greatly
-simplify comparisons across models.
+Components should be reusable and easy to modify.
+`pambox` uses a standard interface for all speech intelligibility prediction
+models in the toolbox, which should simplify comparisons across models.
 
 In case Python is not your thing and you prefer Matlab, the `Auditory Modeling
 Toolbox <http://amtoolbox.sourceforge.net>`_ is an excellent alternative.
@@ -23,7 +22,7 @@ Toolbox <http://amtoolbox.sourceforge.net>`_ is an excellent alternative.
 Installing
 ----------
 
-Right now, `pambox` is only avaible through Github. It should be available
+Right now, `pambox` is only available through Github. It should be available
 via `pip` soon. To install `pambox` from source::
 
     git clone https://github.com/achabotl/pambox.git
@@ -55,23 +54,23 @@ can be applied to signals. Most of them are used in speech intelligibility
 experiments.
 
 The :mod:`~pambox.audio` module is a thin wrapper around `pyaudio
-<http://people.csail.mit.edu/hubert/pyaudio/>`_ that simplify the playback of
-numpy arrays, which his often useful for debugging.
+<http://people.csail.mit.edu/hubert/pyaudio/>`_ that simplifies the playback of
+numpy arrays, which is often useful for debugging.
 
 Contents
 --------
 
 .. toctree::
-   :maxdepth: 2
+:maxdepth: 2
 
-   audio/index
-   inner/index
-   middle/index
-   outer/index
-   central/index
-   speech/index
-   distort/index
-   utils/index
+       audio/index
+       inner/index
+       middle/index
+       outer/index
+       central/index
+       speech/index
+       distort/index
+       utils/index
 
 
 Indices and tables
