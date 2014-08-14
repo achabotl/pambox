@@ -382,7 +382,7 @@ class Experiment(object):
         plt.ylabel(ylabel)
 
     @staticmethod
-    def snr_to_pc(df, col, fc, out_name='Intelligibility'):
+    def pred_to_pc( df, fc, col='Value', out_name='Intelligibility'):
         """Converts the data in a given column to percent correct.
 
         Parameters
