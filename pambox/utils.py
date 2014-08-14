@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-from matplotlib import pyplot as plt, pyplot
+from matplotlib import pyplot as plt
 import numpy as np
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
 from numpy.fft import fft, ifft
@@ -195,31 +195,6 @@ def hilbert(x, N=None, axis=-1):
         h[1:N // 2] = 2
     else:
         return np.linalg.norm(x / np.sqrt(x.shape[-1]))
-
-
-def hilbert_envelope(signal, axis=None):
-    """Calculates the Hilbert envelope of a signal.
-
-    Parameters
-    ----------
-    signal :
-        array_like, signal on which to calculate the hilbert
-        envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
-    axis :
-         (Default value = None)
-
-    Returns
-    -------
-    ndarray
-
-    """
-    signal = np.asarray(signal)
-    N_orig = signal.shape[-1]
-    # Next power of 2.
-    N = next_pow_2(N_orig)
-    y_h = sp.signal.hilbert(signal, N)
-    # Return signal with same dimensions as original
-    return np.abs(y_h[..., :N_orig])
 
 
 def next_pow_2(x):

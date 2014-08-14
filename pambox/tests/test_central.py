@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
 import os.path
+from numpy.testing import assert_allclose
 import pytest
 from pambox import central
 import numpy as np
@@ -68,3 +69,14 @@ def test_fit_obs_set_m_and_sigma_s(data, snrenv):
         params = c.get_params()
         res = [params['k'], params['q'], params['sigma_s'], params['m']]
         np.testing.assert_allclose(res, target, atol=1e-4)
+
+
+def test_mod_filtering_for_simple_signal():
+    signal = np.asarray([1, 0, 1, 0, 1])
+    fs = 2205
+    modf = np.asarray([1., 2., 4., 8., 16., 32., 64.])
+    p, _ = central.mod_filterbank(signal, fs, modf)
+    target = np.asarray([6.69785298e-18, 6.06375859e-06, 2.42555385e-05,
+                         9.70302212e-05, 3.88249957e-04, 1.55506496e-03,
+                         6.25329663e-03])
+    assert_allclose(p, target, rtol=1e-2)
