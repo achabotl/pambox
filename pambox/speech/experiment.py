@@ -72,10 +72,25 @@ class Experiment(object):
         self.timestamp_format = timestamp_format
         self.write = write
         self.output_path = output_path
-        self._full_pred_key = 'Full Prediction'
+        self._key_full_pred = 'Full Prediction'
+        self._key_value = 'Value'
+        self._key_output = 'Output'
+        self._key_dist_params = "Distortion params"
+        self._key_models = 'Model'
+        self._key_snr = 'SNR'
+        self._key_sent = 'Sentence number'
+        self._all_keys = [
+            self._key_full_pred,
+            self._key_value,
+            self._key_output,
+            self._key_dist_params,
+            self._key_models,
+            self._key_snr,
+            self._key_sent
+        ]
 
 
-    def preprocessing(self, target, masker, params):
+    def preprocessing(self, target, masker, snr, params):
         """
         Applies preprocessing to the target and masker before setting the
         levels. In this case, the masker is padded with zeros if it is longer
@@ -126,8 +141,8 @@ class Experiment(object):
     def next_masker(self, target):
         return self.material.ssn(target)
 
-    @staticmethod
     def append_results(
+            self,
             df,
             res,
             model,
@@ -168,7 +183,7 @@ class Experiment(object):
             'SNR': snr
             , 'Model': model_name
             , 'Sentence number': i_target
-            , 'Distortion params': params
+            , self._key_full_pred: res
         }
         for name, value in res['p'].iteritems():
             d['Output'] = name
@@ -267,8 +282,8 @@ class Experiment(object):
 
         output_file = os.path.join(self.output_path, filename)
         try:
-            df.to_csv(output_file)
-            log.info('Saved CSV file to location: {}'.format(output_file))
+            df.drop(self._key_full_pred, axis=1).to_csv(output_file)
+            log.info('Saved CSV file to location: %s'.format(output_file))
         except IOError as e:
             try:
                 alternate_path = os.path.join(os.getcwd(), filename)
@@ -280,7 +295,7 @@ class Experiment(object):
                 raise
             finally:
                 try:
-                    df.to_csv(alternate_path)
+                    df.drop(self._key_full_pred, axis=1).to_csv(alternate_path)
                 except:
                     pass
         else:
