@@ -108,6 +108,11 @@ class Experiment(object):
         if target.shape[-1] != masker.shape[-1]:
             target, masker = make_same_length(target, masker,
                                               extend_first=False)
+        if params:
+            if isinstance(params, dict):
+                target, masker = self.distortion(target, masker, **params)
+            else:
+                target, masker = self.distortion(target, masker, *params)
         return target, target + masker, masker
 
     def adjust_levels(self, target, masker, snr):
