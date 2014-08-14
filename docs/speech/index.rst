@@ -116,7 +116,7 @@ to the exact same level. This is typically done to compensate for differences
 in intelligibility between sentences. In order to keep the inter-sentence
 level difference, it is recommended to use the
 :py:func:`~pambox.speech.Material.set_level` method of the speech material.
-The code below sets the levelo of the first sentence to 65 dB SPL,
+The code below sets the level of the first sentence to 65 dB SPL,
 with the reference that a signal with an RMS value of 1 has a level of 0 dB SPL.
 
     >>> x = sm.load_file(sm.files[0])
@@ -141,8 +141,8 @@ Basic example
     3             None   Sepsm   snr_env   -6                1  10.314227
 
 If the distortion parameters are stored in a list of dictionaries,
-they will be save in separate columsn in the output dataframe. Otherwise,
-they will be saves as tuples in the "Distortion params" column.
+they will be saved in separate columns in the output dataframe. Otherwise,
+they will be saved as tuples in the "Distortion params" column.
 
 
 API
