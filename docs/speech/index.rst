@@ -122,7 +122,27 @@ with the reference that a signal with an RMS value of 1 has a level of 0 dB SPL.
     >>> x = sm.load_file(sm.files[0])
     >>> adjusted_x = sm.set_level(x, 65)
 
+Speech intelligibility experiment
+=================================
 
+Basic example
+-------------
+
+    >>> from pambox.speech import experiment, Sepsm, Material
+    >>> models = Sepsm()
+    >>> material = Material()
+    >>> snrs = np.arange(-9,-5, 3)
+    >>> exp = experiment.Experiment(models, material, snrs, write=False)
+    >>> exp.run(2)
+     Distortion params   Model    Output  SNR  Sentence number      Value
+    0             None   Sepsm   snr_env   -9                0   1.432468
+    1             None   Sepsm   snr_env   -6                0   5.165170
+    2             None   Sepsm   snr_env   -9                1   6.308387
+    3             None   Sepsm   snr_env   -6                1  10.314227
+
+If the distortion parameters are stored in a list of dictionaries,
+they will be save in separate columsn in the output dataframe. Otherwise,
+they will be saves as tuples in the "Distortion params" column.
 
 
 API
