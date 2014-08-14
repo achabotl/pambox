@@ -250,7 +250,7 @@ class Experiment(object):
             )
 
         if self.write:
-            self.write_results(df)
+            self._write_results(df)
         return df
 
     def _write_results(self, df):
