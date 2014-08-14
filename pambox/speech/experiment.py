@@ -190,6 +190,19 @@ class Experiment(object):
             , 'Sentence number': i_target
             , self._key_full_pred: res
         }
+        # If the distortion parameters are in a dictionary, put each value in
+        # a different column. Otherwise, group everything in a single column.
+        if isinstance(params, dict):
+            for k, v in params.iteritems():
+                d[k] = v
+        else:
+            # Make sure the values are hashable for later manipulation
+            if isinstance(params, list):
+                params = tuple(params)
+            else:
+                pass
+            d['Distortion params'] = params
+
         for name, value in res['p'].iteritems():
             d['Output'] = name
             d['Value'] = value
