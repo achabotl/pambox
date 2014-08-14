@@ -5,7 +5,6 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 from six.moves import zip
 from pambox.speech.sepsm import Sepsm
-from pambox import utils
 from pambox import inner
 
 
@@ -224,7 +223,7 @@ class MrSepsm(Sepsm):
 
             for i_sig, channel_env in enumerate(channel_envs):
                 # Extract envelope
-                tmp_env = utils.hilbert_envelope(channel_env).squeeze()
+                tmp_env = inner.hilbert_envelope(channel_env).squeeze()
 
                 # Low-pass filtering
                 tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,

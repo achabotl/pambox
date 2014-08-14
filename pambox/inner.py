@@ -9,6 +9,8 @@ from numpy import pi, exp, sin, cos, sqrt, abs, ones
 from numpy.core.umath import pi
 import scipy as sp
 import scipy.signal as ss
+from .utils import next_pow_2
+
 try:
     _ = np.use_fastnumpy
     from numpy.fft import fft, ifft, rfft, irfft
@@ -321,3 +323,28 @@ def mod_filterbank(signal, fs, modf):
         X_filt[k] = X * TF
         filtered_envs[k] = np.real(ifft(X_filt[k]))
     return powers, filtered_envs
+
+
+def hilbert_envelope(signal, axis=None):
+    """Calculates the Hilbert envelope of a signal.
+
+    Parameters
+    ----------
+    signal :
+        array_like, signal on which to calculate the hilbert
+        envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
+    axis :
+         (Default value = None)
+
+    Returns
+    -------
+    ndarray
+
+    """
+    signal = np.asarray(signal)
+    N_orig = signal.shape[-1]
+    # Next power of 2.
+    N = next_pow_2(N_orig)
+    y_h = sp.signal.hilbert(signal, N)
+    # Return signal with same dimensions as original
+    return np.abs(y_h[..., :N_orig])
