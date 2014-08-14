@@ -4,11 +4,15 @@ The :mod:`pambox.speech.material` module gathers classes to facilitate
 working with different speech materials.
 """
 from __future__ import division, print_function, absolute_import
+import logging
 import os
 
 import numpy as np
 import scipy.io.wavfile
 from six.moves import zip, range
+
+
+log = logging.getLogger(__name__)
 
 
 class Material(object):
@@ -63,6 +67,7 @@ class Material(object):
             Wav file read from disk, as floating point array.
         """
         path = os.path.join(self.root_path, self.path_to_sentences, filename)
+        log.info('Reading file %s', path)
         _, int_sentence = scipy.io.wavfile.read(path)
         return int_sentence.T / np.iinfo(int_sentence.dtype).min
 
@@ -71,7 +76,9 @@ class Material(object):
 
         :return: list of str, list of all CRM files.
         """
-        return os.listdir(os.path.join(self.root_path, self.path_to_sentences))
+        path = os.path.join(self.root_path, self.path_to_sentences)
+        log.info("Listing files from directory: %s", path)
+        return os.listdir(path)
 
     def load_files(self, n=None):
         """Read files from disk, starting from the first one.
