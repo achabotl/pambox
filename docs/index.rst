@@ -63,14 +63,14 @@ Contents
 .. toctree::
   :maxdepth: 2
 
-       audio/index
-       inner/index
-       middle/index
-       outer/index
-       central/index
-       speech/index
-       distort/index
-       utils/index
+  audio/index
+  inner/index
+  middle/index
+  outer/index
+  central/index
+  speech/index
+  distort/index
+  utils/index
 
 
 Indices and tables
