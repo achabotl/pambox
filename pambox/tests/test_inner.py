@@ -2,12 +2,12 @@
 from __future__ import division, print_function, absolute_import
 import csv
 import os.path
-import pytest
+
 import numpy as np
-from scipy import io as sio, io
-from pambox import inner
 import scipy.io as sio
 from numpy.testing import assert_allclose
+
+from pambox import inner
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
@@ -58,17 +58,6 @@ def test_third_octave_filtering_of_noise_():
     fs = 22050
     rms_out = inner.noctave_filtering(x, center_f, fs, width=3)
     assert_allclose(rms_out, target, rtol=1e-4)
-
-
-def test_mod_filtering_for_simple_signal():
-    signal = np.asarray([1, 0, 1, 0, 1])
-    fs = 2205
-    modf = np.asarray([1., 2., 4., 8., 16., 32., 64.])
-    p, _ = inner.mod_filterbank(signal, fs, modf)
-    target = np.asarray([6.69785298e-18, 6.06375859e-06, 2.42555385e-05,
-                         9.70302212e-05, 3.88249957e-04, 1.55506496e-03,
-                         6.25329663e-03])
-    assert_allclose(p, target, rtol=1e-2)
 
 
 def test_hilbert_env_on_2d_array_with_last_dimension():
