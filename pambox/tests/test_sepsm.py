@@ -1,4 +1,4 @@
- -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import division
 import os.path
 import csv
@@ -51,11 +51,11 @@ def test_snr_env():
 
     c = sepsm.Sepsm()
     for target, (p_mix, p_noise) in tests:
+
         snrenv = c._snr_env(p_mix, p_noise)
         assert_allclose(snrenv, target)
 
 
-@pytest.mark.slow
 def test_sepsm_prediction_snr_min9_db():
     with open(os.path.join(__DATA_ROOT__, 'test_full_sepsm.csv')) as csv_file:
         data_file = csv.reader(csv_file)

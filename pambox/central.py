@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Classes and functions related to the concepts of ideal observer and
-psychometric functions.
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
 import numpy as np
-from scipy.stats import norm
+from numpy.core.umath import pi
+from scipy.fftpack import fft, ifft
 from scipy.optimize import leastsq
-from scipy.special import erfc
+from scipy.stats import norm
 
 
 class IdealObs(object):
@@ -33,8 +32,8 @@ class IdealObs(object):
     Converting SNRenv values to percent correct using the default parameters
     of the ideal observer:
 
-    >>> from pambox import idealobs
-    >>> obs = idealobs.IdealObs()
+    >>> from pambox import central
+    >>> obs = central.IdealObs()
     >>> obs.snrenv_to_pc((0, 1, 2, 3))
 
     References
@@ -175,49 +174,82 @@ class IdealObs(object):
         return self._snrenv_to_pc(snrenv, self.k, self.q, self.sigma_s, self.m)
 
 
-def psy_fn(x, mu=0., sigma=1.):
-    """Calculates a psychometric function with a given mean and variance.
+def mod_filterbank(signal, fs, modf):
+    """Implementation of the EPSM-filterbank.
 
     Parameters
     ----------
-    x : array_like
-        "x" values of the psychometric functions.
-    mu : float, optional
-        Value at which the psychometric function reaches 50%, i.e. the mean
-        of the distribution. (Default value = 0)
-    sigma : float, optional
-        Variance of the psychometric function. (Default value = 1)
+    signal : ndarray
+        Temporal envelope of a signal
+    fs : int
+        Sampling frequency of the signal.
+    modf : array_like
+        List of the center frequencies of the modulation filterbank.
 
     Returns
     -------
-    pc : ndarray
-        Array of "percent correct", between 0 and 100.
+    tuple of ndarray
+        Integrated power spectrum at the output of each filter
+        Filtered time signals.
 
     """
-    x = np.asarray(x)
-    return 100 * erfc(-(x - mu) / (np.sqrt(2) * sigma)) / 2
+    modf = np.asarray(modf)
+    fcs = modf[1:]
+    fcut = modf[0]
+    # Make signal odd length
+    signal = signal[0:-1] if (len(signal) % 2) == 0 else signal
 
+    q = 1.     # Q-factor of band-pass filters
+    lp_order = 3.     # order of the low-pass filter
 
-if __name__ == '__main__':
-    from pylab import plot, figure, show, xlabel, ylabel, legend, xticks, yticks
-    snr = np.arange(-12, 5, 1)
-    snrenv = 10 ** np.linspace(-2, 2, len(snr))
-    c = IdealObs()
-    data = psy_fn(snr, -3.1, 2.13) * 100
-    c.fit_obs(snrenv, data)
+    n = signal.shape[-1]  # length of envelope signals
+    X = fft(signal)
+    X_mag = np.abs(X)
+    X_power = np.square(X_mag) / n  # power spectrum
+    X_power_pos = X_power[0:np.floor(n / 2).astype('int') + 1]
+    # take positive frequencies only and multiply by two to get the same total
+    # energy
+    X_power_pos[1:] = X_power_pos[1:] * 2
 
-    figure()
-    plot(snr, data, 'b--', label='Data')
-    plot(snr, c.snrenv_to_pc(snrenv), 'r--', label='Model')
-    xlabel('SNR [dB]')
-    ylabel('Percent correct')
-    legend(loc='upper left')
-    xticks(snr[::2])
-    yticks(range(0, 101, 10))
-    show()
+    pos_freqs = np.linspace(0, fs / 2, X_power_pos.shape[-1])
+    # Concatenate vector of 0:fs and -fs:1
+    freqs = np.concatenate((pos_freqs, -1 * pos_freqs[-1:0:-1]))
 
-    params = c.get_params()
-    print(('Optimized parameters found:\nk = {:.3f}\nq = {:.3f}\n'
-           'sigma_s = {:.4f}\nm = {:.3f}').format(params['k'], params['q'],
-                                                  params['sigma_s'],
-                                                  params['m']))
+    # Initialize transfer function
+    TFs = np.zeros((len(fcs) + 1, len(freqs))).astype('complex')
+    # Calculating frequency-domain transfer function for each center frequency:
+    for k in range(len(fcs)):
+        TFs[k + 1, 1:] = 1. / (1. + (1j * q * (freqs[1:] / fcs[k] - fcs[k] /
+                                               freqs[1:])))  # p287 Hambley.
+
+    # squared filter magnitude transfer functions
+    Wcf = np.square(np.abs(TFs))
+
+    # Low-pass filter squared transfer function, third order Butterworth filter
+    # TF from:
+    # http://en.wikipedia.org/wiki/Butterworth_filter
+    Wcf[0, :] = 1 / (1 + ((2 * pi * freqs / (2 * pi * fcut)) ** (2 * lp_order)))
+    # Transfer function of low-pass filter
+    TFs[0, :] = np.sqrt(Wcf[0, :])
+
+    # initialize output product:
+    vout = np.zeros((len(fcs) + 1, len(pos_freqs)))
+    powers = np.zeros(len(modf))
+
+    # ------------ DC-power, --------------------------
+    # here divide by two such that a fully modulated tone has an AC-power of 1.
+    dc_power = X_power_pos[0] / n / 2
+    # ------------------------------------------------
+    X_filt = np.zeros((Wcf.shape[0], X.shape[-1]), dtype='complex128')
+    filtered_envs = np.zeros_like(X_filt, dtype='float')
+
+    for k, (w, TF) in enumerate(zip(Wcf, TFs)):
+        vout[k] = X_power_pos * w[:np.floor(n / 2).astype('int') + 1]
+        # Integration estimated as a sum from f > 0
+        # integrate envelope power in the passband of the filter. Index goes
+        # from 2:end since integration is for f>0
+        powers[k] = np.sum(vout[k, 1:]) / n / dc_power
+        # Filtering and inverse Fourier transform to get time signal.
+        X_filt[k] = X * TF
+        filtered_envs[k] = np.real(ifft(X_filt[k]))
+    return powers, filtered_envs

@@ -1,9 +1,24 @@
 # -*- coding: utf-8 -*-
+"""
+:mod:`pambox.periph.inner` regroups processes of the inner.
+"""
 from __future__ import division, print_function, absolute_import
-from numpy import pi, exp, sin, cos, sqrt, abs, ones
+
 import numpy as np
+from numpy import exp, sin, cos, sqrt, abs, ones
+from numpy.core.umath import pi
 import scipy as sp
 import scipy.signal as ss
+
+from .utils import next_pow_2
+
+
+try:
+    _ = np.use_fastnumpy
+    from numpy.fft import fft, ifft, rfft, irfft
+except AttributeError:
+    from scipy.fftpack import fft, ifft
+    from numpy.fft import rfft, irfft
 
 
 CENTER_F = np.asarray([63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
@@ -165,3 +180,92 @@ class GammatoneFilterbank():
             output[chan, :] = y4
 
         return output
+
+
+def noctave_filtering(x, center_f, fs, width=3, output_time=False):
+    """Rectangular nth-octave filtering.
+
+    :x: signal
+    :center_f: ndarray, center frequencies, in Hz
+    :width: width of the filters, default 3 for 1/3-octave
+
+    Parameters
+    ----------
+    x : array_like
+        Input signal
+    center_f : array_like
+        List of the center frequencies of the filterbank.
+    fs : int
+        Sampling frequency of the input signal.
+    width : float
+         Width of the filters, in fraction of octave. The default value is 3,
+         therefore 1/3-octave.
+    output_time : bool, optional
+        If `True`, also outputs the time output of the filtering. The default
+        is to output the RMS value of each band only. Doing the inverse FFT
+        is very costly; setting the argument to `False` prevents from doing
+        that computation.
+
+    Returns
+    -------
+    out_rms : ndarray
+         RMS power at the output of each filter.
+    out_time : ndarray
+         Time signals at the output of the filterbank. The shape is (`len(
+         center_f) x len(x)`).
+
+    """
+    # Use numpy's FFT because SciPy's version of rfft (2 real results per
+    # frequency bin) behaves differently from numpy's (1 complex result per
+    # frequency bin)
+    center_f = np.asarray(center_f, dtype='float')
+
+    n = len(x)
+    # TODO Use powers of 2 to calculate the power spectrum, and also, possibly
+    # use RFFT instead of the complete fft.
+    X = rfft(x)
+    X_pow = np.abs(X) ** 2 / n  # Power spectrum
+    X_pow[1:] = X_pow[1:] * 2.
+    bound_f = np.zeros(len(center_f) + 1)
+    bound_f[0] = center_f[0] * 2. ** (- 1. / (2. * width))
+    bound_f[1:] = center_f * 2. ** (1. / (2. * width))
+    bound_f = bound_f[bound_f < fs / 2]
+    # Convert from frequencies to vector indexes. Factor of two is because
+    # we consider positive frequencies only.
+    bound_idx = np.floor(bound_f / (fs / 2.) * len(X_pow)).astype('int')
+    # Initialize arrays
+    out_rms = np.zeros(len(center_f))
+    out_time = np.zeros((len(center_f), x.shape[-1]), dtype='complex')
+    for idx, (l, f) in enumerate(zip(bound_idx[0:], bound_idx[1:])):
+        out_time[idx, l:f] = X[l:f]
+        out_rms[idx] = np.sqrt(np.sum(X_pow[l:f]) / n)
+    if output_time:
+        out_time = np.real(irfft(out_time, n=n, axis=-1))
+        return out_rms, out_time
+    else:
+        return out_rms
+
+
+def hilbert_envelope(signal, axis=None):
+    """Calculates the Hilbert envelope of a signal.
+
+    Parameters
+    ----------
+    signal :
+        array_like, signal on which to calculate the hilbert
+        envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
+    axis :
+         (Default value = None)
+
+    Returns
+    -------
+    ndarray
+
+    """
+    signal = np.asarray(signal)
+    N_orig = signal.shape[-1]
+    # Next power of 2.
+    N = next_pow_2(N_orig)
+    y_h = sp.signal.hilbert(signal, N)
+    # Return signal with same dimensions as original
+    return np.abs(y_h[..., :N_orig])

@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import print_function
+"""
+:mod:`pambox.distort` regroups various types of distortions and processings
+that can be applied to signals.
+"""
+from __future__ import division, print_function
+
 import numpy as np
 import scipy as sp
 from six.moves import zip
 from scipy.io import wavfile
-from pambox import general
-from pambox.general import fftfilt
+
+from pambox import utils
+from pambox.utils import fftfilt
 
 try:
     _ = np.use_fastnumpy
@@ -47,9 +52,9 @@ def mix_noise(clean, noise, sent_level, snr=None):
 
     if snr is not None:
         # Get speech level and set noise level accordingly
-        # clean_level = general.dbspl(clean)
-        # noise = general.setdbspl(noise, clean_level - snr)
-        noise = noise / general.rms(noise) * 10 ** ((sent_level - snr) / 20)
+        # clean_level = utils.dbspl(clean)
+        # noise = utils.setdbspl(noise, clean_level - snr)
+        noise = noise / utils.rms(noise) * 10 ** ((sent_level - snr) / 20)
         mix = clean + noise
     else:
         mix = clean
@@ -98,7 +103,7 @@ def reverb(x, rt):
        Input signal.
     rt : float
         Reverberation time
-        
+
 
     Returns
     -------
@@ -112,7 +117,7 @@ def reverb(x, rt):
 def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
     """
     Apply spectral subtraction to a signal.
-    
+
     The defaul values of the parameters are typical for a sampling frequency of
     44100 Hz. Note that (W+padz) is the final frame window and hence the fft
     length (it is normally chose as a power of 2).
@@ -136,8 +141,10 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
     Returns
     -------
-    tuple of ndarrays
-        Estimate of clean signal and estimate of noisy signal.
+    clean_estimate : ndarray
+        Estimate of the clean signal.
+    noise_estimate : ndarray
+        Estimate of the noisy signal.
 
     """
     wnd = np.hanning(w + 2)  # create hanning window with length = W
@@ -207,9 +214,7 @@ def spec_sub(x, noise, factor, w=1024 / 2., padz=1024 / 2., shift_p=0.5):
 
 
 def overlap_and_add(powers, phases, len_window, shift_size):
-    """
-    Reconstruct a signal with the overlap and add method.
-    
+    """Reconstruct a signal with the overlap and add method.
 
     Parameters
     ----------
@@ -222,7 +227,6 @@ def overlap_and_add(powers, phases, len_window, shift_size):
     shift_size : int
         Shift length. For non overlapping signals, in would equal `len_window`.
         For 50% overlapping signals, it would be `len_window/2`.
-        
 
     Returns
     -------
@@ -256,20 +260,30 @@ def overlap_and_add(powers, phases, len_window, shift_size):
 
 
 class WestermannCrm(object):
-    """Applies HRTF and BRIR for a given target and masker distance."""
+    """Applies HRTF and BRIR for a given target and masker distance.
+
+    Parameters
+    ----------
+    fs : int
+         Samping frequenc of the process. (Default value = 40000)
+
+    Attributes
+    ----------
+    brir : dict
+        Binaural room impulse responses for each distance.
+    delays : dict
+        Delay until the first peak in the BRIR for each distance.
+    dist : ndarray
+        List of the valid distances (0.5, 2, 5, and 10 meters).
+
+    References
+    ----------
+    .. [1] A. Westermann and J. M. Buchholz: Release from masking through
+        spatial separation in distance in hearing impaired listeners.
+        Proceedings of Meetings on Acoustics 19 (2013) 050156.
+    """
 
     def __init__(self, fs=40000):
-        """
-
-        Parameters
-        ----------
-        fs : int
-             Samping frequenc of the process. (Default value = 40000)
-
-        Returns
-        -------
-
-        """
         self.dist = np.asarray([0.5, 2, 5, 10])
         self.fs = fs
         self.brir = self._load_brirs()
@@ -302,7 +316,6 @@ class WestermannCrm(object):
         Parameters
         ----------
         d : float
-            
 
         Returns
         -------
@@ -343,12 +356,11 @@ class WestermannCrm(object):
 
     def apply(self, x, m, tdist, mdist, align=True):
         """Applies the "Westermann" distortion to a target and masker.
-        
-        Applies the BRIR of the required distance to the target. If the
+
         target and masker are not co-located, the masker is equalized before
         applying the BRIR, so that both the target and masker will have the
         same average spectrum after the BRIR filtering.
-        
+
         By default, the delay introduced by the BRIR is compensated for,
         such that the maxiumum of the BRIR happen simulatenously.
 
@@ -368,9 +380,10 @@ class WestermannCrm(object):
 
         Returns
         -------
-        tuple of ndarray
-            Mixture and noise alone, processed by the BRIRs.
-        
+        mix : (2, N) ndarray
+            Mixture processesed by the BRIRs.
+        noise : (2, N)
+            Noise alone processed by the BRIRs.
         """
         if tdist not in self.dist or mdist not in self.dist:
             raise ValueError('The distance values are incorrect.')
@@ -397,7 +410,7 @@ class WestermannCrm(object):
             i_m = 0
 
         # Pad with zeros if necessary, so that the lengths stay the same
-        out_x, out_m = general.make_same_length(out_x[:, i_x:], out_m[:, i_m:])
+        out_x, out_m = utils.make_same_length(out_x[:, i_x:], out_m[:, i_m:])
         return out_x, out_m
 
     def _calc_aligned_idx(self, tdist, mdist):
@@ -414,7 +427,10 @@ class WestermannCrm(object):
 
         Returns
         -------
-
+        i_x : int
+            Index of earliest peak in the signal.
+        i_m : int
+            Index of the earliest peak in the maskers.
         """
         # location of earliest peak
         m_is_shortest = np.argmin([self.delays[tdist], self.delays[mdist]])
@@ -445,12 +461,11 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     ndarray
         Noise signal.
 
-    
     """
     x = np.asarray(x)
     n_x = x.shape[-1]
-    n_fft = general.next_pow_2(n_x)
-    X = rfft(x, general.next_pow_2(n_fft))
+    n_fft = utils.next_pow_2(n_x)
+    X = rfft(x, utils.next_pow_2(n_fft))
     # Randomize phase.
     noise_mag = np.abs(X) * np.exp(
         2 * np.pi * 1j * np.random.random(X.shape[-1]))
