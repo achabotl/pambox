@@ -5,7 +5,7 @@ import scipy as sp
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 from six.moves import zip
-from pambox import utils
+from pambox import central
 from pambox import inner
 try:
     import seaborn
@@ -230,8 +230,8 @@ class Sepsm(object):
                 downsamp_env[i_sig] = self._env_extraction(signal)
 
                 exc_ptns[i_sig, idx_band], _ = \
-                    inner.mod_filterbank(downsamp_env[i_sig], fs_new,
-                                              self.modf)
+                    central.mod_filterbank(downsamp_env[i_sig], fs_new,
+                                           self.modf)
 
         # Calculate SNRenv
         snr_env_matrix = self._snr_env(*exc_ptns[-2:])
