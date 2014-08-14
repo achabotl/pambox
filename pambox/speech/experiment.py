@@ -192,7 +192,7 @@ class Experiment(object):
 
         return df
 
-    def run(self, n=None):
+    def run(self, n=None, seed=0):
         """ Run the experiment.
 
         Parameters
@@ -205,8 +205,11 @@ class Experiment(object):
         df : pd.Dataframe
             Pandas dataframe with the experimental results.
 
-
         """
+        if not seed:
+            seed = 0
+        np.random.seed(seed)
+
         try:
             self.models = iter(self.models)
         except TypeError:
