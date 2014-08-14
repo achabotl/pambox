@@ -184,7 +184,7 @@ class Sepsm(object):
 
         """
         # Extract envelope
-        tmp_env = utils.hilbert_envelope(signal).squeeze()
+        tmp_env = inner.hilbert_envelope(signal).squeeze()
         # Low-pass filtering
         tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
                                                  n=1, fs=self.fs)

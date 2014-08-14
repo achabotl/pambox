@@ -69,3 +69,32 @@ def test_mod_filtering_for_simple_signal():
                          9.70302212e-05, 3.88249957e-04, 1.55506496e-03,
                          6.25329663e-03])
     assert_allclose(p, target, rtol=1e-2)
+
+
+def test_hilbert_env_on_2d_array_with_last_dimension():
+    tests = (
+        ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
+         [0, 1, 2, 1, 0]),
+        ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
+         [0, 1, 2, 1, 0]),
+        ([[0., 1.], [0., 1.]],
+         [[0, 1], [0, 1]]),
+        ([[0.5, 1., 0.5], [2.5, 3.16227766, 1.5]],
+         [[0, 1, 0], [2, 3, 0]]),
+    )
+
+    for target, x in tests:
+        env = inner.hilbert_envelope(x)
+        np.testing.assert_allclose(env, target,
+                                   err_msg="Input was {}".format(x))
+
+
+def test_envelope_extraction():
+    x = np.array(
+        [-0.00032745, -0.00031198, -0.00029605, -0.00027965, -0.00026281,
+         -0.00024553, -0.00022783, -0.00020972])
+    target = np.array(
+        [0.00068165, 0.00068556, 0.00068946, 0.00069335, 0.00069725,
+         0.00070113, 0.00070502, 0.0007089])
+    envelope = inner.hilbert_envelope(x)
+    np.testing.assert_allclose(envelope, target, atol=1e-3)

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
 import os.path
+
 import pytest
-from pambox import utils
 import numpy as np
+
+from pambox import utils
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
@@ -58,35 +60,6 @@ def test_set_level():
     for x, level, offset, target in tests:
         y = utils.setdbspl(x, level, offset=offset)
         np.testing.assert_allclose(y, target, atol=1e-4)
-
-
-def test_envelope_extraction():
-    x = np.array(
-        [-0.00032745, -0.00031198, -0.00029605, -0.00027965, -0.00026281,
-         -0.00024553, -0.00022783, -0.00020972])
-    target = np.array(
-        [0.00068165, 0.00068556, 0.00068946, 0.00069335, 0.00069725,
-         0.00070113, 0.00070502, 0.0007089])
-    envelope = utils.hilbert_envelope(x)
-    np.testing.assert_allclose(envelope, target, atol=1e-3)
-
-
-def test_hilbert_env_on_2d_array_with_last_dimension():
-    tests = (
-        ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
-         [0, 1, 2, 1, 0]),
-        ([0.70710678, 1.56751612, 2., 1.56751612, 0.70710678],
-         [0, 1, 2, 1, 0]),
-        ([[0., 1.], [0., 1.]],
-         [[0, 1], [0, 1]]),
-        ([[0.5, 1., 0.5], [2.5, 3.16227766, 1.5]],
-         [[0, 1, 0], [2, 3, 0]]),
-    )
-
-    for target, x in tests:
-        env = utils.hilbert_envelope(x)
-        np.testing.assert_allclose(env, target,
-                                   err_msg="Input was {}".format(x))
 
 
 # Can't be done programmatically, because the exact third-octave spacing is not
