@@ -61,7 +61,7 @@ Contents
 --------
 
 .. toctree::
-:maxdepth: 2
+  :maxdepth: 2
 
        audio/index
        inner/index
