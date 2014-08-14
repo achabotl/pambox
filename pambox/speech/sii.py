@@ -142,7 +142,7 @@ class Sii(object):
             raise ValueError("Vocal error string not recognized.")
         return self.Ei[:, efforts[vcl_effort]]
 
-    def predict_spec(self, E, N=-50 * ones(18)):
+    def predict_spec(self, E, N=-50):
         """Predicts intelligibility based on the spectra levels of the speech
         and the noise.
 
@@ -158,6 +158,8 @@ class Sii(object):
         ndarray
             Predicted SII value.
         """
+        if isinstance(N, int):
+            N = N * ones(18)
 
         E[np.isnan(E)] = 0
         N[np.isnan(N)] = 0

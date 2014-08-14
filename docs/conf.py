@@ -19,6 +19,17 @@ import sys, os
 #sys.path.insert(0, os.path.abspath('.'))
 
 
+import mock
+
+MOCK_MODULES = ['numpy', 'numpy.fft', 'scipy', 'scipy.stats',
+                'scipy.optimize', 'scipy.fftpack', 'scipy.io',
+                'scipy.signal', 'matplotlib',
+                'scipy.io.wavfile',
+                'mpl_toolkits.axes_grid1', 'matplotlib.pyplot', 'pandas']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

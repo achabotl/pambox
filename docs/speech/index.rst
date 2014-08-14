@@ -60,7 +60,7 @@ Intelligibility models return a dictionary with **at least** the following key:
 It might seem a bit over-complicated, but it allows for an easier storing of
 the results of an experiment.
 
-Additionally, the models can add another keys to the results dictionary. For
+Additionally, the models can add any other keys to the results dictionary. For
 example, a model can return some of its internal attributes,
 its internal representation, etc.
 
@@ -123,10 +123,10 @@ with the reference that a signal with an RMS value of 1 has a level of 0 dB SPL.
     >>> adjusted_x = sm.set_level(x, 65)
 
 Speech intelligibility experiment
-=================================
+---------------------------------
 
 Basic example
--------------
+~~~~~~~~~~~~~
 
     >>> from pambox.speech import experiment, Sepsm, Material
     >>> models = Sepsm()
