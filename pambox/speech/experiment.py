@@ -322,7 +322,7 @@ class Experiment(object):
             return output_file
 
     @staticmethod
-    def prediction(model, target, masker):
+    def prediction(model, target, mix, masker):
         """
         Predicts intelligibility for a target and masker pair. The target and
         masker are simply added together to create the mixture.
@@ -337,7 +337,7 @@ class Experiment(object):
         -------
         :return:
         """
-        return model.predict(target, target + masker, masker)
+        return model.predict(target, mix, masker)
 
     def plot_results(self,
                      df,
