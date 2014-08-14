@@ -60,7 +60,6 @@ class Experiment(object):
             output_path='./Data/',
             timestamp_format="%Y%m%d-%H%M%S"
     ):
-        """@todo: to be defined1. """
         self.models = models
         self.material = material
         self.snrs = snrs
