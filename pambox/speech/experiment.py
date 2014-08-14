@@ -108,7 +108,7 @@ class Experiment(object):
         if target.shape[-1] != masker.shape[-1]:
             target, masker = make_same_length(target, masker,
                                               extend_first=False)
-        return target, masker
+        return target, target + masker, masker
 
     def adjust_levels(self, target, masker, snr):
         """
@@ -229,9 +229,10 @@ class Experiment(object):
         )):
             masker = self.next_masker(target)
 
-            target, masker = self.preprocessing(
+            target, mix, masker = self.preprocessing(
                 target,
                 masker,
+                snr,
                 params
             )
 
