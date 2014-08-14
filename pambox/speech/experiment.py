@@ -340,28 +340,46 @@ class Experiment(object):
         """
         return model.predict(target, target + masker, masker)
 
-    def plot_results(self, df):
-        df = df.ix[self.df['Target distance'] == 0.5, :]
-        for key, grp in df.groupby(['Target distance', 'Masker distance']):
-            plt.plot(grp['SNR'].unique(),
-                     grp.groupby('SNR')['Intelligibility_L'].mean(),
-                     label=str(key) + '_L')
-            plt.plot(grp['SNR'].unique(),
-                     grp.groupby('SNR')['Intelligibility_R'].mean(),
-                     label=str(key) + '_R')
-        srt_l = int2srt(grp['SNR'].unique(),
-                        grp.groupby('SNR')['Intelligibility_L'].mean().values)
-        srt_r = int2srt(grp['SNR'].unique(),
-                        grp.groupby('SNR')['Intelligibility_R'].mean().values)
-        try:
-            print('Positions:%s\tSRTs L:%.1f\t R:%.1f' %
-                  (key, srt_l[0], srt_r[0]))
-        except:
-            pass
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left',
-                   borderaxespad=0.)
-        plt.xlabel('SNR (dB)')
-        plt.ylabel('% Intelligibility')
+    def plot_results(self,
+                     df,
+                     var=None,
+                     xlabel='SNR (dB)',
+                     ylabel='% Intelligibility'):
+
+        # Drop the column with the full prediction results
+        if self._key_full_pred in df.columns:
+            df = df.drop(self._key_full_pred, axis=1)
+
+        # Use the single "Distortion params" column if available.
+        if self._key_dist_params in df.columns:
+            params = [self._key_dist_params]
+        else:
+            params = list(set(df.columns) - set(self._all_keys)
+                          - {'Intelligibility'})
+        log.debug("Found the following parameter keys %s", params)
+
+        if np.unique(df[params]):
+            groups = [self._key_snr, self._key_models]
+        else:
+            groups = params + [self._key_snr, self._key_models]
+
+        grouped_cols = df.groupby(groups).mean().unstack(
+            self._key_snr).T
+
+        # Which column to plot?
+        if not var:
+            if "Intelligibility" in df.columns:
+                var = 'Intelligibility'
+            else:
+                var = self._key_value
+
+        grouped_cols.xs(var).plot()
+        if var == 'Intelligibility':
+            plt.ylim((0, 100))
+
+        plt.legend(loc='best')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
 
     @staticmethod
     def snr_to_pc(df, col, fc, out_name='Intelligibility'):
