@@ -8,6 +8,7 @@ from numpy.fft import fft, ifft
 import scipy as sp
 from scipy import signal as ss
 from scipy.io import wavfile
+import scipy.special
 
 
 def dbspl(x, ac=False, offset=0.0, axis=-1):
