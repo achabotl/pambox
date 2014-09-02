@@ -24,7 +24,7 @@ import mock
 MOCK_MODULES = ['numpy', 'numpy.fft', 'scipy', 'scipy.stats',
                 'scipy.optimize', 'scipy.fftpack', 'scipy.io',
                 'scipy.signal', 'matplotlib',
-                'scipy.io.wavfile',
+                'scipy.io.wavfile', 'scipy.special',
                 'mpl_toolkits.axes_grid1', 'matplotlib.pyplot', 'pandas']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
