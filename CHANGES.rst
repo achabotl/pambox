@@ -5,6 +5,8 @@ master (unreleased)
 
 API changes
 -----------
+- Added optional `model` parameter to `Experiment.pred_to_pc` to select only
+certain models and model outputs for the conversion to percent correct.
 
 Enhancements
 ------------

@@ -388,26 +388,58 @@ class Experiment(object):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
-    @staticmethod
-    def pred_to_pc( df, fc, col='Value', out_name='Intelligibility'):
+    def pred_to_pc(
+            self,
+            df,
+            fc,
+            col='Value',
+            models=None,
+            out_name='Intelligibility'
+    ):
         """Converts the data in a given column to percent correct.
 
         Parameters
         ----------
+        df : Dataframe
+            Dataframe where the intelligibility predictions are stored.
+        fc : function
+            The function used to convert the model outputs to
+            intelligibility. The function must take a float as input and
+            returns a float.
         col : string
-            Name of the column to convert to intelligibility.
-        fc : function,
-            Takes a float as input and returns a float. The function performs
-            the transformation to intelligibility.
+            Name of the column to convert to intelligibility. The default is
+            "Value".
+        models : string, list or dict
+            This argument can either be a string, with the name of the model
+            for which the output value will be transformed to
+            intelligibility, or a list of model names. The argument can also
+            be a dictionary where the keys are model names and the values are
+            "output names", i.e. the name of the value output by the model.
+            This is useful if a model has multiple prediction values. The
+            default is `None`, all the rows will be converted with the same
+            function.
         out_name : str
             Name of the output column (default: 'Intelligibility')
 
         Returns
         -------
         df : dataframe
-            Dataframe with the new columns with trans
+            Dataframe with the new column column with intelligibility values.
         """
-        df[out_name] = df[col].map(fc)
+        if models:
+            if isinstance(models, list):
+                for model in models:
+                    df[out_name] \
+                        = df[df[self._key_models] == model][col].map(fc)
+            elif isinstance(models, dict):
+                for model, v in models.iteritems():
+                    key = (df[self._key_models] == model) & (
+                        df[self._key_output == v])
+                    df[out_name] = df[key][col].map(fc)
+            else:
+                df[out_name] = df[df[self._key_models] == models][col].map(fc)
+        else:
+            df[out_name] = df[col].map(fc)
         return df
 
     @staticmethod
