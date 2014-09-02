@@ -300,6 +300,14 @@ class Experiment(object):
             name = ''
         filename = "{date}{name}.csv".format(date=date, name=name)
 
+        if not os.path.isdir(self.output_path):
+            try:
+                os.mkdir(self.output_path)
+                log.info('Created directory %s', self.output_path)
+            except IOError as e:
+                log.info("Could not create directory %s", self.output_path)
+                log.error(e)
+
         output_file = os.path.join(self.output_path, filename)
         try:
             df.drop(self._key_full_pred, axis=1).to_csv(output_file)
