@@ -4,8 +4,10 @@ The :mod:`pambox.speech.material` module gathers classes to facilitate
 working with different speech materials.
 """
 from __future__ import division, print_function, absolute_import
+import glob
 import logging
 import os
+import random
 
 import numpy as np
 import scipy.io.wavfile
@@ -39,10 +41,18 @@ class Material(object):
         self._path_to_ssn = None
         self.path_to_ssn = path_to_ssn
         self.force_mono = force_mono
+        self._files = None
+        self._audio_ext = '.wav'
 
     @property
     def files(self):
-        return self.files_list()
+        if not self._files:
+            self._files = self.files_list()
+        return self._files
+
+    @files.setter
+    def files(self, f):
+        self._files = f
 
     @property
     def path_to_ssn(self):
@@ -50,8 +60,9 @@ class Material(object):
 
     @path_to_ssn.setter
     def path_to_ssn(self, path):
-        self._path_to_ssn = path
-        self._ssn = self._load_ssn()
+        if path:
+            self._path_to_ssn = path
+            self._ssn = self._load_ssn()
 
     def load_file(self, filename):
         """Read a speech file by name.
@@ -83,10 +94,8 @@ class Material(object):
         """
         path = os.path.join(self.path_to_sentences)
         log.info("Listing files from directory: %s", path)
-        all_files = os.listdir(path)
-        wav_files_only = [filename for filename in all_files if
-                          filename.lower().endswith('.wav')]
-        return wav_files_only
+        return [os.path.basename(each) for each in glob.glob(path + '*' +
+                self._audio_ext)]
 
     def load_files(self, n=None):
         """Read files from disk, starting from the first one.
@@ -203,7 +212,42 @@ class Material(object):
         spl = [utils.dbspl(x) for x in self.load_files()]
         return np.mean(spl), np.std(spl)
 
+    def create_ssn(self, files=None, repetitions=200):
+        """Creates a speech-shaped noise from the sentences.
 
+        Creates a speech-shaped noise by randomly adding together sentences
+        from the speech material. The output noise is 75% the length of all
+        concatenated sentences.
 
+        Parameters
+        ----------
+        files : list, optional
+            List of files to concatenate. Each file should be an `ndarray`.
+            If `files` is None, all the files from the speech material
+            will be used. They are loaded with the method `load_files()`.
+        repetitions : int
+            Number of times to superimpose the randomized sentences. The
+            default is 120 times.
 
+        Returns
+        -------
+        ssn : ndarray
 
+        Notes
+        -----
+        Before each addition, the random stream of sentences is jittered to
+        prevent perfect alignment of all sentences. The maximum jitter is
+        equal to 25% of the length of the concatenated sentences.
+        """
+        if files is None:
+            files = [each for each in self.load_files()]
+        ssn = np.hstack(files)
+        n_output = int(0.75 * ssn.shape[-1])
+        max_jitter = ssn.shape[-1] - n_output
+        ssn = ssn[..., :n_output]
+        for _ in range(repetitions):
+            random.shuffle(files)
+            start = np.random.randint(max_jitter)
+            ssn += np.hstack(files)[..., start:start + n_output]
+        ssn /= np.sqrt(repetitions)
+        return ssn
