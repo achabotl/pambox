@@ -75,7 +75,7 @@ def test_complete_mr_sepsm(mr):
     mix = mat_complete['mix']
     noise = mat_complete['noise']
     tests = (
-        (mix, noise, 17.026659110065896),
+        (mix, noise, 17.4),
     )
 
     for mix, noise, target in tests:
