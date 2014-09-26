@@ -219,7 +219,7 @@ def mod_filterbank(signal, fs, modf):
 
     pos_freqs = np.linspace(0, fs / 2, X_power_pos.shape[-1])
     # Concatenate vector of 0:fs and -fs:1
-    freqs = np.concatenate((pos_freqs, -1 * pos_freqs[-1:0:-1]))
+    freqs = np.concatenate((pos_freqs, pos_freqs[-1:0:-1]))
 
     # Initialize transfer function
     TFs = np.zeros((len(fcs) + 1, len(freqs))).astype('complex')
