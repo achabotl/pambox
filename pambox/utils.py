@@ -326,11 +326,10 @@ def fftfilt(b, x, n=None):
     return np.real(y)
 
 
-def write_wav(fname, fs, x):
+def write_wav(fname, fs, x, normalize=False):
     """Writes floating point numpy array to 16 bit wavfile.
 
-    Convenience wrapper around the scipy.io.wavfile.write function. The
-    signal is scaled such that its maximum value is one.
+    Convenience wrapper around the scipy.io.wavfile.write function.
 
     The '.wav' extension is added to the file if it is not part of the
     filename string.
@@ -343,6 +342,8 @@ def write_wav(fname, fs, x):
         Sampling frequency.
     x : array_like
         Signal with the shape N_channels x Length
+    normalize : bool
+        Scale the signal such that its maximum value is one.
 
     Returns
     -------
@@ -357,7 +358,7 @@ def write_wav(fname, fs, x):
     if x.shape[0] <= 2:
         x = x.T
 
-    if x is np.float:
+    if x is np.float and normalize:
         scaled = (x / np.max(np.abs(x)) * (2 ** 15 - 1))
     else:
         scaled = x
