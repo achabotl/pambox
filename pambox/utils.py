@@ -14,7 +14,7 @@ import scipy.special
 def dbspl(x, ac=False, offset=0.0, axis=-1):
     """Computes RMS value of signal in dB.
 
-    By default, a signal with an RMS value of 1 will have a level of 100 dB
+    By default, a signal with an RMS value of 1 will have a level of 0 dB
     SPL.
 
     Parameters
