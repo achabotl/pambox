@@ -244,10 +244,10 @@ class Experiment(object):
 
         for ii, ((i_target, target), params, snr, model) \
                 in enumerate(product(
-                enumerate(targets),
-                self.dist_params,
-                self.snrs,
-                self.models
+                    enumerate(targets),
+                    self.dist_params,
+                    self.snrs,
+                    self.models
         )):
             masker = self.next_masker(target)
 
@@ -257,7 +257,6 @@ class Experiment(object):
                 snr,
                 params
             )
-
             log.info("Simulation # %s\t SNR: %s, sentence %s", ii, snr,
                      i_target)
             res = self.prediction(model, target, mix, masker)
