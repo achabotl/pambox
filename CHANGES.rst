@@ -9,6 +9,11 @@ API changes
 Enhancements
 ------------
 
+- `utils.fftfilt` now mirrors Matlab's behavior. Given coefficients `b` and
+signal `x`: If `x` is a matrix, the rows are filtered. If `b` is a matrix,
+each filter is applied to `x`. If both `b` and `x` are matrices with the same
+number of rows, each row of `x` is filtered with the respective row of `b`.
+
 Performance
 -----------
 

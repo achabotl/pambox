@@ -214,8 +214,13 @@ def next_pow_2(x):
     return int(pow(2, np.ceil(np.log2(x))))
 
 
-def fftfilt(b, x, *n):
+def fftfilt(b, x, n=None):
     """FIR filtering using the FFT and the overlap-add method.
+
+    Filters the data in `x` using the FIR coefficients in `b`. If `x` is a
+    matrix, the rows are filtered. If `b` is a matrix, each filter is applied
+    to `x`. If both `b` and `x` are matrices with the same number of rows,
+    each row of `x` is filtered with the respective row of `b`.
 
     Parameters
     ----------
@@ -223,44 +228,61 @@ def fftfilt(b, x, *n):
         Coefficients of the FIR filter.
     x : array_like
         Signal to filter.
-    *n : int, optional.
-        Length of the FFT.
+    n : int, optional.
+        Length of the FFT. If `n` is not provided, a value of `n` will be
+        chosen by `fftfilt`. See Notes for details.
 
     Returns
     -------
-    ndarray
+    y : ndarray
         Filtered signal.
 
     Notes
     -----
-    Filter the signal x with the FIR filter described by the
+    Filter the signal `x` with the FIR filter described by the
     coefficients in `b` using the overlap-add method. If the FFT
-    length n is not specified, it and the overlap-add block length
+    length `n` is not specified, it and the overlap-add block length
     are selected so as to minimize the computational cost of
     the filtering operation.
 
-    From: http://projects.scipy.org/scipy/attachment/ticket/837/fftfilt.py
+    If `x` is longer than `b`, then `n` and `L` will be chosen as to minimize
+    the product of the number of blocks and the number of flops per FFT.
+
+    If a value of `n` is provided, the FFT length will be the next power of 2
+    after `n` and each block of data will be of length `N_fft - N_b + 1`. If
+    `n` is smaller than the length of `b`, the FFT length will be the length
+    of `b`.
+
+    Examples
+    --------
+    >>> import pambox.utils
+    >>> b = [1, 1]
+    >>> x = [0, 1, 2, 3, 4, 5]
+    >>> y = pambox.utils.fftfilt(b, x)
+
+    The FFT length can also be specified:
+    >>> y = pambox.utils.fftfilt(b, x, 16)
     """
     x = np.asarray(x)
     b = np.asarray(b)
 
-    if b.ndim > 1 or x.ndim > 1:
-        raise ValueError('The inputs should be one dimensional')
+    if b.ndim > 1 and x.ndim > 1 and (b.shape[0] != x.shape[0]):
+        raise(ValueError,
+              "b and x must have the same number of dimensions if they have more than 1.")
 
-    N_x = len(x)
-    N_b = len(b)
+    N_x = x.shape[-1]
+    N_b = b.shape[-1]
 
     # Determine the FFT length to use:
-    if len(n):
+    if n:
         # Use the specified FFT length (rounded up to the nearest
         # power of 2), provided that it is no less than the filter
         # length:
-        n = n[0]
         if n != int(n) or n <= 0:
-            raise ValueError('n must be a nonnegative integer')
+            raise ValueError('n must be a non-negative integer.')
         if n < N_b:
             n = N_b
-        N_fft = 2 ** next_pow_2(n)
+        N_fft = 2 ** ceil(log2(np.abs(n)))
     else:
         if N_x > N_b:
             # When the filter length is smaller than the signal,
@@ -273,11 +295,11 @@ def fftfilt(b, x, *n):
             # lengths that are powers of 2 are considered:
             N = 2 ** arange(ceil(log2(N_b)), 27)
             cost = ceil(N_x / (N - N_b + 1)) * N * (log2(N) + 1)
-            N_fft = N[argmin(cost)]
+            N_fft = N[np.argmin(cost)]
         else:
             # When the filter length is at least as long as the signal,
             # filter the signal using a single block:
-            N_fft = next_pow_2(N_b + N_x - 1)
+            N_fft = 2 ** ceil(log2((N_b + N_x - 1)))
 
     N_fft = int(N_fft)
 
@@ -285,15 +307,21 @@ def fftfilt(b, x, *n):
     L = int(N_fft - N_b + 1)
 
     # Compute the transform of the filter:
-    H = fft(b, N_fft)
+    B = fft(b, N_fft)
 
-    y = zeros(N_x, complex)
+    if b.ndim == 1 and x.ndim > 1:
+        # Replicate the rows of B
+        B = np.tile(B, (x.shape[0], 1))
+    if x.ndim == 1 and B.ndim > 1 :
+        x = np.tile(x, (B.shape[0], 1))
+
+    y = zeros(x.shape, np.complex)
     i = 0
     while i <= N_x:
-        il = min([i + L, N_x])
-        k = min([i + N_fft, N_x])
-        yt = ifft(fft(x[i:il], N_fft) * H, N_fft)  # Overlap..
-        y[i:k] = y[i:k] + yt[:k - i]  # and add
+        il = np.min([i + L, N_x])
+        k = np.min([i + N_fft, N_x])
+        yt = ifft(B * fft(x[..., i:il], N_fft), N_fft)
+        y[..., i:k] = y[..., i:k] + yt[..., :k - i]
         i += L
     return np.real(y)
 

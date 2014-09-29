@@ -4,8 +4,11 @@ import os.path
 
 import pytest
 import numpy as np
+from numpy.testing import assert_allclose, dec, TestCase
+from scipy import signal
 
 from pambox import utils
+from pambox.utils import fftfilt
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
@@ -22,7 +25,7 @@ def test_dbspl():
         (([10, 10], False, 0, 1), [20, 20]),
     )
     for (x, ac, offset, axis), target in tests:
-        np.testing.assert_allclose(utils.dbspl(x, ac=ac, offset=offset,
+        assert_allclose(utils.dbspl(x, ac=ac, offset=offset,
                                                axis=axis), target)
 
 
@@ -47,7 +50,7 @@ def test_rms():
         (([[0, 1], [0, 1]], False, 1), [0.70710678, 0.70710678]),
     )
     for (x, ac, axis), target in tests:
-        np.testing.assert_allclose(utils.rms(x, ac=ac, axis=axis), target)
+        assert_allclose(utils.rms(x, ac=ac, axis=axis), target)
 
 
 def test_set_level():
@@ -59,7 +62,7 @@ def test_set_level():
 
     for x, level, offset, target in tests:
         y = utils.setdbspl(x, level, offset=offset)
-        np.testing.assert_allclose(y, target, atol=1e-4)
+        assert_allclose(y, target, atol=1e-4)
 
 
 # Can't be done programmatically, because the exact third-octave spacing is not
@@ -103,8 +106,7 @@ def test_make_same_length_with_padding():
     )
 
     for inputs, targets in tests:
-        np.testing.assert_allclose(utils.make_same_length(*inputs),
-                                   targets)
+        assert_allclose(utils.make_same_length(*inputs), targets)
 
 
 def test_psy_fn():
@@ -113,4 +115,130 @@ def test_psy_fn():
     sigma = 1.0
     target = 0.13498980316300957
     y = utils.psy_fn(x, mu, sigma)
-    np.testing.assert_allclose(y, target)
+    assert_allclose(y, target)
+
+
+class _TestFFTFilt(TestCase):
+    dt = None
+
+    def test_fftfilt(self):
+        dt = 1e-6
+        fs = 1/dt
+        u = np.random.rand(10**6)
+        f = 10**4
+        b = signal.firwin(50, f/fs)
+
+        u_lfilter = signal.lfilter(b, 1, u)
+        u_fftfilt = fftfilt(b, u)
+        assert_allclose(u_lfilter, u_fftfilt)
+
+    def test_rank1(self):
+        dec.knownfailureif(
+            self.dt in [np.longdouble, np.longcomplex],
+            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+
+        x = np.arange(6).astype(self.dt)
+
+        # Test simple FIR
+        b = np.array([1, 1]).astype(self.dt)
+        y_r = np.array([0, 1, 3, 5, 7, 9.]).astype(self.dt)
+        assert_allclose(fftfilt(b, x), y_r, atol=1e-6)
+
+        # Test simple FIR with FFT length
+        b = np.array([1, 1]).astype(self.dt)
+        y_r = np.array([0, 1, 3, 5, 7, 9.]).astype(self.dt)
+        n = 12
+        assert_allclose(fftfilt(b, x, n), y_r, atol=1e-6)
+
+        # Test simple FIR with FFT length which is a power of 2
+        b = np.array([1, 1]).astype(self.dt)
+        y_r = np.array([0, 1, 3, 5, 7, 9.]).astype(self.dt)
+        n = 32
+        assert_allclose(fftfilt(b, x, n), y_r, atol=1e-6)
+
+        # Test simple FIR with FFT length
+        b = np.array(np.ones(6)).astype(self.dt)
+        y_r = np.array([0, 1, 3, 6, 10, 15]).astype(self.dt)
+        assert_allclose(fftfilt(b, x), y_r, atol=1e-6)
+
+    def test_rank2_x_longer_than_b(self):
+        dec.knownfailureif(
+            self.dt in [np.longdouble, np.longcomplex],
+            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+
+        shape = (4, 3)
+        x = np.linspace(0, np.prod(shape) - 1, np.prod(shape)).reshape(shape)
+        x = x.astype(self.dt)
+
+        b = np.array([1, 1]).astype(self.dt)
+
+        y_r2 = np.array([[0, 1, 3], [3, 7, 9], [6, 13, 15], [9, 19, 21]],
+                           dtype=self.dt)
+
+        y = fftfilt(b, x)
+        assert_allclose(y, y_r2)
+
+    def test_rank2_b_longer_than_x(self):
+        dec.knownfailureif(
+            self.dt in [np.longdouble, np.longcomplex],
+            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+
+        shape = (4, 3)
+        x = np.linspace(0, np.prod(shape) - 1, np.prod(shape)).reshape(shape)
+        x = x.astype(self.dt)
+
+        b = np.array([1, 1, 1, 1]).astype(self.dt)
+
+        y_r2 = np.array([[0, 1, 3], [3, 7, 12], [6, 13, 21], [9, 19, 30]],
+                        dtype=self.dt)
+
+        y = utils.fftfilt(b, x)
+        assert_allclose(y, y_r2, atol=1e-6)
+
+    def test_b_rank2(self):
+        dec.knownfailureif(
+            self.dt in [np.longdouble, np.longcomplex],
+            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+
+        x = np.linspace(0, 5, 6).astype(self.dt)
+
+        b = np.array([[1, 1], [2, 2]]).astype(self.dt)
+
+        y_r2 = np.array([[0, 1, 3, 5, 7, 9], [0, 2, 6, 10, 14, 18]],
+                        dtype=self.dt)
+        y = utils.fftfilt(b, x)
+        assert_allclose(y, y_r2)
+
+        b = np.array([[1, 1], [2, 2], [3, 3]]).astype(self.dt)
+
+        y_r2 = np.array([[0, 1, 3, 5, 7, 9],
+                         [0, 2, 6, 10, 14, 18],
+                         [0, 3, 9, 15, 21, 27]],
+                        dtype=self.dt)
+        y = utils.fftfilt(b, x)
+        assert_allclose(y, y_r2, atol=1e-6)
+
+    def test_b_and_x_of_same_dim(self):
+        dec.knownfailureif(
+            self.dt in [np.longdouble, np.longcomplex],
+            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+
+        shape = (2, 5)
+        x = np.linspace(0, np.prod(shape) - 1, np.prod(shape)).reshape(shape)
+        x = x.astype(self.dt)
+
+        b = np.array([[1, 1], [2, 2]]).astype(self.dt)
+
+        y_r2 = np.array([[0, 1, 3, 5, 7], [10, 22, 26, 30, 34]],
+                        dtype=self.dt)
+        y = utils.fftfilt(b, x)
+        assert_allclose(y, y_r2, atol=1e-6)
+
+
+class TestFFTFiltFloat32(_TestFFTFilt):
+    dt = np.float32
+
+
+class TestFFTFiltFloat64(_TestFFTFilt):
+    dt = np.float64
+
