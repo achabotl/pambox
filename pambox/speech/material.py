@@ -20,17 +20,15 @@ class Material(object):
 
     def __init__(self,
                  fs=22050,
-                 root_path='../stimuli/clue',
-                 path_to_sentences='sentencesWAV22',
+                 path_to_sentences='../stimuli/clue/sentencesWAV22',
                  path_to_maskers=None,
-                 path_to_ssn='SSN_CLUE22.wav',
-                 ref_level='74',
+                 path_to_ssn='../stimuli/clue/SSN_CLUE22.wav',
+                 ref_level=74,
                  name='CLUE'):
         """
 
         """
         self.fs = fs
-        self.root_path = root_path
         self.path_to_sentences = path_to_sentences
         self.path_to_maskers = path_to_maskers
         self.ref_level = ref_level
@@ -66,7 +64,7 @@ class Material(object):
         ndarray
             Wav file read from disk, as floating point array.
         """
-        path = os.path.join(self.root_path, self.path_to_sentences, filename)
+        path = os.path.join(self.path_to_sentences, filename)
         log.info('Reading file %s', path)
         _, int_sentence = scipy.io.wavfile.read(path)
         return int_sentence.T / np.iinfo(int_sentence.dtype).min
@@ -76,7 +74,7 @@ class Material(object):
 
         :return: list of str, list of all CRM files.
         """
-        path = os.path.join(self.root_path, self.path_to_sentences)
+        path = os.path.join(self.path_to_sentences)
         log.info("Listing files from directory: %s", path)
         return os.listdir(path)
 
@@ -101,7 +99,7 @@ class Material(object):
 
     def _load_ssn(self):
         try:
-            filepath = os.path.join(self.root_path, self._path_to_ssn)
+            filepath = self.path_to_ssn
             _, int_sentence = scipy.io.wavfile.read(filepath)
             ssn = int_sentence.T / np.iinfo(int_sentence.dtype).min
         except IOError:

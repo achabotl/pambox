@@ -7,6 +7,8 @@ API changes
 -----------
 - Added optional `model` parameter to `Experiment.pred_to_pc` to select only
 certain models and model outputs for the conversion to percent correct.
+- The `speech.Material` class takes directly the path to the sentences and to
+ the speech-shaped noise. This allows the user to use auto-complete.
 
 Enhancements
 ------------
