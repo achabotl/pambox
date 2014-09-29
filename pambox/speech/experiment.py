@@ -183,11 +183,16 @@ class Experiment(object):
             model_name = model.name
         except AttributeError:
             model_name = model.__class__.__name__
+        try:
+            material_name = self.material.name
+        except AttributeError:
+            material_name = self.material.__class__.__name__
         d = {
             'SNR': snr
             , 'Model': model_name
             , 'Sentence number': i_target
             , self._key_full_pred: res
+            , 'Material': material_name
         }
         # If the distortion parameters are in a dictionary, put each value in
         # a different column. Otherwise, group everything in a single column.

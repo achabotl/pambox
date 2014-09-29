@@ -16,6 +16,8 @@ signal `x`: If `x` is a matrix, the rows are filtered. If `b` is a matrix,
 each filter is applied to `x`. If both `b` and `x` are matrices with the same
 number of rows, each row of `x` is filtered with the respective row of `b`.
 - The `Experiment` class tries to create the output folder if it does not exist.
+- The speech material name is saved out the output data frame when running a
+speech intelligibility experiment.
 
 Performance
 -----------
