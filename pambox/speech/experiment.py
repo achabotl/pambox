@@ -81,7 +81,6 @@ class Experiment(object):
         self._all_keys = [
             self._key_full_pred,
             self._key_value,
-            self._key_output,
             self._key_dist_params,
             self._key_models,
             self._key_snr,
@@ -351,6 +350,40 @@ class Experiment(object):
         """
         return model.predict(target, mix, masker)
 
+    def _get_groups(self, df, var=None):
+        """Get of variables for plotting.
+
+        Ignored variables should be:
+        - SNR
+        - Sentence number
+
+        :param df:
+        :param var:
+        :return:
+        """
+
+        # Use the single "Distortion params" column if available and not
+        # None. Else, consider all "extra columns" as parameters.
+        if self._key_dist_params in df.columns:
+            # Use the distortion parameters only if it's not None.
+            if df[self._key_dist_params].unique().any():
+                params = [self._key_dist_params]
+            else:
+                params = []
+        else:
+            params = list(set(df.columns) - set(self._all_keys)
+                          - {'Intelligibility'})
+        # If var is defined, remove it from the groups
+        if var:
+            params = list(set(params) - set([var]))
+        log.debug("Found the following parameter keys %s.", params)
+        if len(np.unique(df[params])):
+            groups = params + [self._key_snr, self._key_models]
+        else:
+            groups = [self._key_snr, self._key_models]
+        log.debug("The plotting groups are: %s.", groups)
+        return groups
+
     def plot_results(self,
                      df,
                      var=None,
@@ -361,18 +394,7 @@ class Experiment(object):
         if self._key_full_pred in df.columns:
             df = df.drop(self._key_full_pred, axis=1)
 
-        # Use the single "Distortion params" column if available.
-        if self._key_dist_params in df.columns:
-            params = [self._key_dist_params]
-        else:
-            params = list(set(df.columns) - set(self._all_keys)
-                          - {'Intelligibility'})
-        log.debug("Found the following parameter keys %s", params)
-
-        if np.unique(df[params]):
-            groups = [self._key_snr, self._key_models]
-        else:
-            groups = params + [self._key_snr, self._key_models]
+        groups = self._get_groups(df, var)
 
         grouped_cols = df.groupby(groups).mean().unstack(
             self._key_snr).T
