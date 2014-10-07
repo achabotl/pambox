@@ -454,7 +454,7 @@ def int2srt(x, y, srt=50.0):
         srt = x[idx] + (srt - y[idx]) * (x[idx + 1] - x[idx]) \
             / (y[idx + 1] - y[idx])
     else:
-        srt = None
+        srt = np.nan
     return srt
 
 

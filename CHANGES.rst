@@ -9,6 +9,8 @@ API changes
 certain models and model outputs for the conversion to percent correct.
 - The `speech.Material` class takes directly the path to the sentences and to
  the speech-shaped noise. This allows the user to use auto-complete.
+- The py:func:`~pambox.utils.int2srt` function return `np.nan` if the SRT is
+not found, instead of returning None.
 
 Enhancements
 ------------

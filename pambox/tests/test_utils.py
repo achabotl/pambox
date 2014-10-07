@@ -88,7 +88,7 @@ def test_find_calculate_srt_when_found():
 def test_find_calculate_srt_when_not_found():
     x = np.arange(10)
     y = 2 * x + 4
-    assert None == utils.int2srt(x, y, srt=50)
+    assert np.isnan(utils.int2srt(x, y, srt=50))
 
 
 def test_find_srt_when_srt_at_index_zero():
