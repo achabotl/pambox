@@ -33,3 +33,9 @@ Butterworth filter coefficients and the `scipy.signal.filtfilt` function.
 - Fix #16: the ideal observer fits the average intelligibility, across all
 sentences, to the reference data, rather than trying to fit all sentences at
 once.
+- Fix #17: Removed unnecessary compensation factor in the sEPSM. It
+compensated for the filter bandwidth when computing the bands above threshold
+. The tests tolerance had to be adjusted; for the spectral subtraction case,
+the relative difference compared to the Matlab code is smaller than 8%. In
+the condition with speech-shaped noise only, the difference is smaller than 0
+.1%.

@@ -30,6 +30,15 @@ class Sepsm(object):
          (Default value = 0.01)
     snr_env_limit : float
          (Default value = 0.001)
+
+    Notes
+    -----
+
+
+    Modifed on 2014-10-07 by Alexandre Chabot-Leclerc: Remove the unnecessary
+    factor to compensate for filter bandwidth when computing the bands above
+    threshold. The diffuse hearing threshold are already adjusted for filter
+    bandwidth.
     """
 
     _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630,
@@ -92,7 +101,7 @@ class Sepsm(object):
         noise_rms_db = 20 * np.log10(x)
         # convert to spectrum level according to SII - ANSI 1997
         noise_spec_level_corr = noise_rms_db \
-            - 10.0 * np.log10(sp.asarray(self.cf) * 0.231)
+            - 10.0 * np.log10(sp.asarray(self.cf))
         max_idx = min(len(noise_spec_level_corr), len(self.ht_diffuse))
         b = noise_spec_level_corr[:max_idx] > self.ht_diffuse[:max_idx]
         idx = np.arange(len(noise_rms_db))
