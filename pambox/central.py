@@ -107,22 +107,27 @@ class IdealObs(object):
         else:
             self.m = m
 
+        # Set default values for optimization
+        p0 = [self.k, self.q, self.sigma_s]
+        fixed_params = {'m': m}
         if sigma_s:
-            errfc = lambda p, snr, data: self._snrenv_to_pc(snrenv,
-                                                            p[0],
-                                                            p[1],
-                                                            sigma_s,
-                                                            m) - data
-            p0 = [self.k, self.q]
-        else:
-            errfc = lambda p, snr, data: self._snrenv_to_pc(snrenv,
-                                                            p[0],
-                                                            p[1],
-                                                            p[2],
-                                                            m) - data
-            p0 = [self.k, self.q, self.sigma_s]
+            p0 = p0[:2]
+            fixed_params['sigma_s'] = sigma_s
 
-        res = leastsq(errfc, p0, args=(snrenv, pcdata))[0]
+        # Reshape the array to have `N` predictions and define the cost
+        # function to average over those predictions.
+        if snrenv.shape != pcdata.shape:
+            snrenv = snrenv.reshape((-1, len(pcdata)))
+
+            def errfc(p, fixed):
+                return np.mean(self._snrenv_to_pc(snrenv, *p, **fixed), axis=0
+                               ) - pcdata
+        # They have the same shape, the array should not be averaged
+        else:
+            def errfc(p, fixed):
+                return self._snrenv_to_pc(snrenv, *p, **fixed) - pcdata
+
+        res = leastsq(errfc, p0, args=fixed_params)[0]
         if sigma_s:
             self.k, self.q = res
             self.sigma_s = sigma_s

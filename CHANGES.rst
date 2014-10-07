@@ -27,6 +27,9 @@ Performance
 Bug fixes
 ---------
 
-- Fixed #14n in the function py:func:`~pambox.central.mod_filterbank` that made
- the filterbank acausal. The filterbank now produces the same time output as using
- Butterworth filter coefficients and the `scipy.signal.filtfilt` function.
+- Fixed #14 in the function py:func:`~pambox.central.mod_filterbank` that made
+the filterbank acausal. The filterbank now produces the same time output as using
+Butterworth filter coefficients and the `scipy.signal.filtfilt` function.
+- Fix #16: the ideal observer fits the average intelligibility, across all
+sentences, to the reference data, rather than trying to fit all sentences at
+once.
