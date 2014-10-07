@@ -153,6 +153,26 @@ class Material(object):
         """
         return x * 10 ** ((level - self.ref_level) / 20)
 
+    def average_level(self):
+        """Calculate the average level across all sentences.
+
+        The levels are calculated according to the toolbox's reference
+        level.
+
+        Returns
+        -------
+        mean : float
+            Mean level across all sentences, in dB SPL.
+        std : float
+            Standard deviation of the levels across all sentences.
+
+        See also
+        --------
+        utils.dbspl
+        """
+        spl = [utils.dbspl(x) for x in self.load_files()]
+        return np.mean(spl), np.std(spl)
+
 
 
 
