@@ -2,7 +2,7 @@
 from __future__ import division, print_function, absolute_import
 import os.path
 import pytest
-from pambox.speech.mrsepsm import MrSepsm
+from pambox.speech import MrSepsm
 import scipy.io as sio
 import numpy as np
 from numpy.testing import assert_allclose
