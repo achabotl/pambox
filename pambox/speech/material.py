@@ -11,6 +11,7 @@ import numpy as np
 import scipy.io.wavfile
 from six.moves import zip, range
 
+from .. import utils
 
 log = logging.getLogger(__name__)
 
@@ -150,7 +151,7 @@ class Material(object):
             Adjusted sentences with a `level` db SPL with the reference
             that a signal with an RMS of 1 corresponds to 0 db SPL.
         """
-        return x * 10 ** ((level - (-self.ref_level)) / 20)
+        return x * 10 ** ((level - self.ref_level) / 20)
 
 
 

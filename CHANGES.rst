@@ -41,3 +41,5 @@ compensated for the filter bandwidth when computing the bands above threshold
 the relative difference compared to the Matlab code is smaller than 8%. In
 the condition with speech-shaped noise only, the difference is smaller than 0
 .1%.
+- The py:func:`~pambox.speech.material.Material.set_level` function uses
+compensates for the reference sentence level using the correct sign.
