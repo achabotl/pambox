@@ -401,12 +401,14 @@ class Experiment(object):
         grouped_cols = df.groupby(groups).mean().unstack(
             self._key_snr).T
 
-        # Which column to plot?
+        # If "Var" is not defined, use the "Intelligibility" column if it
+        # exists. Otherwise, use the key defined in the model.
         if not var:
             if "Intelligibility" in df.columns:
                 var = 'Intelligibility'
             else:
                 var = self._key_value
+        log.debug("Plotting the variable `%s`.", var)
 
         ax = grouped_cols.xs(var).plot(ax=ax)
         if var == 'Intelligibility':
