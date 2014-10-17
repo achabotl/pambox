@@ -388,8 +388,10 @@ class Experiment(object):
                      df,
                      var=None,
                      xlabel='SNR (dB)',
-                     ylabel='% Intelligibility'):
-
+                     ylabel='% Intelligibility',
+                     ax=None
+    ):
+        df = df.convert_objects()
         # Drop the column with the full prediction results
         if self._key_full_pred in df.columns:
             df = df.drop(self._key_full_pred, axis=1)
@@ -406,13 +408,14 @@ class Experiment(object):
             else:
                 var = self._key_value
 
-        grouped_cols.xs(var).plot()
+        ax = grouped_cols.xs(var).plot(ax=ax)
         if var == 'Intelligibility':
             plt.ylim((0, 100))
 
         plt.legend(loc='best')
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        return ax
 
     def pred_to_pc(
             self,
