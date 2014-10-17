@@ -308,13 +308,13 @@ class Experiment(object):
                 os.mkdir(self.output_path)
                 log.info('Created directory %s', self.output_path)
             except IOError as e:
-                log.info("Could not create directory %s", self.output_path)
+                log.error("Could not create directory %s", self.output_path)
                 log.error(e)
 
         output_file = os.path.join(self.output_path, filename)
         try:
             df.drop(self._key_full_pred, axis=1).to_csv(output_file)
-            log.info('Saved CSV file to location: %s'.format(output_file))
+            log.info('Saved CSV file to location: {}'.format(output_file))
         except IOError as e:
             try:
                 alternate_path = os.path.join(os.getcwd(), filename)
