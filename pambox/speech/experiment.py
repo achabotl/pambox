@@ -482,28 +482,6 @@ class Experiment(object):
             df[out_name] = df[col].map(fc)
         return df
 
-    @staticmethod
-    def get_srt(df):
-        """Converts SRTs to DeltaSRTs.
-
-        :return: tuple, srts and DeltaSRTs
-        """
-
-        scores = []
-        df_tn = df[df['Target distance'] == 0.5]
-        for ii, (key, grp) in enumerate(df_tn.groupby(['Target distance',
-                                                       'Masker distance'])):
-            scores.append(grp.groupby('SNR')['Intelligibility_L'].mean())
-
-        srts = np.zeros(4)
-        for ii, score in enumerate(scores):
-            srts[ii] = int2srt(score.index, score)
-
-        print(srts)
-        dsrts = srts[1] - srts
-        print(dsrts)
-        return srts, dsrts
-
     def srts_from_df(self, df, col='Intelligibility', srt_at=50):
         """Get dataframe with SRTs
 
