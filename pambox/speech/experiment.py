@@ -420,6 +420,7 @@ class Experiment(object):
 
         ax = grouped_cols.xs(var).plot(ax=ax)
         if var == 'Intelligibility':
+            log.debug("Setting the limits to intelligibility.")
             plt.ylim((0, 100))
 
         plt.legend(loc='best')
