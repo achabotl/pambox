@@ -493,6 +493,34 @@ class Experiment(object):
         print(dsrts)
         return srts, dsrts
 
+    def srts_from_df(self, df):
+        """Get dataframe with SRTs
+
+        Parameters
+        ----------
+        df : Data Frame
+            DataFrame resulting from an experiment. It must have an
+            "Intelligibility" column.
+
+        Returns
+        -------
+        out : Data frame
+            Data frame, with an SRT column.
+        """
+        groups = self._get_groups(df)
+        grouped = df.groupby(groups).mean()
+        # Get name of all groups, which was now the index.
+        # Remove the SNR column because it should not be a group
+        # when calculating the SRTs.
+        grp_for_int = list(set(grouped.index.names) - {'SNR'})
+        # Get the SNR values for the tranformation in intelligibility.
+        snrs = df['SNR'].unique()
+        fc_to_srt = lambda y: int2srt(snrs, y)
+
+        grouped = grouped.reset_index()
+        return grouped.groupby(grp_for_int)['Intelligibility'].agg(
+            {'SRT': fc_to_srt}).reset_index()
+
 
 def srt_dict_to_dataframe(d):
     df_srts = pd.DataFrame()
