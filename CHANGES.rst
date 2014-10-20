@@ -11,6 +11,7 @@ certain models and model outputs for the conversion to percent correct.
  the speech-shaped noise. This allows the user to use auto-complete.
 - The py:func:`~pambox.utils.int2srt` function return `np.nan` if the SRT is
 not found, instead of returning None.
+- Renamed the SRT parameter in pa:func:`~pambox.utils.int2srt` to `srt_at` instead of `srt`.
 
 Enhancements
 ------------

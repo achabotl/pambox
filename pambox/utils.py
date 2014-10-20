@@ -419,7 +419,7 @@ def add_signals(a, b):
     return c
 
 
-def int2srt(x, y, srt=50.0):
+def int2srt(x, y, srt_at=50.0):
     """Finds intersection using linear interpolation.
 
     This function finds the x values at which a curve intersects with a
@@ -431,7 +431,7 @@ def int2srt(x, y, srt=50.0):
         "x" values
     y : array_like
         "y" values
-    srt : float
+    srt_at : float
          Value of `y` at which the interception is calculated. (Default value
          = 50.0)
 
@@ -445,17 +445,18 @@ def int2srt(x, y, srt=50.0):
 
     if x.shape != y.shape:
         raise ValueError('Inputs of different lenghts.')
-    srt = np.float(srt)
-    idx = np.nonzero(np.diff(y >= srt))[0]
-    if not idx and y[0] == srt:
+    srt_at = np.float(srt_at)
+    idx = np.nonzero(np.diff(y >= srt_at))[0]
+    if not idx.any() and y[0] == srt_at:
         return x[0]
 
     if len(idx) >= 1:
-        srt = x[idx] + (srt - y[idx]) * (x[idx + 1] - x[idx]) \
+        idx = idx[0]
+        srt = x[idx] + (srt_at - y[idx]) * (x[idx + 1] - x[idx]) \
             / (y[idx + 1] - y[idx])
     else:
         srt = np.nan
-    return srt
+    return float(srt)
 
 
 def psy_fn(x, mu=0., sigma=1.):

@@ -308,13 +308,13 @@ class Experiment(object):
                 os.mkdir(self.output_path)
                 log.info('Created directory %s', self.output_path)
             except IOError as e:
-                log.info("Could not create directory %s", self.output_path)
+                log.error("Could not create directory %s", self.output_path)
                 log.error(e)
 
         output_file = os.path.join(self.output_path, filename)
         try:
             df.drop(self._key_full_pred, axis=1).to_csv(output_file)
-            log.info('Saved CSV file to location: %s'.format(output_file))
+            log.info('Saved CSV file to location: {}'.format(output_file))
         except IOError as e:
             try:
                 alternate_path = os.path.join(os.getcwd(), filename)
@@ -388,8 +388,10 @@ class Experiment(object):
                      df,
                      var=None,
                      xlabel='SNR (dB)',
-                     ylabel='% Intelligibility'):
-
+                     ylabel='% Intelligibility',
+                     ax=None
+    ):
+        df = df.convert_objects()
         # Drop the column with the full prediction results
         if self._key_full_pred in df.columns:
             df = df.drop(self._key_full_pred, axis=1)
@@ -399,20 +401,24 @@ class Experiment(object):
         grouped_cols = df.groupby(groups).mean().unstack(
             self._key_snr).T
 
-        # Which column to plot?
+        # If "Var" is not defined, use the "Intelligibility" column if it
+        # exists. Otherwise, use the key defined in the model.
         if not var:
             if "Intelligibility" in df.columns:
                 var = 'Intelligibility'
             else:
                 var = self._key_value
+        log.debug("Plotting the variable `%s`.", var)
 
-        grouped_cols.xs(var).plot()
+        ax = grouped_cols.xs(var).plot(ax=ax)
         if var == 'Intelligibility':
+            log.debug("Setting the limits to intelligibility.")
             plt.ylim((0, 100))
 
         plt.legend(loc='best')
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        return ax
 
     def pred_to_pc(
             self,
@@ -468,18 +474,16 @@ class Experiment(object):
             df[out_name] = df[col].map(fc)
         return df
 
-    @staticmethod
-    def get_srt(df):
+    def get_srt(self, df):
         """Converts SRTs to DeltaSRTs.
 
         :return: tuple, srts and DeltaSRTs
         """
 
         scores = []
-        df_tn = df[df['Target distance'] == 0.5]
-        for ii, (key, grp) in enumerate(df_tn.groupby(['Target distance',
-                                                       'Masker distance'])):
-            scores.append(grp.groupby('SNR')['Intelligibility_L'].mean())
+        groups = self._get_groups(df, 'Intelligibility')
+        for ii, (key, grp) in enumerate(df.groupby(groups)):
+            scores.append(grp.groupby('SNR')['Intelligibility'].mean())
 
         srts = np.zeros(4)
         for ii, score in enumerate(scores):
@@ -489,6 +493,34 @@ class Experiment(object):
         dsrts = srts[1] - srts
         print(dsrts)
         return srts, dsrts
+
+    def srts_from_df(self, df):
+        """Get dataframe with SRTs
+
+        Parameters
+        ----------
+        df : Data Frame
+            DataFrame resulting from an experiment. It must have an
+            "Intelligibility" column.
+
+        Returns
+        -------
+        out : Data frame
+            Data frame, with an SRT column.
+        """
+        groups = self._get_groups(df)
+        grouped = df.groupby(groups).mean()
+        # Get name of all groups, which was now the index.
+        # Remove the SNR column because it should not be a group
+        # when calculating the SRTs.
+        grp_for_int = list(set(grouped.index.names) - {'SNR'})
+        # Get the SNR values for the tranformation in intelligibility.
+        snrs = df['SNR'].unique()
+        fc_to_srt = lambda y: int2srt(snrs, y)
+
+        grouped = grouped.reset_index()
+        return grouped.groupby(grp_for_int)['Intelligibility'].agg(
+            {'SRT': fc_to_srt}).reset_index()
 
 
 def srt_dict_to_dataframe(d):

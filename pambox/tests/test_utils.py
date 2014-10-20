@@ -82,19 +82,19 @@ def test_third_oct_center_freq_bet_63_12500_hz():
 def test_find_calculate_srt_when_found():
     x = np.arange(10)
     y = 20 * x + 4
-    assert 2.3 == utils.int2srt(x, y, srt=50)
+    assert 2.3 == utils.int2srt(x, y, srt_at=50)
 
 
 def test_find_calculate_srt_when_not_found():
     x = np.arange(10)
     y = 2 * x + 4
-    assert np.isnan(utils.int2srt(x, y, srt=50))
+    assert np.isnan(utils.int2srt(x, y, srt_at=50))
 
 
 def test_find_srt_when_srt_at_index_zero():
     x = [0, 1]
     y = [50, 51]
-    assert 0 == utils.int2srt(x, y, srt=50)
+    assert 0 == utils.int2srt(x, y, srt_at=50)
 
 
 def test_make_same_length_with_padding():
