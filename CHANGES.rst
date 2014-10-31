@@ -25,6 +25,8 @@ number of rows, each row of `x` is filtered with the respective row of `b`.
 speech intelligibility experiment.
 - Added the function py:func:`~pambox.speech.material.Material.average_level`
 to measure the average level of a speech material.
+- Added py:func:`~pambox.speech.experiment.srts_from_df` to convert
+intelligibility predictions to SRTs.
 
 Performance
 -----------
