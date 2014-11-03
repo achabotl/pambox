@@ -147,7 +147,7 @@ class Experiment(object):
         masker = setdbspl(masker, masker_level)
         return target, masker
 
-    def next_masker(self, target):
+    def next_masker(self, target, params):
         return self.material.ssn(target)
 
     def append_results(
@@ -254,7 +254,7 @@ class Experiment(object):
                     self.snrs,
                     self.models
         )):
-            masker = self.next_masker(target)
+            masker = self.next_masker(target, params)
 
             target, mix, masker = self.preprocessing(
                 target,

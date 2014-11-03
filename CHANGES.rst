@@ -31,6 +31,10 @@ speech intelligibility experiment.
 to measure the average level of a speech material.
 - Added py:func:`~pambox.speech.experiment.srts_from_df` to convert
 intelligibility predictions to SRTs.
+- The py:func:`~pambox.speech.experiment.next_masker` function now takes a
+dictionary with all the parameters of the experiment. It does not change the
+default behavior of the function be default, but it allows for using that
+parameter if the `next_masker` function is overriden.
 
 Performance
 -----------
