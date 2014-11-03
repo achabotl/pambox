@@ -79,6 +79,7 @@ class Experiment(object):
         self._key_dist_params = "Distortion params"
         self._key_models = 'Model'
         self._key_snr = 'SNR'
+        self._key_material = 'Material'
         self._key_sent = 'Sentence number'
         self._all_keys = [
             self._key_full_pred,
@@ -86,7 +87,8 @@ class Experiment(object):
             self._key_dist_params,
             self._key_models,
             self._key_snr,
-            self._key_sent
+            self._key_sent,
+            self._key_material
         ]
 
 
@@ -193,11 +195,11 @@ class Experiment(object):
         except AttributeError:
             material_name = self.material.__class__.__name__
         d = {
-            'SNR': snr
-            , 'Model': model_name
-            , 'Sentence number': i_target
+            self._key_snr: snr
+            , self._key_models: model_name
+            , self._key_sent: i_target
             , self._key_full_pred: res
-            , 'Material': material_name
+            , self._key_material: material_name
         }
         # If the distortion parameters are in a dictionary, put each value in
         # a different column. Otherwise, group everything in a single column.
@@ -210,11 +212,11 @@ class Experiment(object):
                 params = tuple(params)
             else:
                 pass
-            d['Distortion params'] = params
+            d[self._key_dist_params] = params
 
         for name, value in res['p'].iteritems():
-            d['Output'] = name
-            d['Value'] = value
+            d[self._key_output] = name
+            d[self._key_value] = value
             df = df.append(d, ignore_index=True)
 
         return df

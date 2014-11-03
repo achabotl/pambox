@@ -35,6 +35,8 @@ intelligibility predictions to SRTs.
 dictionary with all the parameters of the experiment. It does not change the
 default behavior of the function be default, but it allows for using that
 parameter if the `next_masker` function is overriden.
+- The name of the columns saved during a speech intelligibility experiment are
+defined as class parameters, rather than being hard-coded.
 
 Performance
 -----------
