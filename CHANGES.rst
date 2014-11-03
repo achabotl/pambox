@@ -37,6 +37,7 @@ default behavior of the function be default, but it allows for using that
 parameter if the `next_masker` function is overriden.
 - The name of the columns saved during a speech intelligibility experiment are
 defined as class parameters, rather than being hard-coded.
+- Add optional `ax` parameter to py:func:`~pambox.speech.experiment.plot_results`.
 
 Performance
 -----------
