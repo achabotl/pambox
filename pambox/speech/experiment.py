@@ -57,7 +57,7 @@ class Experiment(object):
             fixed_target=True,
             name=None,
             write=True,
-            output_path='./Data/',
+            output_path='./output/',
             timestamp_format="%Y%m%d-%H%M%S"
     ):
         self.models = models
