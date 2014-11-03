@@ -13,6 +13,9 @@ certain models and model outputs for the conversion to percent correct.
 not found, instead of returning None.
 - Renamed the SRT parameter in pa:func:`~pambox.utils.int2srt` to `srt_at` instead of `srt`.
 - Change the default folder for speech experiment outputs to `output`.
+- Add parameter to adjust levels before or after the application of the
+distortion in speech intelligibility experiments. The default is to apply it
+after the distortion.
 
 Enhancements
 ------------

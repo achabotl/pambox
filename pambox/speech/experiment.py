@@ -58,7 +58,8 @@ class Experiment(object):
             name=None,
             write=True,
             output_path='./output/',
-            timestamp_format="%Y%m%d-%H%M%S"
+            timestamp_format="%Y%m%d-%H%M%S",
+            adjust_levels_bef_proc=False
     ):
         self.models = models
         self.material = material
@@ -71,6 +72,7 @@ class Experiment(object):
         self.timestamp_format = timestamp_format
         self.write = write
         self.output_path = output_path
+        self.adjust_levels_bef_proc = adjust_levels_bef_proc
         self._key_full_pred = 'Full Prediction'
         self._key_value = 'Value'
         self._key_output = 'Output'
@@ -104,13 +106,17 @@ class Experiment(object):
             target, masker = make_same_length(target, masker,
                                               extend_first=False)
 
+        if self.adjust_levels_bef_proc:
+            target, masker = self.adjust_levels(target, masker, snr)
+
         if params:
             if isinstance(params, dict):
                 target, masker = self.distortion(target, masker, **params)
             else:
                 target, masker = self.distortion(target, masker, *params)
 
-        target, masker = self.adjust_levels(target, masker, snr)
+        if not self.adjust_levels_bef_proc:
+            target, masker = self.adjust_levels(target, masker, snr)
         return target, target + masker, masker
 
     def adjust_levels(self, target, masker, snr):
