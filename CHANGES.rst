@@ -12,6 +12,10 @@ certain models and model outputs for the conversion to percent correct.
 - The py:func:`~pambox.utils.int2srt` function return `np.nan` if the SRT is
 not found, instead of returning None.
 - Renamed the SRT parameter in pa:func:`~pambox.utils.int2srt` to `srt_at` instead of `srt`.
+- Change the default folder for speech experiment outputs to `output`.
+- Add parameter to adjust levels before or after the application of the
+distortion in speech intelligibility experiments. The default is to apply it
+after the distortion.
 
 Enhancements
 ------------
@@ -25,6 +29,15 @@ number of rows, each row of `x` is filtered with the respective row of `b`.
 speech intelligibility experiment.
 - Added the function py:func:`~pambox.speech.material.Material.average_level`
 to measure the average level of a speech material.
+- Added py:func:`~pambox.speech.experiment.srts_from_df` to convert
+intelligibility predictions to SRTs.
+- The py:func:`~pambox.speech.experiment.next_masker` function now takes a
+dictionary with all the parameters of the experiment. It does not change the
+default behavior of the function be default, but it allows for using that
+parameter if the `next_masker` function is overriden.
+- The name of the columns saved during a speech intelligibility experiment are
+defined as class parameters, rather than being hard-coded.
+- Add optional `ax` parameter to py:func:`~pambox.speech.experiment.plot_results`.
 
 Performance
 -----------

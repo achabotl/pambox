@@ -57,8 +57,9 @@ class Experiment(object):
             fixed_target=True,
             name=None,
             write=True,
-            output_path='./Data/',
-            timestamp_format="%Y%m%d-%H%M%S"
+            output_path='./output/',
+            timestamp_format="%Y%m%d-%H%M%S",
+            adjust_levels_bef_proc=False
     ):
         self.models = models
         self.material = material
@@ -71,12 +72,14 @@ class Experiment(object):
         self.timestamp_format = timestamp_format
         self.write = write
         self.output_path = output_path
+        self.adjust_levels_bef_proc = adjust_levels_bef_proc
         self._key_full_pred = 'Full Prediction'
         self._key_value = 'Value'
         self._key_output = 'Output'
         self._key_dist_params = "Distortion params"
         self._key_models = 'Model'
         self._key_snr = 'SNR'
+        self._key_material = 'Material'
         self._key_sent = 'Sentence number'
         self._all_keys = [
             self._key_full_pred,
@@ -84,7 +87,8 @@ class Experiment(object):
             self._key_dist_params,
             self._key_models,
             self._key_snr,
-            self._key_sent
+            self._key_sent,
+            self._key_material
         ]
 
 
@@ -104,13 +108,17 @@ class Experiment(object):
             target, masker = make_same_length(target, masker,
                                               extend_first=False)
 
+        if self.adjust_levels_bef_proc:
+            target, masker = self.adjust_levels(target, masker, snr)
+
         if params:
             if isinstance(params, dict):
                 target, masker = self.distortion(target, masker, **params)
             else:
                 target, masker = self.distortion(target, masker, *params)
 
-        target, masker = self.adjust_levels(target, masker, snr)
+        if not self.adjust_levels_bef_proc:
+            target, masker = self.adjust_levels(target, masker, snr)
         return target, target + masker, masker
 
     def adjust_levels(self, target, masker, snr):
@@ -141,7 +149,7 @@ class Experiment(object):
         masker = setdbspl(masker, masker_level)
         return target, masker
 
-    def next_masker(self, target):
+    def next_masker(self, target, params):
         return self.material.ssn(target)
 
     def append_results(
@@ -187,11 +195,11 @@ class Experiment(object):
         except AttributeError:
             material_name = self.material.__class__.__name__
         d = {
-            'SNR': snr
-            , 'Model': model_name
-            , 'Sentence number': i_target
+            self._key_snr: snr
+            , self._key_models: model_name
+            , self._key_sent: i_target
             , self._key_full_pred: res
-            , 'Material': material_name
+            , self._key_material: material_name
         }
         # If the distortion parameters are in a dictionary, put each value in
         # a different column. Otherwise, group everything in a single column.
@@ -204,11 +212,11 @@ class Experiment(object):
                 params = tuple(params)
             else:
                 pass
-            d['Distortion params'] = params
+            d[self._key_dist_params] = params
 
         for name, value in res['p'].iteritems():
-            d['Output'] = name
-            d['Value'] = value
+            d[self._key_output] = name
+            d[self._key_value] = value
             df = df.append(d, ignore_index=True)
 
         return df
@@ -248,7 +256,7 @@ class Experiment(object):
                     self.snrs,
                     self.models
         )):
-            masker = self.next_masker(target)
+            masker = self.next_masker(target, params)
 
             target, mix, masker = self.preprocessing(
                 target,
@@ -474,27 +482,7 @@ class Experiment(object):
             df[out_name] = df[col].map(fc)
         return df
 
-    def get_srt(self, df):
-        """Converts SRTs to DeltaSRTs.
-
-        :return: tuple, srts and DeltaSRTs
-        """
-
-        scores = []
-        groups = self._get_groups(df, 'Intelligibility')
-        for ii, (key, grp) in enumerate(df.groupby(groups)):
-            scores.append(grp.groupby('SNR')['Intelligibility'].mean())
-
-        srts = np.zeros(4)
-        for ii, score in enumerate(scores):
-            srts[ii] = int2srt(score.index, score)
-
-        print(srts)
-        dsrts = srts[1] - srts
-        print(dsrts)
-        return srts, dsrts
-
-    def srts_from_df(self, df):
+    def srts_from_df(self, df, col='Intelligibility', srt_at=50):
         """Get dataframe with SRTs
 
         Parameters
@@ -502,6 +490,13 @@ class Experiment(object):
         df : Data Frame
             DataFrame resulting from an experiment. It must have an
             "Intelligibility" column.
+        col : string (optional)
+            Name of the column to use for the SRT calculation. The default
+            value is the 'Intelligibility' column.
+        srt_at : float (optional)
+            Value corresponding to the SRT. The default is 50 (%). This
+            parameter can be used to calculate SRT directly from other
+            metric, such as the SII. Simply set `srt_at` to the SII criterion.
 
         Returns
         -------
@@ -516,10 +511,10 @@ class Experiment(object):
         grp_for_int = list(set(grouped.index.names) - {'SNR'})
         # Get the SNR values for the tranformation in intelligibility.
         snrs = df['SNR'].unique()
-        fc_to_srt = lambda y: int2srt(snrs, y)
+        fc_to_srt = lambda y: int2srt(snrs, y, srt_at=srt_at)
 
         grouped = grouped.reset_index()
-        return grouped.groupby(grp_for_int)['Intelligibility'].agg(
+        return grouped.groupby(grp_for_int)[col].agg(
             {'SRT': fc_to_srt}).reset_index()
 
 
