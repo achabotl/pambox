@@ -4,7 +4,7 @@ import os.path
 
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose, dec, TestCase
+from numpy.testing import assert_allclose
 from scipy import signal
 
 from pambox import utils
@@ -118,7 +118,7 @@ def test_psy_fn():
     assert_allclose(y, target)
 
 
-class _TestFFTFilt(TestCase):
+class _TestFFTFilt():
     dt = None
 
     def test_fftfilt(self):
@@ -133,9 +133,11 @@ class _TestFFTFilt(TestCase):
         assert_allclose(u_lfilter, u_fftfilt)
 
     def test_rank1(self):
-        dec.knownfailureif(
-            self.dt in [np.longdouble, np.longcomplex],
-            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+        # pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
+        #                     reason="Type %s is not supported by fftpack" % self.dt)
+        # dec.knownfailureif(
+        #     self.dt in [np.longdouble, np.longcomplex],
+        #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
 
         x = np.arange(6).astype(self.dt)
 
@@ -162,10 +164,11 @@ class _TestFFTFilt(TestCase):
         assert_allclose(fftfilt(b, x), y_r, atol=1e-6)
 
     def test_rank2_x_longer_than_b(self):
-        dec.knownfailureif(
-            self.dt in [np.longdouble, np.longcomplex],
-            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
-
+        pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
+                            reason="Type %s is not supported by fftpack" % self.dt)
+        # dec.knownfailureif(
+        #     self.dt in [np.longdouble, np.longcomplex],
+        #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
         shape = (4, 3)
         x = np.linspace(0, np.prod(shape) - 1, np.prod(shape)).reshape(shape)
         x = x.astype(self.dt)
@@ -179,9 +182,11 @@ class _TestFFTFilt(TestCase):
         assert_allclose(y, y_r2)
 
     def test_rank2_b_longer_than_x(self):
-        dec.knownfailureif(
-            self.dt in [np.longdouble, np.longcomplex],
-            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+        pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
+                            reason="Type %s is not supported by fftpack" % self.dt)
+        # dec.knownfailureif(
+        #     self.dt in [np.longdouble, np.longcomplex],
+        #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
 
         shape = (4, 3)
         x = np.linspace(0, np.prod(shape) - 1, np.prod(shape)).reshape(shape)
@@ -196,9 +201,11 @@ class _TestFFTFilt(TestCase):
         assert_allclose(y, y_r2, atol=1e-6)
 
     def test_b_rank2(self):
-        dec.knownfailureif(
-            self.dt in [np.longdouble, np.longcomplex],
-            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+        pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
+                            reason="Type %s is not supported by fftpack" % self.dt)
+        # dec.knownfailureif(
+        #     self.dt in [np.longdouble, np.longcomplex],
+        #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
 
         x = np.linspace(0, 5, 6).astype(self.dt)
 
@@ -219,9 +226,11 @@ class _TestFFTFilt(TestCase):
         assert_allclose(y, y_r2, atol=1e-6)
 
     def test_b_and_x_of_same_dim(self):
-        dec.knownfailureif(
-            self.dt in [np.longdouble, np.longcomplex],
-            "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
+        pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
+                            reason="Type %s is not supported by fftpack" % self.dt)
+        # dec.knownfailureif(
+        #     self.dt in [np.longdouble, np.longcomplex],
+        #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
 
         shape = (2, 5)
         x = np.linspace(0, np.prod(shape) - 1, np.prod(shape)).reshape(shape)
