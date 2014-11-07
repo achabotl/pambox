@@ -113,6 +113,34 @@ class Material(object):
             raise IOError('File not found: %s' % filepath)
         return ssn
 
+    @staticmethod
+    def pick_section(signal, section=None):
+        """Pick section of signal
+
+        Parameters
+        ----------
+        section : int or ndarray, optional
+            If an integer is given, returns section of length `n`
+            Alternatively, if `section` is an ndarray the signal returned
+            will be of the same length as the `section` signal. If `x` is
+            `None`, the full signal is returned.
+        Returns
+        -------
+        ndarray
+            Speech-shaped noise signal.
+        """
+        len_noise = signal.shape[-1]
+        if section is None:
+            len_sig = len_noise
+            ii = 0
+        elif isinstance(section, int):
+            len_sig = section
+            ii = np.random.randint(0, len_noise - len_sig)
+        else:
+            len_sig = np.asarray(section).shape[-1]
+            ii = np.random.randint(0, len_noise - len_sig)
+        return signal[..., ii:ii + len_sig]
+
     def ssn(self, x=None):
         """Returns the speech-shaped noise appropriate for the speech material.
 
@@ -128,17 +156,7 @@ class Material(object):
         ndarray
             Speech-shaped noise signal.
         """
-        len_noise = self._ssn.shape[-1]
-        if x is None:
-            len_sig = len_noise
-            ii = 0
-        elif isinstance(x, int):
-            len_sig = x
-            ii = np.random.randint(len_sig, len_noise - len_sig)
-        else:
-            len_sig = np.asarray(x).shape[-1]
-            ii = np.random.randint(len_sig, len_noise - len_sig)
-        return self._ssn[..., ii:ii + len_sig]
+        return self.pick_section(self._ssn, x)
 
     def set_level(self, x, level):
         """Set level of a sentence, in dB.
