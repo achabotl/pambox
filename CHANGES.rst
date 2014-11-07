@@ -41,6 +41,8 @@ defined as class parameters, rather than being hard-coded.
 - Function py:func:`~pambox.speech.experiment.pred_to_pc` can now convert prediction to intelligibility for a specific model.
 - Possibility to force the audio file to be mono when loading file in
 py:class:`pambox.speech.material.Material`.
+- Add py:func:`~pambox.utils.read_wav_as_float` as a convenience function to
+read wave files as float.
 
 Performance
 -----------

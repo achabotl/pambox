@@ -588,3 +588,19 @@ def mfreqz(b, a=1, fs=22050.0):
     plt.xlabel(r'Normalized Frequency (x$\pi$rad/sample)')
     plt.title(r'Phase response')
     plt.subplots_adjust(hspace=0.5)
+
+
+def read_wav_as_float(path):
+    """Reads a wavefile as a float.
+
+    Parameters
+    ----------
+    path : string
+        Path to the wave file.
+
+    Returns
+    -------
+    wav : ndarray
+    """
+    _, int_sentence = scipy.io.wavfile.read(path)
+    return int_sentence.T / np.iinfo(int_sentence.dtype).min
