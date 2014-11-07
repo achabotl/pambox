@@ -25,7 +25,8 @@ class Material(object):
                  path_to_maskers=None,
                  path_to_ssn='../stimuli/clue/SSN_CLUE22.wav',
                  ref_level=74,
-                 name='CLUE'):
+                 name='CLUE',
+                 force_mono=False):
         """
 
         """
@@ -37,6 +38,7 @@ class Material(object):
         self._ssn = None
         self._path_to_ssn = None
         self.path_to_ssn = path_to_ssn
+        self.force_mono = force_mono
 
     @property
     def files(self):
@@ -68,7 +70,11 @@ class Material(object):
         path = os.path.join(self.path_to_sentences, filename)
         log.info('Reading file %s', path)
         _, int_sentence = scipy.io.wavfile.read(path)
-        return int_sentence.T / np.iinfo(int_sentence.dtype).min
+        sent = int_sentence.T / np.iinfo(int_sentence.dtype).min
+        if self.force_mono and sent.ndim == 2:
+            return sent[1]
+        else:
+            return sent
 
     def files_list(self):
         """Return a list of all the files in the corpus.
