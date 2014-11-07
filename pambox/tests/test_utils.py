@@ -242,3 +242,8 @@ class TestFFTFiltFloat32(_TestFFTFilt):
 class TestFFTFiltFloat64(_TestFFTFilt):
     dt = np.float64
 
+
+def test_hilbert():
+    x = np.random.randn(100)
+    assert_allclose(utils.hilbert(x),
+                    signal.hilbert(x))

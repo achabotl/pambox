@@ -190,12 +190,20 @@ def hilbert(x, N=None, axis=-1):
         raise ValueError("N must be positive.")
 
     Xf = fft(x, N, axis=axis)
-    h = zeros(N)
+    h = np.zeros(N)
     if N % 2 == 0:
         h[0] = h[N // 2] = 1
         h[1:N // 2] = 2
     else:
-        return np.linalg.norm(x / np.sqrt(x.shape[-1]))
+        h[0] = 1
+        h[1:(N + 1) // 2] = 2
+
+    if len(x.shape) > 1:
+        ind = [np.newaxis] * x.ndim
+        ind[axis] = slice(None)
+        h = h[ind]
+    x = ifft(Xf * h, axis=axis)
+    return x
 
 
 def next_pow_2(x):
