@@ -52,7 +52,7 @@ def test_snr_env():
     c = sepsm.Sepsm()
     for target, (p_mix, p_noise) in tests:
 
-        snrenv = c._snr_env(p_mix, p_noise)
+        snrenv, _ = c._snr_env(p_mix, p_noise)
         assert_allclose(snrenv, target)
 
 

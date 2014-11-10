@@ -14,7 +14,7 @@ except ImportError:
 
 
 class Sepsm(object):
-    """Implement the sEPSM intelligibility model
+    """Implement the sEPSM intelligibility model [1].
 
     Parameters
     ----------
@@ -34,19 +34,30 @@ class Sepsm(object):
     Notes
     -----
 
-
     Modifed on 2014-10-07 by Alexandre Chabot-Leclerc: Remove the unnecessary
     factor to compensate for filter bandwidth when computing the bands above
     threshold. The diffuse hearing threshold are already adjusted for filter
     bandwidth.
+
+    References
+    ----------
+
+    .. [1] S. Jørgensen and T. Dau: Predicting speech intelligibility based
+        on the signal-to-noise envelope power ratio after modulation-
+        frequency selective processing. J. Acoust. Soc. Am. 130 (2011)
+        1475--1487.
+
     """
 
+    # Center frequencies of the peripheral filterbank.
     _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630,
                           800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
                           6300, 8000)
+    # Diffuse field hearing threshold in quiet: ISO 389-7:2005
     _default_ht_diffuse = (37.5, 31.5, 26.5, 22.1, 17.9, 14.4, 11.4, 8.4, 5.8,
                            3.8, 2.1, 1.0, 0.8, 1.9, 0.5, -1.5, -3.1, -4.0,
                            -3.8, -1.8, 2.5, 6.8)
+    # Center frequencies of the modulation filterbank.
     _default_modf = (1., 2., 4., 8., 16., 32., 64.)
 
     def __init__(self, fs=22050
@@ -65,8 +76,8 @@ class Sepsm(object):
         self.ht_diffuse = self._default_ht_diffuse
         self.name = 'Sepsm'
 
-    def _peripheral_filtering(self, signal, center_f):
-        """
+    def _peripheral_filtering(self, signals):
+        """Filters a time signal using a Gammatone filterbank.
 
         Parameters
         ----------
@@ -77,14 +88,19 @@ class Sepsm(object):
 
         Returns
         -------
+        y : ndarray
+            Outputs of the peripheral filterbank.
 
         """
-        g = inner.GammatoneFilterbank(center_f, self.fs)
-        y = g.filter(signal)
+        y = np.zeros((signals.shape[0], len(self.cf), signals.shape[-1]))
+        g = inner.GammatoneFilterbank(self.cf, self.fs)
+        for i_sig, s in enumerate(signals):
+            y[i_sig] = g.filter(s)
         return y
 
     def _bands_above_thres(self, x):
-        """Select bands above threshold
+        """Select bands above threshold accoring to the diffuse field hearing
+        threshold in quiet: ISO 389-7:2005.
 
         Parameters
         ----------
@@ -96,7 +112,6 @@ class Sepsm(object):
         ndarray
             Index of the bands above threshold.
 
-        
         """
         noise_rms_db = 20 * np.log10(x)
         # convert to spectrum level according to SII - ANSI 1997
@@ -141,7 +156,7 @@ class Sepsm(object):
         snr_env = (p_mix - p_noise) / p_noise
         snr_env = np.maximum(snr_env, self.snr_env_limit)
 
-        return snr_env
+        return snr_env, (p_mix, p_noise)
 
     def _optimal_combination(self, snr_env, bands_above_thres_idx):
         """Calculates "optimal combination" of SNRenv above threshold.
@@ -172,33 +187,120 @@ class Sepsm(object):
         snr_env = np.sqrt(np.sum(snr_env ** 2))
         return snr_env
 
-    def _env_extraction(self, signal):
-        """Extracts the envelope of a time signal.
+    def _find_bands_above_thres(self, mixture):
+        """Find the indexes of the bands that are above hearing threshold.
+
+        The signal is filtered using a rectangular third-octave filterbank
+        and the level in each bands is compared to the diffuse field hearing
+        threshold in quiet: ISO 389-7:2005.
 
         Parameters
         ----------
-        signal : ndarray
-            Input signal.
+        mixture : ndarray
+            1D time signal.
 
         Returns
         -------
-        ndarray
-            Low-pass filtered envelope.
+        indexes : ndarray
+            Index of the channels that are above hearing threshold.
 
-        Notes
-        -----
-        The envelope is extracted by calculating the absolute value of the
-        Hilbert transform, and then by low-pass filtering the envelope at a
-        frequency of 150 Hz using a first order Butterworth filter.
+        See also
+        --------
+        _bands_above_thres : Compares the band powers to the hearing
+            threshold.
 
         """
-        # Extract envelope
-        tmp_env = inner.hilbert_envelope(signal).squeeze()
-        # Low-pass filtering
-        tmp_env = inner.lowpass_env_filtering(tmp_env, 150.0,
-                                                 n=1, fs=self.fs)
+        filtered_rms_mix = inner.noctave_filtering(mixture, self.cf,
+                                                   self.fs, width=3)
+        return self._bands_above_thres(filtered_rms_mix)
+
+    def _extract_env(self, channel_sigs):
+        """Calculates the Hilbert envelope.
+
+        Parameters
+        ----------
+        channel_sigs : ndarray
+            Peripheral subband signals.
+
+        Returns
+        -------
+        env : ndarray
+            Hilbert envelope of the input signals.
+
+        See also:
+        ---------
+        inner.hilbert_envelope : Calculates the Hilbert envelope.
+
+        """
+        return inner.hilbert_envelope(channel_sigs)
+
+    def _mod_sensitivity(self, envs):
+        """Reduces modulation sensitivity using a low-pass filter.
+
+        Low-pass filters the envelope using a 1st-order Butterworth filter at
+        150 Hz [1, 2].
+
+        Parameters
+        ----------
+        envs : ndarray
+            Envelopes
+
+        Returns
+        -------
+        envs : ndarray
+
+        References
+        ----------
+        .. [1] S. D. Ewert and T. Dau: Characterizing frequency selectivity
+            for envelope fluctuations.. J. Acoust. Soc. Am. 108 (2000)
+            1181-1196.
+        .. [2] A. Kohlrausch, R. Fassel, and T. Dau: The influence of carrier
+            level and frequency on modulation and beat-detection thresholds
+            for sinusoidal carriers. J. Acoust. Soc. Am. 108 (2000) 723-734.
+
+
+
+        """
+        return inner.lowpass_env_filtering(envs, 150.0, n=1, fs=self.fs)
+
+    def _mod_filtering(self, channel_envs):
+        """Filters the subband envelopes using a modulation filterbank.
+
+        Parameters
+        ----------
+        channels_envs : ndarray
+            Subband envelopes. The shape should be (N_SIG, N_CHAN, N).
+
+        Returns
+        -------
+        envs : ndarray
+            Modulation subband signals. The shape is (N_SIG, N_CHAN, N_MODF, N).
+        powers : ndarray
+            Modulation power at the output of the modulation filterbank. The
+            shape is (N_SIG, N_CHAN, N_MODF).
+
+        """
+        fs_new = self.fs / self.downsamp_factor
         # Downsample the envelope for faster processing
-        return tmp_env[::self.downsamp_factor]
+        channel_envs = channel_envs[..., ::self.downsamp_factor]
+        if (channel_envs.shape[-1] % 2) == 0:
+            len_offset = 1
+        else:
+            len_offset = 0
+        envs = np.zeros((channel_envs.shape[0],
+                         len(self.cf),
+                         len(self.modf),
+                         channel_envs.shape[-1] - len_offset)
+        )
+        powers = np.zeros((channel_envs.shape[0],
+                         len(self.cf),
+                         len(self.modf))
+        )
+        for i_sig, s in enumerate(channel_envs):
+            for i_chan, chan in enumerate(s):
+                powers[i_sig, i_chan], envs[i_sig, i_chan] =  \
+                    central.mod_filterbank(chan, fs_new, self.modf)
+        return envs, powers
 
     def predict(self, clean, mixture, noise):
         """Predicts intelligibility
@@ -211,40 +313,28 @@ class Sepsm(object):
         Returns
         -------
         res : dict
-            @todo
+            Dictionary of the model predictions. The keys are as follow:
+            - 'p': is a dictionary with the model predictions. In this case
+            it contains a 'snr_env' key.
+            - 'snr_env_matrix': 2D matrix of the SNRenv as a function audio
+            frequency and modulation frequency.
+            - 'exc_ptns': Modulation power at the output of the modulation
+            filterbank for the intput signals. It is a (N_SIG, N_CHAN,
+            N_MODF) array.
+            - 'band_above_thres_idx': Array of the indexes of the bands that
+            were above hearing threshold.
 
         """
-        fs_new = self.fs / self.downsamp_factor
-        n = len(clean)
-        n_modf = len(self.modf)
-        n_cf = len(self.cf)
+        signals = np.vstack((clean, mixture, noise))
 
         # find bands above threshold
-        filtered_mix_rms = inner.noctave_filtering(mixture, self.cf,
-                                                        self.fs, width=3)
-        bands_above_thres_idx = self._bands_above_thres(filtered_mix_rms)
+        bands_above_thres_idx = self._find_bands_above_thres(mixture)
 
-        exc_ptns = np.zeros((3, n_cf, n_modf))
-        # For each band above threshold,
-        # (actually, for debug purposes, maybe I should keep all...)
-        for idx_band in bands_above_thres_idx:
-            # Peripheral filtering, of just the band we process
-            filtered_signals = [self._peripheral_filtering(signal,
-                                                           self.cf[idx_band])
-                                for signal in [clean, mixture, noise]]
-
-            downsamp_env = \
-                np.empty((3, np.ceil(n / self.downsamp_factor).astype('int')))
-            for i_sig, signal in enumerate(filtered_signals):
-                downsamp_env[i_sig] = self._env_extraction(signal)
-
-                exc_ptns[i_sig, idx_band], _ = \
-                    central.mod_filterbank(downsamp_env[i_sig], fs_new,
-                                           self.modf)
-
-        # Calculate SNRenv
-        snr_env_matrix = self._snr_env(*exc_ptns[-2:])
-
+        channel_sigs = self._peripheral_filtering(signals)
+        channel_envs = self._extract_env(channel_sigs)
+        channel_envs = self._mod_sensitivity(channel_envs)
+        filtered_envs, exc_ptns = self._mod_filtering(channel_envs)
+        snr_env_matrix, _ = self._snr_env(*exc_ptns[-2:])
         snr_env = self._optimal_combination(snr_env_matrix,
                                             bands_above_thres_idx)
 

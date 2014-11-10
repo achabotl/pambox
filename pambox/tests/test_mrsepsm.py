@@ -27,10 +27,12 @@ def test_mr_sepsm_mr_env_powers(mr):
     mat = sio.loadmat(__DATA_ROOT__ + '/test_mr_sepsm_mr_env_powers.mat',
                       squeeze_me=True)
     channel_env = mat['env'].T[0]
+    channel_env = channel_env[np.newaxis, np.newaxis, :]
     mod_channel_envs = mat['mod_channel_envs'].T[0]
+    mod_channel_envs = mod_channel_envs[np.newaxis, np.newaxis, :, :]
 
     mr_env_powers = mr._mr_env_powers(channel_env, mod_channel_envs)
-    for d, target in zip(mr_env_powers,
+    for d, target in zip(mr_env_powers[0, 0],
                          mat['mr_env_powers']):
         assert_allclose(d.compressed(), target[0])
 
@@ -44,8 +46,8 @@ def test_mr_snr_env(mr, mat):
                             '/test_mr_sepsm_mr_snr_env_noise.mat')
     od_mix = np.ma.MaskedArray(mat_mix['data'], mat_mix['mask'])
     od_noise = np.ma.MaskedArray(mat_noise['data'], mat_noise['mask'])
-    time_av_snr_env, exc_ptns, mr_snr_env = mr._mr_snr_env(od_mix,
-                                                           od_noise)
+    mr_snr_env, exc_ptns = mr._mr_snr_env(od_mix, od_noise)
+    time_av_snr_env = mr._time_average(mr_snr_env)
     assert_allclose(time_av_snr_env, mat['timeAvg_SNRenvs'])
 
 
