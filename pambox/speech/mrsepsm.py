@@ -32,6 +32,9 @@ class MrSepsm(Sepsm):
         Minimal duration of the multi-resolution windows, in ms.
     name : string, optional, (Default value = 'MrSepsm')
         Name of the model.
+    output_time_signals : bool, optional
+        Output the time signals signals in the results dictionary. Adds the
+        keys 'chan_sigs', 'chan_envs', and 'filtered_envs'.
 
     References
     ----------
@@ -51,13 +54,15 @@ class MrSepsm(Sepsm):
                  snr_env_limit=0.001,
                  snr_env_ceil=None,
                  min_win=None,
-                 name='MrSepsm'
+                 name='MrSepsm',
+                 output_time_signals=False
                  ):
         Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
                        snr_env_limit)
         self.min_win = min_win
         self.name = name
         self.snr_env_ceil = snr_env_ceil
+        self.output_time_signals = output_time_signals
 
     def _mr_env_powers(self, channel_envs, filtered_envs):
         """Calculates the envelope power in multi-resolution windows.
@@ -243,6 +248,10 @@ class MrSepsm(Sepsm):
 
             'bands_above_thres_idx': bands_above_thres_idx
         }
+        if self.output_time_signals:
+            res['chan_sigs'] = channel_sigs
+            res['chan_envs'] = channel_envs
+            res['filtered_envs'] = filtered_envs
         return res
 
 
