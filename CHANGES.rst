@@ -38,6 +38,11 @@ parameter if the `next_masker` function is overriden.
 - The name of the columns saved during a speech intelligibility experiment are
 defined as class parameters, rather than being hard-coded.
 - Add optional `ax` parameter to py:func:`~pambox.speech.experiment.plot_results`.
+- Function py:func:`~pambox.speech.experiment.pred_to_pc` can now convert prediction to intelligibility for a specific model.
+- Possibility to force the audio file to be mono when loading file in
+py:class:`pambox.speech.material.Material`.
+- Add py:func:`~pambox.utils.read_wav_as_float` as a convenience function to
+read wave files as float.
 
 Performance
 -----------
@@ -59,3 +64,5 @@ the condition with speech-shaped noise only, the difference is smaller than 0
 .1%.
 - The py:func:`~pambox.speech.material.Material.set_level` function uses
 compensates for the reference sentence level using the correct sign.
+- Fix the py:func:`~pambox.utils.hilbert` definition that had been mangled in
+a merge. It is now the same as in `scipy.signal`.

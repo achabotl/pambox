@@ -466,18 +466,24 @@ class Experiment(object):
         df : dataframe
             Dataframe with the new column column with intelligibility values.
         """
+        try:
+            df[out_name]
+        except KeyError:
+            df[out_name] = np.nan
+
         if models:
             if isinstance(models, list):
                 for model in models:
-                    df[out_name] \
+                    df[out_name][df[self._key_models] == model] \
                         = df[df[self._key_models] == model][col].map(fc)
             elif isinstance(models, dict):
                 for model, v in models.iteritems():
                     key = (df[self._key_models] == model) & (
                         df[self._key_output == v])
-                    df[out_name] = df[key][col].map(fc)
+                    df[out_name][key] = df[key][col].map(fc)
             else:
-                df[out_name] = df[df[self._key_models] == models][col].map(fc)
+                df[out_name][df[self._key_models] == models] = \
+                    df[df[self._key_models] == models][col].map(fc)
         else:
             df[out_name] = df[col].map(fc)
         return df
