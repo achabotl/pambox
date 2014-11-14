@@ -66,3 +66,5 @@ the condition with speech-shaped noise only, the difference is smaller than 0
 compensates for the reference sentence level using the correct sign.
 - Fix the py:func:`~pambox.utils.hilbert` definition that had been mangled in
 a merge. It is now the same as in `scipy.signal`.
+- Fix #25: py:func:`~pambox.utils.setdbspl` and py:func:`~pambox.utils.rms`
+now behave properly with input arrays that have more than one dimension.
