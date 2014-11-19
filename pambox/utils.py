@@ -4,7 +4,17 @@ from __future__ import division
 from matplotlib import pyplot as plt
 import numpy as np
 from numpy import min, log2, ceil, argmin, zeros, arange, complex
-from numpy.fft import fft, ifft
+try:
+    _ = np.use_fastnumpy  # Use Enthought MKL optimizations
+    from numpy.fft import fft, ifft
+except AttributeError:
+    try:
+        import mklfft  # MKL FFT optimizations from Continuum Analytics
+        from numpy.fft import fft, ifft
+    except ImportError:
+        # Finally, just use Scipy's
+        from scipy.fftpack import fft, ifft
+
 import scipy as sp
 from scipy import signal as ss
 from scipy.io import wavfile

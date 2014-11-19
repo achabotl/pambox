@@ -13,11 +13,16 @@ from .utils import next_pow_2
 
 
 try:
-    _ = np.use_fastnumpy
+    _ = np.use_fastnumpy  # Use Enthought MKL optimizations
     from numpy.fft import fft, ifft, rfft, irfft
 except AttributeError:
-    from scipy.fftpack import fft, ifft
-    from numpy.fft import rfft, irfft
+    try:
+        import mklfft  # MKL FFT optimizations from Continuum Analytics
+        from numpy.fft import fft, ifft, rfft, irfft
+    except ImportError:
+        # Finally, just use Numpy's and Scipy's
+        from scipy.fftpack import fft, ifft
+        from numpy.fft import rfft, irfft
 
 
 CENTER_F = np.asarray([63, 80, 100, 125, 160, 200, 250, 315, 400, 500,

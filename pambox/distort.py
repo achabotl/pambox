@@ -14,11 +14,15 @@ from pambox import utils
 from pambox.utils import fftfilt
 
 try:
-    _ = np.use_fastnumpy
+    _ = np.use_fastnumpy  # MKL FFT optimizations from Enthought.
     from numpy.fft import fft, ifft, rfft, irfft
 except AttributeError:
-    from scipy.fftpack import fft, ifft
-    from numpy.fft import rfft, irfft
+    try:
+        import mklfft  # MKL FFT optimizations from Continuum Analytics
+        from numpy.fft import fft, ifft, rfft, irfft
+    except ImportError:
+        from scipy.fftpack import fft, ifft
+        from numpy.fft import rfft, irfft
 
 
 def mix_noise(clean, noise, sent_level, snr=None):
