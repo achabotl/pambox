@@ -11,7 +11,7 @@ from six.moves import zip
 from scipy.io import wavfile
 
 from pambox import utils
-from pambox.utils import fftfilt
+from pambox.utils import fftfilt, hilbert
 
 try:
     _ = np.use_fastnumpy  # MKL FFT optimizations from Enthought.
@@ -477,7 +477,7 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     out = noise[:n_x]
 
     if keep_env:
-        env = np.abs(sp.signal.hilbert(x))
+        env = np.abs(hilbert(x))
         [bb, aa] = sp.signal.butter(6, 50 / (fs / 2))  # 50 Hz LP filter
         env = sp.signal.filtfilt(bb, aa, env)
         out *= env
