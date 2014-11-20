@@ -30,7 +30,25 @@ def test_dbspl():
 
 
 def test_rms_do_ac():
+    # AC = True
     assert utils.rms([0, 1, 2, 3, 4, 5, 6], ac=True) == 2
+    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6]], ac=True, axis=0),
+                    [0, 0, 0, 0, 0, 0, 0]
+    )
+    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6]], ac=True, axis=1), 2)
+    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6],
+                               [0, 1, 2, 3, 4, 5, 6]],
+                               ac=True),
+                    [2, 2])
+
+    # AC = False
+    assert_allclose(utils.rms([0, 1, 2, 3, 4, 5, 6], ac=False),
+                    3.60555128)
+    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6],
+                               [0, 1, 2, 3, 4, 5, 6]],
+                              ac=False),
+                    [3.60555128, 3.60555128],
+                    rtol=1e-6)
 
 
 def test_rms():

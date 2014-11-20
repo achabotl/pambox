@@ -72,7 +72,11 @@ def setdbspl(x, lvl, ac=False, offset=0.0):
         Signal of the same dimension as the original.
     """
     x = np.asarray(x)
-    return x / rms(x, ac) * 10. ** ((lvl - float(offset)) / 20.)
+    if x.ndim > 1:
+        rms_value = rms(x, ac)[(slice(None),) + (x.ndim - 1) * (np.newaxis, )]
+    else:
+        rms_value = rms(x, ac)
+    return x / rms_value * 10. ** ((lvl - float(offset)) / 20.)
 
 
 def rms(x, ac=False, axis=-1):
@@ -96,7 +100,11 @@ def rms(x, ac=False, axis=-1):
     """
     x = np.asarray(x)
     if ac:
-        return np.linalg.norm((x - np.mean(x, axis=axis))
+        if x.ndim > 1 and axis == -1:
+            x_mean = x.mean(axis=axis)[..., np.newaxis]
+        else:
+            x_mean = x.mean(axis=axis)
+        return np.linalg.norm((x - x_mean)
                               / np.sqrt(x.shape[axis]), axis=axis)
     else:
         return np.linalg.norm(x / np.sqrt(x.shape[axis]), axis=axis)
