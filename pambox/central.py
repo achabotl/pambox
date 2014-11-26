@@ -7,11 +7,16 @@ import numpy as np
 from numpy import pi
 
 try:
-    _ = np.use_fastnumpy
+    _ = np.use_fastnumpy  # Use Enthought MKL optimizations
     from numpy.fft import fft, ifft, rfft, irfft
 except AttributeError:
-    from scipy.fftpack import fft, ifft
-    from numpy.fft import rfft, irfft
+    try:
+        import mklfft  # MKL FFT optimizations from Continuum Analytics
+        from numpy.fft import fft, ifft, rfft, irfft
+    except ImportError:
+        # Finally, just use Numpy's and Scipy's
+        from scipy.fftpack import fft, ifft
+        from numpy.fft import rfft, irfft
 from scipy.optimize import leastsq
 from scipy.stats import norm
 

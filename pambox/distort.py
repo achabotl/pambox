@@ -11,14 +11,18 @@ from six.moves import zip
 from scipy.io import wavfile
 
 from pambox import utils
-from pambox.utils import fftfilt
+from pambox.utils import fftfilt, hilbert
 
 try:
-    _ = np.use_fastnumpy
+    _ = np.use_fastnumpy  # MKL FFT optimizations from Enthought.
     from numpy.fft import fft, ifft, rfft, irfft
 except AttributeError:
-    from scipy.fftpack import fft, ifft
-    from numpy.fft import rfft, irfft
+    try:
+        import mklfft  # MKL FFT optimizations from Continuum Analytics
+        from numpy.fft import fft, ifft, rfft, irfft
+    except ImportError:
+        from scipy.fftpack import fft, ifft
+        from numpy.fft import rfft, irfft
 
 
 def mix_noise(clean, noise, sent_level, snr=None):
@@ -473,7 +477,7 @@ def noise_from_signal(x, fs=40000, keep_env=False):
     out = noise[:n_x]
 
     if keep_env:
-        env = np.abs(sp.signal.hilbert(x))
+        env = np.abs(hilbert(x))
         [bb, aa] = sp.signal.butter(6, 50 / (fs / 2))  # 50 Hz LP filter
         env = sp.signal.filtfilt(bb, aa, env)
         out *= env

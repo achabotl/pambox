@@ -9,15 +9,20 @@ from numpy import exp, sin, cos, sqrt, abs, ones, pi
 import scipy as sp
 import scipy.signal as ss
 
-from .utils import next_pow_2
+from .utils import next_pow_2, hilbert
 
 
 try:
-    _ = np.use_fastnumpy
+    _ = np.use_fastnumpy  # Use Enthought MKL optimizations
     from numpy.fft import fft, ifft, rfft, irfft
 except AttributeError:
-    from scipy.fftpack import fft, ifft
-    from numpy.fft import rfft, irfft
+    try:
+        import mklfft  # MKL FFT optimizations from Continuum Analytics
+        from numpy.fft import fft, ifft, rfft, irfft
+    except ImportError:
+        # Finally, just use Numpy's and Scipy's
+        from scipy.fftpack import fft, ifft
+        from numpy.fft import rfft, irfft
 
 
 CENTER_F = np.asarray([63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
@@ -265,6 +270,6 @@ def hilbert_envelope(signal, axis=None):
     N_orig = signal.shape[-1]
     # Next power of 2.
     N = next_pow_2(N_orig)
-    y_h = sp.signal.hilbert(signal, N)
+    y_h = hilbert(signal, N)
     # Return signal with same dimensions as original
     return np.abs(y_h[..., :N_orig])
