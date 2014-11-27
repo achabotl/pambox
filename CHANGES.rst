@@ -20,6 +20,8 @@ after the distortion.
 Enhancements
 ------------
 
+- Possibility to run experiments in parallel using IPython.parallel. See the
+:py:func:`~pambox.speech.experiment.run` function.
 - `utils.fftfilt` now mirrors Matlab's behavior. Given coefficients `b` and
 signal `x`: If `x` is a matrix, the rows are filtered. If `b` is a matrix,
 each filter is applied to `x`. If both `b` and `x` are matrices with the same
