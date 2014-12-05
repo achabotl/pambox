@@ -240,7 +240,7 @@ class Experiment(object):
         np.random.seed(seed)
 
         try:
-            self.models = iter(self.models)
+            iter(self.models)
         except TypeError:
             self.models = [self.models]
 
