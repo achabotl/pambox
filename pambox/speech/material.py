@@ -251,3 +251,47 @@ class Material(object):
             ssn += np.hstack(files)[..., start:start + n_output]
         ssn /= np.sqrt(repetitions)
         return ssn
+
+    def create_filtered_ssn(self, files=None, duration=5):
+        """Create speech-shaped noise based on the average long-term spectrum
+        of the speech material.
+
+        Parameters
+        ----------
+        files : list, optional
+            List of files to concatenate. Each file should be an `ndarray`.
+            If `files` is None, all the files from the speech material
+            will be used. They are loaded with the method `load_files()`.
+        duration : float, optional
+            Duration of the noise, in seconds. The default is 5 seconds.
+
+        Returns
+        -------
+        ssn : ndarray
+        """
+        if files is None:
+            files = tuple(self.load_files())
+
+        # Find maximum sentence length
+        max_len = reduce(lambda x, y: max(x, y.shape[-1]), files, 0)
+        n_fft = utils.next_pow_2(max_len)
+
+        # Calculate the average spectra
+        LONG_TERM_SPEC = reduce(lambda x, y: (x + np.fft.rfft(y, n_fft)) / 2,
+                                files,
+                                0)
+
+        average_masker = np.real(np.fft.irfft(LONG_TERM_SPEC, n=n_fft))[..., :max_len]
+
+        n_noise = duration * self.fs
+        if average_masker.ndim > 1:
+            noise_shape = [average_masker.shape[0], n_noise]
+        else:
+            noise_shape = [n_noise]
+
+        n_fft_noise = utils.next_pow_2(n_noise)
+        NOISE = np.fft.rfft(np.random.randn(*noise_shape), n_fft_noise)
+        NOISE /= np.abs(NOISE)
+        NOISE *= np.abs(np.fft.rfft(average_masker, n_fft_noise))
+        ssn = np.real(np.fft.irfft(NOISE, n_fft_noise))[..., :n_noise]
+        return ssn
