@@ -131,6 +131,7 @@ class MrSepsm(Sepsm):
                     # mask.
                     mr_env_powers.mask[i_sig, i_chan, i_modf, :n_seg] = False
 
+        mr_env_powers[np.isnan(mr_env_powers) & ~mr_env_powers.mask] = 0
         return mr_env_powers
 
     @staticmethod
