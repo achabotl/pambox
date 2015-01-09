@@ -26,9 +26,9 @@ install:
 
   - conda install --yes pip
   - conda install --yes six
-  - conda install --yes ipython
+  - conda install --yes ipython-notebook
   - conda install --yes numpy
-  - conda install --yes scipy
+  - conda install --yes spicy
   - conda install --yes pandas
   - conda install --yes matplotlib
   - conda install --yes pytest
