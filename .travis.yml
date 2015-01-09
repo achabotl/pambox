@@ -26,6 +26,7 @@ install:
 
   - conda install --yes pip
   - conda install --yes six
+  - conda install --yes ipython
   - conda install --yes numpy
   - conda install --yes scipy
   - conda install --yes pandas
