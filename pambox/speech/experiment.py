@@ -671,33 +671,94 @@ class AdaptiveExperiment(Experiment):
     def __init__(self,
                  rule=(1, 2),
                  start_snr=20,
-                 step_size=(4., 2., 1.),
+                 step_sizes=(4., 2., 1.),
                  n_test_reversals=6,
                  change_step_on=-1,
                  threshold=0.5,
+                 pred_key='snr_env',
                  **kwargs
     ):
         self.rule = rule
         self.start_snr = start_snr
-        self.step_size = step_size
+        self.step_sizes = step_sizes
         self.n_test_reversals = n_test_reversals
         self.change_step_on = change_step_on
         self.threshold = threshold
+        self.pred_key = pred_key
         super(AdaptiveExperiment, self).__init__(**kwargs)
 
     def run(self, n=None, seed=0, parallel=False):
+        np.random.seed(seed)
 
-        total_reversals = 0
-        test_reversals = 0
-        snr = self.start_snr
-        threshold = self.threshold
+        targets = self.material.load_files(n)
+        # Initialize the dataframe in which the results are saved.
+        df = pd.DataFrame()
+        for ii, ((i_target, target), params, model) \
+                in enumerate(product(
+                                     enumerate(targets),
+                                     self.dist_params,
+                                     self.models,
+        )):
+            log.debug("Running with parameters {}".format(params))
+            masker = self.next_masker(target, params)
 
-        ups = 0
-        downs = 0
-        while test_reversals < self.n_test_reversals:
-            res = self._predict((i_target, target), snr, model, params)
-            if res[self.pred_key] > threshold:
-            elif res[self.pred_key] < threshold:
+            test_reversals = 0
+            snr = self.start_snr
+            threshold = self.threshold
+            last_reversal_sign = -1
+
+            i_step = 0
+            all_res = []
+            while test_reversals <= self.n_test_reversals:
+
+                target, mix, masker = self.preprocessing(
+                    target,
+                    masker,
+                    snr,
+                    params
+                )
+                log.info("Simulation # %s\t SNR: %s, sentence %s", ii, snr,
+                         i_target)
+                res = self.prediction(model, target, mix, masker)
+                pred = res['p'][self.pred_key]
+
+                all_res.append((snr, pred))
+                if pred >= threshold:
+                    snr -= self.step_sizes[i_step]
+                    log.debug('Decreased SNR to {}, with step size {}'
+                        .format(snr, self.step_sizes[i_step]))
+                    if last_reversal_sign > 0:
+                        last_reversal_sign = -1
+                        log.debug("Changed reversal sign to %s", last_reversal_sign)
+                        i_step = min(i_step + 1, len(self.step_sizes) - 1)
+                        if i_step == len(self.step_sizes) - 1:
+                            test_reversals += 1
+                    else:
+                        pass  # Keep going down
+                else:  # prediction is below threshold
+                    snr += self.step_sizes[i_step]
+                    log.debug('Increased SNR to {}, with step size {}'
+                        .format(snr, self.step_sizes[i_step]))
+                    if last_reversal_sign < 0:
+                        last_reversal_sign = 1
+                        log.debug("Changed reversal sign to %s", last_reversal_sign)
+                        if i_step == len(self.step_sizes) - 1:
+                            test_reversals += 1
+                    else:
+                        pass  # Keep going up.
+
+            srt = np.mean([each[0] for each in all_res[-self.n_test_reversals:]])
+
+            df = self.append_results(
+                df,
+                res,
+                model,
+                snr,
+                i_target,
+                params,
+                SRT=srt
+            )
+        return df
 
 
 
