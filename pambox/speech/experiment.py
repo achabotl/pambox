@@ -6,6 +6,7 @@ import logging
 import os
 import os.path
 
+from IPython import parallel as ipyparallel
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -221,13 +222,62 @@ class Experiment(object):
 
         return df
 
-    def run(self, n=None, seed=0):
-        """ Run the experiment.
+    def _model_prediction(self, model, target, mix, masker):
+        """Call the `predict` method of an intelligibility model.
+
+        Parameters
+        ----------
+        model :
+            Speech intelligibility model
+        target, mix, masker : ndarray
+            Input signals for the model prediction
+
+        Returns
+        -------
+        res : dict
+            Model prediction.
+
+        Notes
+        -----
+        The sole purpose of this function is to make it easier to override if
+        the model used does not have a `predict` method, but maybe a
+        `predict_snr` method or the like.
+        """
+        return model.predict(target, mix, masker)
+
+    def _predict(self, ii_and_target, snr, model, params):
+        i_target, target = ii_and_target
+        masker = self.next_masker(target, params)
+
+        target, mix, masker = self.preprocessing(
+            target,
+            masker,
+            snr,
+            params
+        )
+        res = self._model_prediction(model, target, mix, masker)
+
+        # Initialize the dataframe in which the results are saved.
+        df = pd.DataFrame()
+        df = self.append_results(
+            df,
+            res,
+            model,
+            snr,
+            i_target,
+            params
+        )
+        return df
+
+    def _parallel_run(self, n=None, seed=0):
+        """ Run the experiment using IPython.parallel
 
         Parameters
         ----------
         n : int
             Number of sentences to process.
+        seed : int
+            Seed for the random number generator. Default is 0.
 
         Returns
         -------
@@ -235,27 +285,64 @@ class Experiment(object):
             Pandas dataframe with the experimental results.
 
         """
-        if not seed:
-            seed = 0
-        np.random.seed(seed)
+        rc = ipyparallel.Client()
+        all_engines = rc[:]
+        lview = rc.load_balanced_view()
+        lview.block = False
+        rc[:].use_dill()
+        lview.apply(np.random.seed, seed)
 
         try:
             iter(self.models)
         except TypeError:
             self.models = [self.models]
 
-        targets = self.material.load_files(n)
-
         # Initialize the dataframe in which the results are saved.
         df = pd.DataFrame()
 
+        targets = self.material.load_files(n)
+        conditions = product(
+            enumerate(targets),
+            self.snrs,
+            self.models,
+            self.dist_params
+        )
+        lview_res = all_engines.map(self._predict, *zip(*conditions))
+
+        for each in lview_res:
+            df = df.append(each, ignore_index=True)
+
+        return df
+
+    def _single_run(self, n, seed):
+        """ Run the experiment locally using a for-loop.
+
+        Parameters
+        ----------
+        n : int
+            Number of sentences to process.
+        seed : int
+            Seed for the random number generator. Default is 0.
+
+        Returns
+        -------
+        df : pd.Dataframe
+            Pandas dataframe with the experimental results.
+        """
+
+        np.random.seed(seed)
+
+        targets = self.material.load_files(n)
+        # Initialize the dataframe in which the results are saved.
+        df = pd.DataFrame()
         for ii, ((i_target, target), params, snr, model) \
                 in enumerate(product(
-                    enumerate(targets),
-                    self.dist_params,
-                    self.snrs,
-                    self.models
+                enumerate(targets),
+                self.dist_params,
+                self.snrs,
+                self.models
         )):
+            log.debug("Running with parameters {}".format(params))
             masker = self.next_masker(target, params)
 
             target, mix, masker = self.preprocessing(
@@ -276,6 +363,37 @@ class Experiment(object):
                 i_target,
                 params
             )
+        return df
+
+    def run(self, n=None, seed=0, parallel=False):
+        """ Run the experiment.
+
+        Parameters
+        ----------
+        n : int
+            Number of sentences to process.
+        seed : int
+            Seed for the random number generator. Default is 0.
+        parallel : bool
+            If False, the experiment is ran locally, using a for-loop. If
+            True, we use IPython.parallel to run the experiment in parallel.
+            We try to connect to the current profile.
+
+        Returns
+        -------
+        df : pd.Dataframe
+            Pandas dataframe with the experimental results.
+
+        """
+        try:
+            iter(self.models)
+        except TypeError:
+            self.models = (self.models,)
+
+        if parallel:
+            df = self._parallel_run(n, seed)
+        else:
+            df = self._single_run(n, seed)
 
         if self.write:
             self._write_results(df)

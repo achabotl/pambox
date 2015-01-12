@@ -50,7 +50,7 @@ Intelligibility models return a dictionary with **at least** the following key:
 * ``p`` (for "predictions"): which is a dictionary with the outputs of the
   model. They keys are the names of the outputs. This allows models to have
   multiple return values. For example, the :py:class:`~pambox.speech.MrSepsm`
-  returns two predictions values::
+  returns two prediction values::
 
     >>> s = MrSepsm()
     >>> res = s.predict(clean, mix, noise)
@@ -85,7 +85,7 @@ the `../stimuli/ieee` folder::
 
     >>> sm = SpeechMaterial(
     ...    fs=25000,
-    ...    root_path='../stimuli/ieee',
+    ...    path_to_sentences='../stimuli/ieee',
     ...    path_to_ssn='ieee_ssn.wav',
     ...    ref_level=74
     ...    name='IEEE'
@@ -93,7 +93,7 @@ the `../stimuli/ieee` folder::
 
 Each speech file can be loaded using its name::
 
-    >>> x = sm.load_file(sm.list[0])
+    >>> x = sm.load_file(sm.files[0])
 
 Or files can be loaded as an iterator::
 
@@ -104,7 +104,7 @@ Or files can be loaded as an iterator::
 
 
 By default, the list of files is simply all the files found in
-the `root_path`. To overwrite this behavior, simply replace the
+the `path_to_sentences`. To overwrite this behavior, simply replace the
 :py:func:`~pambox.speech.Material.files_list` function::
 
     >>> def new_files_list():
@@ -122,23 +122,68 @@ with the reference that a signal with an RMS value of 1 has a level of 0 dB SPL.
     >>> x = sm.load_file(sm.files[0])
     >>> adjusted_x = sm.set_level(x, 65)
 
-Speech intelligibility experiment
+Accessing the speech-shaped noise corresponding the speech material is done
+using the :func:`~pambox.speech.Material.ssn` function:
+
+    >>> ieee_ssn = sm.ssn()
+
+By default, this will return the entirety of the SSN. However, it is often
+required to select a section of noise that is the same length as a target
+speech signal, therefore, you can get a random portion of the SSN of the same
+length as the signal `x` using:
+
+    >>> ssn_section = sm.ssn(x)
+
+If you are given a speech material but you don't know it's average level, you
+can use the help function :func:`~pambox.speech.Material.average_level` to
+find the average leve, in dB, of all the sentences in the speech material:
+
+    >>> average_level = sm.average_level()
+
+Speech Intelligibility Experiment
 ---------------------------------
 
-Basic example
+Performing speech intelligibility experiments usually involves a tedious
+process of looping through all conditions to study, such as different SNRs,
+processing conditions, and sentences. The :class:`~pambox.speech.Experiment`
+class simplifies and automates the process of going through all the
+experimental conditions. It also gathers all the results in a way that is
+simple to manipulate, transform, and plot.
+
+Basic Example
 ~~~~~~~~~~~~~
 
-    >>> from pambox.speech import experiment, Sepsm, Material
+An experiment requires at least: a model, a speech material, and a list of SNRs.
+
+    >>> from pambox.speech import Experiment, Sepsm, Material
     >>> models = Sepsm()
     >>> material = Material()
     >>> snrs = np.arange(-9,-5, 3)
-    >>> exp = experiment.Experiment(models, material, snrs, write=False)
-    >>> exp.run(2)
+    >>> exp = Experiment(models, material, snrs, write=False)
+    >>> df = exp.run(2)
+    >>> df
      Distortion params   Model    Output  SNR  Sentence number      Value
     0             None   Sepsm   snr_env   -9                0   1.432468
     1             None   Sepsm   snr_env   -6                0   5.165170
     2             None   Sepsm   snr_env   -9                1   6.308387
     3             None   Sepsm   snr_env   -6                1  10.314227
+
+Additionally, you can assign a type of processing, such as reverberation,
+spectral subtraction, or any arbitrary type of processing. To keep things
+simply, let's apply a compression to the mixture and to the noise. Your
+distortion function *must return* the clean speech, the mixture, and the
+noise alone.
+
+    >>> def compress(clean, noise, power):
+    ...     mixture = (clean + noise) ** (1 / power)
+    ...     noise = noise ** (1 / power)
+    ...     return clean, mixture, noise
+    ...
+    >>> powers = range(1, 4)
+    >>> exp = Experiment(models, material, snrs, mix_signals, powers)
+    >>> df = exp.run(2)
+    >>> df
+
 
 If the distortion parameters are stored in a list of dictionaries,
 they will be saved in separate columns in the output dataframe. Otherwise,

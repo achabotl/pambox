@@ -268,4 +268,5 @@ def mod_filterbank(signal, fs, modf):
         # Filtering and inverse Fourier transform to get time signal.
         X_filt[k] = X * TF
         filtered_envs[k] = np.real(ifft(X_filt[k]))
+    powers[np.isnan(powers)] = 0
     return powers, filtered_envs

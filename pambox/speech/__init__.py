@@ -1,6 +1,7 @@
 """
 The :mod:`pambox.speech` module gather speech intelligibility
-models.
+models, a framework to run intelligibility experiments, as well as a wrapper
+around speech materials.
 """
 from __future__ import absolute_import
 

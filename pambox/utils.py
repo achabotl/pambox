@@ -82,6 +82,9 @@ def setdbspl(x, lvl, ac=False, offset=0.0):
         Signal of the same dimension as the original.
     """
     x = np.asarray(x)
+    if np.isinf(lvl) and lvl < 0:
+        return np.zeros_like(x)
+
     if x.ndim > 1:
         rms_value = rms(x, ac)[(slice(None),) + (x.ndim - 1) * (np.newaxis, )]
     else:
@@ -360,6 +363,8 @@ def write_wav(fname, fs, x, normalize=False):
     The '.wav' extension is added to the file if it is not part of the
     filename string.
 
+    Inputs of type `np.float` are converted to `int16` before writing to file.
+
     Parameters
     ----------
     fname : string
@@ -384,8 +389,10 @@ def write_wav(fname, fs, x, normalize=False):
     if x.shape[0] <= 2:
         x = x.T
 
-    if x is np.float and normalize:
+    if np.issubdtype(x.dtype, np.float) and normalize:
         scaled = (x / np.max(np.abs(x)) * (2 ** 15 - 1))
+    elif np.issubdtype(x.dtype, np.float):
+        scaled = x * (2 ** 15 - 1)
     else:
         scaled = x
     wavfile.write(fname, fs, scaled.astype('int16'))
