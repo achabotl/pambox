@@ -82,6 +82,9 @@ def setdbspl(x, lvl, ac=False, offset=0.0):
         Signal of the same dimension as the original.
     """
     x = np.asarray(x)
+    if np.isinf(lvl) and lvl < 0:
+        return np.zeros_like(x)
+
     if x.ndim > 1:
         rms_value = rms(x, ac)[(slice(None),) + (x.ndim - 1) * (np.newaxis, )]
     else:
