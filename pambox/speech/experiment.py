@@ -637,6 +637,70 @@ class Experiment(object):
             {'SRT': fc_to_srt}).reset_index()
 
 
+class AdaptiveExperiment(Experiment):
+    """
+
+    Attributes
+    ----------
+
+    Parameters
+    ----------
+    rule : tuple of 2 integers
+        Rule for the adaptive procedure. The default is `(1, 2)` for 1-up,
+        2-down.
+    start_snr : float
+        SNR at which to start the procedure. Default is 20 dB SNR.
+    step_size : list of floats
+        Step sizes. Multiple values can be used if the step size should
+        change according to the number of reversals. The default value is
+        (4, 2, 1) The reversal where the step size changes depends on
+        `change_step_on`.
+    n_test_reversals : int
+        Number of reversals to consider when calculating the threshold. The
+        default value is 6 reversals.
+    change_step_on : int (-1 or 1)
+        Change step size on downward reversal (-1) or upward reversal (1).
+        Default value is -1.
+    threshold : float
+        Target proportion correct. Define
+    """
+    def __init__(self,
+                 rule=(1, 2),
+                 start_snr=20,
+                 step_size=(4., 2., 1.),
+                 n_test_reversals=6,
+                 change_step_on=-1,
+                 threshold=0.5,
+                 **kwargs
+    ):
+        self.rule = rule
+        self.start_snr = start_snr
+        self.step_size = step_size
+        self.n_test_reversals = n_test_reversals
+        self.change_step_on = change_step_on
+        self.threshold = threshold
+        super(AdaptiveExperiment, self).__init__(**kwargs)
+
+    def run(self, n=None, seed=0, parallel=False):
+
+        total_reversals = 0
+        test_reversals = 0
+        snr = self.start_snr
+        threshold = self.threshold
+
+        ups = 0
+        downs = 0
+        while test_reversals < self.n_test_reversals:
+            res = self._predict((i_target, target), snr, model, params)
+            if res[self.pred_key] > threshold:
+            elif res[self.pred_key] < threshold:
+
+
+
+
+
+
+
 def srt_dict_to_dataframe(d):
     df_srts = pd.DataFrame()
     for k, v in d.iteritems():
