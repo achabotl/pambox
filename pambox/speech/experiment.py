@@ -245,7 +245,8 @@ class Experiment(object):
         """
         return model.predict(target, mix, masker)
 
-    def _predict(self, (i_target, target), snr, model, params):
+    def _predict(self, ii_and_target, snr, model, params):
+        i_target, target = ii_and_target
         masker = self.next_masker(target, params)
 
         target, mix, masker = self.preprocessing(
