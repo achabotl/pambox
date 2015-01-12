@@ -24,6 +24,13 @@ via `pip` soon. To install `pambox` from source::
     cd pambox
     python setup.py install
 
+You'll also need all the requirements in `requirements.txt <https://github
+.com/achabotl/pambox/blob/develop/requirements.txt>`_. If you use `conda
+<https://store.continuum.io/cshop/anaconda/>`_, you can simply run the
+following to install all the dependencies::
+
+    conda install --file requirements.txt
+
 
 Structure of the toolbox
 ------------------------
