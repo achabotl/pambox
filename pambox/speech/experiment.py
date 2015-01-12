@@ -337,6 +337,7 @@ class Experiment(object):
                 self.snrs,
                 self.models
         )):
+            log.debug("Running with parameters {}".format(params))
             masker = self.next_masker(target, params)
 
             target, mix, masker = self.preprocessing(
