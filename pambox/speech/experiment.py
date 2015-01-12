@@ -160,7 +160,8 @@ class Experiment(object):
             model,
             snr,
             i_target,
-            params
+            params,
+            **kwargs
     ):
         """
         Appends results to a DataFrame
@@ -214,6 +215,9 @@ class Experiment(object):
             else:
                 pass
             d[self._key_dist_params] = params
+
+        for name, value in kwargs.iteritems():
+            d[name] = value
 
         for name, value in res['p'].iteritems():
             d[self._key_output] = name
