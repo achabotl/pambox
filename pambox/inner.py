@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:mod:`pambox.periph.inner` regroups processes of the inner.
+:mod:`pambox.inner` regroups processes of the inner.
 """
 from __future__ import division, print_function, absolute_import
 
