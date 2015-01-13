@@ -10,6 +10,7 @@ from IPython import parallel as ipyparallel
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from six.moves import zip
 
 from ..utils import make_same_length, setdbspl, int2srt
 
@@ -160,7 +161,8 @@ class Experiment(object):
             model,
             snr,
             i_target,
-            params
+            params,
+            **kwargs
     ):
         """
         Appends results to a DataFrame
@@ -214,6 +216,10 @@ class Experiment(object):
             else:
                 pass
             d[self._key_dist_params] = params
+
+        log.debug("Kwargs to store are: {}".format(kwargs))
+        for name, value in kwargs.iteritems():
+            d[name] = value
 
         for name, value in res['p'].iteritems():
             d[self._key_output] = name
@@ -640,6 +646,133 @@ class Experiment(object):
         grouped = grouped.reset_index()
         return grouped.groupby(grp_for_int)[col].agg(
             {'SRT': fc_to_srt}).reset_index()
+
+
+class AdaptiveExperiment(Experiment):
+    """
+
+    Attributes
+    ----------
+
+    Parameters
+    ----------
+    pred_keys_and_thresholds : list of tuples
+        List of the model output and corresponding threshold for each model,
+        of the form: ('output_name', threshold). e.g. [('snr_env', 33.5)].
+    start_snr : float
+        SNR at which to start the procedure. Default is 20 dB SNR.
+    step_size : list of floats
+        Step sizes. Multiple values can be used if the step size should
+        change according to the number of reversals. The default value is
+        (4, 2, 1) The reversal where the step size changes depends on
+        `change_step_on`.
+    n_test_reversals : int
+        Number of reversals to consider when calculating the threshold. The
+        default value is 6 reversals.
+    change_step_on : int (-1 or 1)
+        Change step size on downward reversal (-1) or upward reversal (1).
+        Default value is -1.
+    """
+    def __init__(self,
+                 pred_keys_and_thresholds,
+                 start_snr=20,
+                 step_sizes=(4., 2., 1.),
+                 n_test_reversals=6,
+                 change_step_on=-1,
+                 **kwargs
+    ):
+        self.pred_keys_and_thresholds = pred_keys_and_thresholds
+        self.start_snr = start_snr
+        self.step_sizes = step_sizes
+        self.n_test_reversals = n_test_reversals
+        self.change_step_on = change_step_on
+        super(AdaptiveExperiment, self).__init__(**kwargs)
+
+    def run(self, n=None, seed=0, parallel=False):
+        np.random.seed(seed)
+
+        targets = self.material.load_files(n)
+        # Initialize the dataframe in which the results are saved.
+        df = pd.DataFrame()
+        for ii, ((i_target, target), params, model_and_keys) \
+                in enumerate(product(
+                                     enumerate(targets),
+                                     self.dist_params,
+                                     zip(self.models,
+                                         self.pred_keys_and_thresholds
+                                     )
+        )):
+            log.debug("Running with parameters {}".format(params))
+            masker = self.next_masker(target, params)
+
+            model, (pred_key, threshold) = model_and_keys
+            log.debug("Prediction key: {}, and threshold {}".format(
+                pred_key, threshold))
+
+            test_reversals = 0
+            total_reversals = 0
+            snr = self.start_snr
+            last_reversal_sign = -1
+
+            i_step = 0
+            all_res = []
+            while test_reversals <= self.n_test_reversals:
+
+                target, mix, masker = self.preprocessing(
+                    target,
+                    masker,
+                    snr,
+                    params
+                )
+                log.info("Simulation # %s\t SNR: %s, sentence %s", ii, snr,
+                         i_target)
+                res = self.prediction(model, target, mix, masker)
+                pred = res['p'][pred_key]
+
+                all_res.append((snr, pred))
+                if pred >= threshold:
+                    snr -= self.step_sizes[i_step]
+                    log.debug('Decreased SNR to {}, with step size {}'
+                        .format(snr, self.step_sizes[i_step]))
+                    if last_reversal_sign > 0:
+                        last_reversal_sign = -1
+                        log.debug("Changed reversal sign to %s", last_reversal_sign)
+                        i_step = min(i_step + 1, len(self.step_sizes) - 1)
+                        if i_step == len(self.step_sizes) - 1:
+                            test_reversals += 1
+                    else:
+                        pass  # Keep going down
+                else:  # prediction is below threshold
+                    snr += self.step_sizes[i_step]
+                    log.debug('Increased SNR to {}, with step size {}'
+                        .format(snr, self.step_sizes[i_step]))
+                    if last_reversal_sign < 0:
+                        last_reversal_sign = 1
+                        log.debug("Changed reversal sign to %s", last_reversal_sign)
+                        if i_step == len(self.step_sizes) - 1:
+                            test_reversals += 1
+                    else:
+                        pass  # Keep going up.
+                total_reversals += 1
+
+            srt = np.mean([each[0] for each in all_res[-self.n_test_reversals:]])
+
+            df = self.append_results(
+                df,
+                res,
+                model,
+                snr,
+                i_target,
+                params,
+                SRT=srt,
+                Reversals=total_reversals
+            )
+        return df
+
+
+
+
+
 
 
 def srt_dict_to_dataframe(d):
