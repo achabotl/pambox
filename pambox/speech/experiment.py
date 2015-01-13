@@ -649,9 +649,6 @@ class AdaptiveExperiment(Experiment):
 
     Parameters
     ----------
-    rule : tuple of 2 integers
-        Rule for the adaptive procedure. The default is `(1, 2)` for 1-up,
-        2-down.
     start_snr : float
         SNR at which to start the procedure. Default is 20 dB SNR.
     step_size : list of floats
@@ -669,7 +666,6 @@ class AdaptiveExperiment(Experiment):
         Target proportion correct. Define
     """
     def __init__(self,
-                 rule=(1, 2),
                  start_snr=20,
                  step_sizes=(4., 2., 1.),
                  n_test_reversals=6,
@@ -678,7 +674,6 @@ class AdaptiveExperiment(Experiment):
                  pred_key='snr_env',
                  **kwargs
     ):
-        self.rule = rule
         self.start_snr = start_snr
         self.step_sizes = step_sizes
         self.n_test_reversals = n_test_reversals
