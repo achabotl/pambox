@@ -57,6 +57,10 @@ via `pip` soon. To install pambox from source::
     cd pambox
     python setup.py install
 
+If you need more details, see the
+[Installation](https://github.com/achabotl/pambox/wiki/Installation) page on
+the wiki.
+
 
 Contributing
 ------------
