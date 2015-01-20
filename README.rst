@@ -45,7 +45,7 @@ thoroughly tested.
 `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_ is required if you
 want to use the ``audio`` module.
 
-For running tests, you will need `pytest <http://pytest.org/>`_ and pytest-cov.
+For running tests, you will need `pytest <http://pytest.org/>`_ and `pytest-cov <https://pypi.python.org/pypi/pytest-cov>`_.
 
 Install
 -------
