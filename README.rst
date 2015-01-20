@@ -36,7 +36,7 @@ The main dependencies are :
 - `Scipy <http://scipy.org/scipylib/>`_ >=0.14.0,
 - `Pandas <http://pandas.pydata.org>`_ >=0.14.1,
 - `six <https://bitbucket.org/gutworth/six>`_ >=1.7.2 (to have a single
-codebase for Python 2 and Python 3). 
+  codebase for Python 2 and Python 3).
 - `ipython-notebook <http://ipython.org>`_ >= 2.3.1 (for parallel experiments)
 
 Lower versions of these packages are likely to work as well but have not been
