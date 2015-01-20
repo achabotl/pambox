@@ -30,12 +30,17 @@ Dependencies
 pambox is tested to work under Python 2.7 and Python 3.4 (thanks to
 ``six``). Only Mac OS X (10.9) has been tested thoroughly.
 
-The main dependencies are `Numpy <http://www.numpy.org/>`_ >= 1.8.0,
-`Scipy <http://scipy.org/scipylib/>`_ >=0.14.0,
-`Pandas <http://pandas.pydata.org>`_ >=0.14.1,
-`six <https://bitbucket.org/gutworth/six>`_ >=1.7.2 (to have a single
-codebase for Python 2 and Python 3). Lower versions of these packages
-are likely to work as well but have not been thoroughly tested.
+The main dependencies are :
+
+- `Numpy <http://www.numpy.org/>`_ >= 1.8.0,
+- `Scipy <http://scipy.org/scipylib/>`_ >=0.14.0,
+- `Pandas <http://pandas.pydata.org>`_ >=0.14.1,
+- `six <https://bitbucket.org/gutworth/six>`_ >=1.7.2 (to have a single
+codebase for Python 2 and Python 3). 
+- `ipython-notebook <http://ipython.org>`_ >= 2.3.1 (for parallel experiments)
+
+Lower versions of these packages are likely to work as well but have not been
+thoroughly tested.
 
 `pyaudio <http://people.csail.mit.edu/hubert/pyaudio/>`_ is required if you
 want to use the ``audio`` module.
