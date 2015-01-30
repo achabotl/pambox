@@ -137,8 +137,8 @@ class Sepsm(object):
 
         """
 
-        p_mix = np.asarray(p_mix)
-        p_noise = np.asarray(p_noise)
+        p_mix = np.asanyarray(p_mix)
+        p_noise = np.asanyarray(p_noise)
 
         # set nan values to zero
         p_mix[np.isnan(p_mix)] = 0
