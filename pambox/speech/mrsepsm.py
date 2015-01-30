@@ -266,9 +266,11 @@ class MrSepsm(Sepsm):
             SNRenv value.
 
         """
-        # Acceptable modulation frequencies
+
+        # Calculate mask for modulation frequencies larger than 1/4 center
+        # of their channel.
         ma = np.tile(np.asarray(self.modf), (len(self.cf), 1)) \
-             >= np.asarray(self.cf)[:, np.newaxis]
+             >= np.asarray(self.cf)[:, np.newaxis] / 4
         # Set the reject SNRenvs to 0. It's ok because we're just doing a
         # summation
         snr_env[ma] = 0.
