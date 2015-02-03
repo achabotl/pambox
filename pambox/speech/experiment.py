@@ -587,15 +587,15 @@ class Experiment(object):
         if models:
             if isinstance(models, list):
                 for model in models:
-                    df[out_name][df[self._key_models] == model] \
+                    df.loc[df[self._key_models] == model, out_name] \
                         = df[df[self._key_models] == model][col].map(fc)
             elif isinstance(models, dict):
                 for model, v in models.iteritems():
                     key = (df[self._key_models] == model) & (
-                        df[self._key_output == v])
-                    df[out_name][key] = df[key][col].map(fc)
+                        df[self._key_output] == v)
+                    df.loc[key, out_name] = df[key][col].map(fc)
             else:
-                df[out_name][df[self._key_models] == models] = \
+                df.loc[df[self._key_models] == models, out_name] = \
                     df[df[self._key_models] == models][col].map(fc)
         else:
             df[out_name] = df[col].map(fc)
