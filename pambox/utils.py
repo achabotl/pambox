@@ -296,8 +296,9 @@ def fftfilt(b, x, n=None):
     b = np.asarray(b)
 
     if b.ndim > 1 and x.ndim > 1 and (b.shape[0] != x.shape[0]):
-        raise(ValueError,
-              "b and x must have the same number of dimensions if they have more than 1.")
+        raise ValueError(
+            "b and x must have the same number of dimensions if they have "
+            "more than 1.")
 
     N_x = x.shape[-1]
     N_b = b.shape[-1]

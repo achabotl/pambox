@@ -12,6 +12,7 @@ from scipy.io import wavfile
 
 from pambox import utils
 from pambox.utils import fftfilt, hilbert
+import six
 
 try:
     _ = np.use_fastnumpy  # MKL FFT optimizations from Enthought.
@@ -308,7 +309,7 @@ class WestermannCrm(object):
     def _find_delay(self):
         """Calculates the delay of the direct sound, in samples."""
         delays = {}
-        for k, v in self.brir.iteritems():
+        for k, v in six.iteritems(self.brir):
             x = np.mean(v, axis=0)
             delays[k] = np.abs(x).argmax()
         return delays

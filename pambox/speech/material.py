@@ -101,7 +101,7 @@ class Material(object):
         if not n:
             n = len(self.files)
 
-        for _, name in zip(range(n), self.files):
+        for _, name in zip(list(range(n)), self.files):
             yield self.load_file(name)
 
     def _load_ssn(self):

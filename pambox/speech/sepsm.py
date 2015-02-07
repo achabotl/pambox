@@ -364,7 +364,7 @@ class Sepsm(object):
 
         """
         cf = self.cf
-        cf_ticks = range(len(cf))
+        cf_ticks = list(range(len(cf)))
         bands = res.bands_above_thres_idx
         # Make the bar chart
         y = np.zeros_like(cf)
@@ -408,9 +408,9 @@ class Sepsm(object):
 
         if ax is None:
             f, ax = plt.subplots()
-            ax.set_xticks(range(len(mf))[::2])
+            ax.set_xticks(list(range(len(mf)))[::2])
             ax.set_xticklabels(mf[::2])
-            ax.set_yticks(range(len(cf))[::3])
+            ax.set_yticks(list(range(len(cf)))[::3])
             ax.set_yticklabels(cf[::3])
 
             ax.set_xlabel(xlabel)
@@ -459,9 +459,9 @@ class Sepsm(object):
         ax.set_xlabel('Modulation frequency [Hz]')
         ax.set_ylabel('Channel frequency [Hz]')
 
-        ax.set_xticks(range(len(self.modf))[::2])
+        ax.set_xticks(list(range(len(self.modf)))[::2])
         ax.set_xticklabels([int(x) for x in self.modf[::2]])
-        ax.set_yticks(range(len(self.cf))[::3])
+        ax.set_yticks(list(range(len(self.cf)))[::3])
         ax.set_yticklabels(self.cf[::3])
 
         return ax
@@ -519,9 +519,9 @@ class Sepsm(object):
             im = self._plot_mod_matrix(exc_ptns, ax=ax, vmin=vmin, vmax=vmax)
 
         for ax in grid:
-            ax.set_xticks(range(len(mf))[::2])
+            ax.set_xticks(list(range(len(mf)))[::2])
             ax.set_xticklabels([int(x) for x in mf[::2]])
-            ax.set_yticks(range(len(cf))[::3])
+            ax.set_yticks(list(range(len(cf)))[::3])
             ax.set_yticklabels(cf[::3])
 
         for ax, title in zip(grid, titles[-n_subs:]):

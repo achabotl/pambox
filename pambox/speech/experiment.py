@@ -12,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from ..utils import make_same_length, setdbspl, int2srt
+import six
 
 
 log = logging.getLogger(__name__)
@@ -205,7 +206,7 @@ class Experiment(object):
         # If the distortion parameters are in a dictionary, put each value in
         # a different column. Otherwise, group everything in a single column.
         if isinstance(params, dict):
-            for k, v in params.iteritems():
+            for k, v in six.iteritems(params):
                 d[k] = v
         else:
             # Make sure the values are hashable for later manipulation
@@ -215,7 +216,7 @@ class Experiment(object):
                 pass
             d[self._key_dist_params] = params
 
-        for name, value in res['p'].iteritems():
+        for name, value in six.iteritems(res['p']):
             d[self._key_output] = name
             d[self._key_value] = value
             df = df.append(d, ignore_index=True)
@@ -590,7 +591,7 @@ class Experiment(object):
                     df.loc[df[self._key_models] == model, out_name] \
                         = df[df[self._key_models] == model][col].map(fc)
             elif isinstance(models, dict):
-                for model, v in models.iteritems():
+                for model, v in six.iteritems(models):
                     key = (df[self._key_models] == model) & (
                         df[self._key_output] == v)
                     df.loc[key, out_name] = df[key][col].map(fc)
@@ -639,7 +640,7 @@ class Experiment(object):
 
 def srt_dict_to_dataframe(d):
     df_srts = pd.DataFrame()
-    for k, v in d.iteritems():
+    for k, v in six.iteritems(d):
         model, material, tdist, mdist = k.split('_')
 
         try:
