@@ -56,3 +56,6 @@ design/*
 todo.taskpaper
 
 docs/_build
+
+# Ctags file
+tags
