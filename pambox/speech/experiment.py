@@ -296,7 +296,7 @@ class Experiment(object):
         lview = rc.load_balanced_view()
         lview.block = False
         rc[:].use_dill()
-        lview.apply(np.random.seed, seed)
+        lview.apply(np.random.seed, args=(seed,))
 
         try:
             iter(self.models)
