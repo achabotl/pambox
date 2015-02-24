@@ -628,5 +628,7 @@ def read_wav_as_float(path):
     -------
     wav : ndarray
     """
-    _, int_sentence = scipy.io.wavfile.read(path)
-    return int_sentence.T / np.iinfo(int_sentence.dtype).min
+    _, signal = scipy.io.wavfile.read(path)
+    if np.issubdtype(signal.dtype, np.integer):
+        return signal.T / np.iinfo(signal.dtype).min
+    return signal.T
