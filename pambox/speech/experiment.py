@@ -272,7 +272,7 @@ class Experiment(object):
         )
         return df
 
-    def _parallel_run(self, n=None, seed=0):
+    def _parallel_run(self, n=None, seed=0, profile=None):
         """ Run the experiment using IPython.parallel
 
         Parameters
@@ -288,7 +288,10 @@ class Experiment(object):
             Pandas dataframe with the experimental results.
 
         """
-        rc = ipyparallel.Client()
+        if profile:
+            rc = ipyparallel.Client(profile=profile)
+        else:
+            rc = ipyparallel.Client()
         all_engines = rc[:]
         lview = rc.load_balanced_view()
         lview.block = False
@@ -368,7 +371,7 @@ class Experiment(object):
             )
         return df
 
-    def run(self, n=None, seed=0, parallel=False):
+    def run(self, n=None, seed=0, parallel=False, profile=None):
         """ Run the experiment.
 
         Parameters
@@ -394,7 +397,7 @@ class Experiment(object):
             self.models = (self.models,)
 
         if parallel:
-            df = self._parallel_run(n, seed)
+            df = self._parallel_run(n, seed, profile=profile)
         else:
             df = self._single_run(n, seed)
 
