@@ -8,7 +8,6 @@ from __future__ import absolute_import
 from .sepsm import Sepsm
 from .mrsepsm import MrSepsm
 from .sii import Sii
-from .stec import Stec
 from .material import Material
 from .experiment import Experiment
 
@@ -16,7 +15,6 @@ __all__ = [
     'Sepsm',
     'MrSepsm',
     'Sii',
-    'Stec',
     'Material',
     'Experiment'
 ]
