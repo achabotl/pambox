@@ -297,6 +297,10 @@ class Experiment(object):
         lview.block = False
         rc[:].use_dill()
         lview.apply(np.random.seed, args=(seed,))
+        with all_engines.sync_imports():
+            import os
+            rc[:]['cwd'] = os.getcwd()
+            rc[:].execute("import os; os.chdir(cwd)")
 
         try:
             iter(self.models)
