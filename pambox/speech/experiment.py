@@ -41,7 +41,7 @@ class Experiment(object):
         Write the result to file, as CSV, the default is True.
     output_path : string, optional.
         Path where the results will be written if `write` is True. The
-        default is './Data'.
+        default is './output'.
     timestamp_format : str, optional
         Datetime timestamp format for the CSV file name. The default is of
         the form YYYYMMDD-HHMMSS.
