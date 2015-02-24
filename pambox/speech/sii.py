@@ -44,7 +44,7 @@ class Sii(object):
 
         if len(T) != 18:
             raise ValueError("The length of T should be 18.")
-        if I not in range(7):
+        if I not in list(range(7)):
             raise ValueError("Band importance should be an integer between 0 \
                              and 1.")
         self.T = asarray(T)
@@ -116,7 +116,7 @@ class Sii(object):
             Band importance function.
         """
 
-        if test not in range(7):
+        if test not in list(range(7)):
             raise ValueError("Band Importance function must be integer \
                              between 0 and 6.")
         return self.BIArr[:, test].T
