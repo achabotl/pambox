@@ -375,7 +375,8 @@ class Experiment(object):
             )
         return df
 
-    def run(self, n=None, seed=0, parallel=False, profile=None):
+    def run(self, n=None, seed=0, parallel=False, profile=None,
+            output_filename=None):
         """ Run the experiment.
 
         Parameters
@@ -388,6 +389,10 @@ class Experiment(object):
             If False, the experiment is ran locally, using a for-loop. If
             True, we use IPython.parallel to run the experiment in parallel.
             We try to connect to the current profile.
+        output_filename : string
+            Name of the output file where the results will be saved. If it is
+            `None`, the default is to use the current date and time. The
+            default is `None`.
 
         Returns
         -------
@@ -406,10 +411,10 @@ class Experiment(object):
             df = self._single_run(n, seed)
 
         if self.write:
-            self._write_results(df)
+            self._write_results(df, filename=output_filename)
         return df
 
-    def _write_results(self, df):
+    def _write_results(self, df, filename=None):
         """Writes results to CSV file.
 
         Will drop the column where all the complete model output is stored
@@ -431,13 +436,14 @@ class Experiment(object):
         the current directory, in order not to loose the simulation data.
 
         """
-        timestamp = datetime.now()
-        date = timestamp.strftime(self.timestamp_format)
-        if self.name:
-            name = "-{}".format(self.name)
-        else:
-            name = ''
-        filename = "{date}{name}.csv".format(date=date, name=name)
+        if filename is None:
+            timestamp = datetime.now()
+            date = timestamp.strftime(self.timestamp_format)
+            if self.name:
+                name = "-{}".format(self.name)
+            else:
+                name = ''
+            filename = "{date}{name}.csv".format(date=date, name=name)
 
         if not os.path.isdir(self.output_path):
             try:
