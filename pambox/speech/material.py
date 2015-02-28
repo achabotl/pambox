@@ -159,7 +159,10 @@ class Material(object):
         ndarray
             Speech-shaped noise signal.
         """
-        return self.pick_section(self._ssn, x)
+        section = self.pick_section(self._ssn, x)
+        if self.force_mono and section.ndim > 1:
+            return section[0]
+        return section
 
     def set_level(self, x, level):
         """Set level of a sentence, in dB.
