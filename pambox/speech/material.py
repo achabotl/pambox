@@ -83,7 +83,10 @@ class Material(object):
         """
         path = os.path.join(self.path_to_sentences)
         log.info("Listing files from directory: %s", path)
-        return os.listdir(path)
+        all_files = os.listdir(path)
+        wav_files_only = [filename for filename in all_files if
+                          filename.lower().endswith('.wav')]
+        return wav_files_only
 
     def load_files(self, n=None):
         """Read files from disk, starting from the first one.
