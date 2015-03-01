@@ -630,5 +630,5 @@ def read_wav_as_float(path):
     """
     _, signal = scipy.io.wavfile.read(path)
     if np.issubdtype(signal.dtype, np.integer):
-        return signal.T / np.iinfo(signal.dtype).min
+        return signal.T / np.abs(np.iinfo(signal.dtype).min)
     return signal.T
