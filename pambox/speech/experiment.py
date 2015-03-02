@@ -609,17 +609,17 @@ class Experiment(object):
             if isinstance(models, list):
                 for model in models:
                     df.loc[df[self._key_models] == model, out_name] \
-                        = df[df[self._key_models] == model][col].map(fc)
+                        = df.loc[df[self._key_models] == model, col].map(fc)
             elif isinstance(models, dict):
                 for model, v in six.iteritems(models):
                     key = (df[self._key_models] == model) & (
                         df[self._key_output] == v)
-                    df.loc[key, out_name] = df[key][col].map(fc)
+                    df.loc[key, out_name] = df.loc[key, col].map(fc)
             else:
                 df.loc[df[self._key_models] == models, out_name] = \
-                    df[df[self._key_models] == models][col].map(fc)
+                    df.loc[df[self._key_models] == models, col].map(fc)
         else:
-            df[out_name] = df[col].map(fc)
+            df.loc[:, out_name] = df.loc[:, col].map(fc)
         return df
 
     def srts_from_df(self, df, col='Intelligibility', srt_at=50):
