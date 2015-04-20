@@ -75,6 +75,9 @@ class Sepsm(object):
         self.snr_env_limit = snr_env_limit
         self.ht_diffuse = self._default_ht_diffuse
         self.name = 'Sepsm'
+        self.mod_fb = \
+            central.ModulationFilterbankEPSM(self.fs / self.downsamp_factor,
+                                             self.modf)
 
     def _peripheral_filtering(self, signals):
         """Filters a time signal using a Gammatone filterbank.
@@ -280,7 +283,6 @@ class Sepsm(object):
             shape is (N_SIG, N_CHAN, N_MODF).
 
         """
-        fs_new = self.fs / self.downsamp_factor
         # Downsample the envelope for faster processing
         channel_envs = channel_envs[..., ::self.downsamp_factor]
         if (channel_envs.shape[-1] % 2) == 0:
@@ -299,7 +301,7 @@ class Sepsm(object):
         for i_sig, s in enumerate(channel_envs):
             for i_chan, chan in enumerate(s):
                 powers[i_sig, i_chan], envs[i_sig, i_chan] =  \
-                    central.mod_filterbank(chan, fs_new, self.modf)
+                    self.mod_fb.filter(chan)
         return envs, powers
 
     def predict(self, clean, mixture, noise):
