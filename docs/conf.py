@@ -22,8 +22,10 @@ import sys, os
 import mock
 
 MOCK_MODULES = [
+    'IPython',
     'numpy',
     'numpy.fft',
+    'pyaudio',
     'scipy',
     'scipy.stats',
     'scipy.optimize',
@@ -31,9 +33,10 @@ MOCK_MODULES = [
     'scipy.io',
     'scipy.signal',
     'matplotlib',
+    'mpl_toolkits',
+    'mpl_toolkits.axes_grid1',
     'scipy.io.wavfile',
     'scipy.special',
-    'mpl_toolkits.axes_grid1',
     'matplotlib.pyplot',
     'pandas',
 ]
