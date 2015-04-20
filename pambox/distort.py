@@ -76,9 +76,9 @@ def phase_jitter(x, a):
     .. math:: y(t) = s(t) * cos(\Phi(t)),
 
     where :math:`\Phi(t)` is a random process uniformly distributed over
-    :math:`[0, 2\pi\alpha]`. The effect of the jitter when \alpha is 0.5 or 1
-    is to completely destroy the carrier signal, effictively yielding
-    modulated white noise.
+    :math:`[0, 2\pi\\alpha]`. The effect of the jitter when :math:`\\alpha`
+    is 0.5 or 1 is to completely destroy the carrier signal, effectively
+    yielding modulated white noise.
 
     Parameters
     ----------
