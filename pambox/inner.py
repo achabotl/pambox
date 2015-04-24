@@ -72,7 +72,7 @@ def lowpass_env_filtering(x, cutoff=150., n=1, fs=22050):
     return sp.signal.lfilter(b, a, x)
 
 
-class GammatoneFilterbank():
+class GammatoneFilterbank(object):
     """Gammatone Filterbank
 
     Parameters
@@ -95,27 +95,37 @@ class GammatoneFilterbank():
 
     """
 
-    def __init__(self, cf, fs, b=1.019, order=1, q=9.26449,
-                 min_bw=24.7):
+
+    def __init__(self, cf, fs, b=1.019, order=1, q=9.26449, min_bw=24.7):
+
+        self.fs = fs
         try:
             len(cf)
         except TypeError:
             cf = [cf]
-        cf = np.asarray(cf)
-        self.fs = fs
+        self.cf = np.asarray(cf)
+        self.b = b
+        self.erb_order = order
+        self.q = q
+        self.min_bw = min_bw
+
+
+    def _calculate_coefficients(self):
+        cf = self.cf
+        b = self.b
+        order = self.erb_order
+        q = self.q
+        min_bw = self.min_bw
+
+        erb = ((cf / q) ** order + min_bw ** order) ** (1 / order)
+        print(self.fs)
         t = 1 / self.fs
-        self.b, self.erb_order, self.EarQ, self.min_bw = b, order, q, min_bw
-        erb = ((cf / q) ** order + min_bw ** order) ** (
-            1 / order)
-
         b = b * 2 * pi * erb
-
         a0 = t
         a2 = 0
         b0 = 1
         b1 = -2 * cos(2 * cf * pi * t) / exp(b * t)
         b2 = exp(-2 * b * t)
-
         a11 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) + 2 * sqrt(
             3 + 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
         a12 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) - 2 * sqrt(
@@ -124,7 +134,6 @@ class GammatoneFilterbank():
             3 - 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
         a14 = -(2 * t * cos(2 * cf * pi * t) / exp(b * t) - 2 * sqrt(
             3 - 2 ** 1.5) * t * sin(2 * cf * pi * t) / exp(b * t)) / 2
-
         i = 1j
         gain = abs((-2 * exp(4 * i * cf * pi * t) * t +
                     2 * exp(-(b * t) + 2 * i * cf * pi * t) * t *
@@ -144,12 +153,8 @@ class GammatoneFilterbank():
                         2 * cf * pi * t))) /
                    (-2 / exp(2 * b * t) - 2 * exp(4 * i * cf * pi * t) +
                     2 * (1 + exp(4 * i * cf * pi * t)) / exp(b * t)) ** 4)
-
         allfilts = ones(len(cf))
-
-        self.a0, self.a11, self.a12, self.a13, self.a14, self.a2, \
-            self.b0, self.b1, self.b2, self.gain = \
-            a0 * allfilts, a11, a12, a13, a14, a2 * allfilts, \
+        return a0 * allfilts, a11, a12, a13, a14, a2 * allfilts, \
             b0 * allfilts, b1, b2, gain
 
     def filter(self, x):
@@ -163,12 +168,11 @@ class GammatoneFilterbank():
         Returns
         -------
         ndarray
-            Filtered signals
+            Filtered signals with shape ``(M, N)``, where ``M`` is the number of
+            channels, and ``N`` is the input signal's nubmer of samples.
         """
 
-        a0, a11, a12, a13, a14, a2 = self.a0, self.a11, self.a12, self.a13, \
-            self.a14, self.a2
-        b0, b1, b2, gain = self.b0, self.b1, self.b2, self.gain
+        a0, a11, a12, a13, a14, a2, b0, b1, b2, gain = self._calculate_coefficients()
 
         output = np.zeros((gain.shape[0], x.shape[-1]))
         for chan in range(gain.shape[0]):
