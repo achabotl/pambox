@@ -305,13 +305,21 @@ class Sepsm(object):
                     self.mod_fb.filter(chan)
         return envs, powers
 
-    def predict(self, clean, mixture, noise):
-        """Predicts intelligibility
+    def predict(self, clean=None, mix=None, noise=None):
+        """Predicts intelligibility.
+
+        The sEPSM requires at least the mixture and the noise alone to make a
+        prediction. The clean signal will also be processed if it is
+        available, but it is not used to make the prediction.
         
         Parameters
         ----------
-        clean, mixture, noise : ndarrays
-            Clean, mixture, and noise signals.
+        clean : ndarray (optional)
+            Clean speech signal, optional.
+        mix : ndarray
+            Mixture of the processed speech and noise.
+        noise : ndarrays
+            Processed noise signal alone.
 
         Returns
         -------
@@ -328,10 +336,13 @@ class Sepsm(object):
             were above hearing threshold.
 
         """
-        signals = np.vstack((clean, mixture, noise))
+        if clean is None:
+            signals = np.vstack((mix, noise))
+        else:
+            signals = np.vstack((clean, mix, noise))
 
         # find bands above threshold
-        bands_above_thres_idx = self._find_bands_above_thres(mixture)
+        bands_above_thres_idx = self._find_bands_above_thres(mix)
 
         channel_sigs = self._peripheral_filtering(signals)
         channel_envs = self._extract_env(channel_sigs)

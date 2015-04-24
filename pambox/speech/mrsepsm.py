@@ -189,17 +189,20 @@ class MrSepsm(Sepsm):
 
         return mr_snr_env, [p_mix, p_noise]
 
-    def predict(self, clean, mixture, noise):
+    def predict(self, clean=None, mix=None, noise=None):
         """Predicts intelligibility using the mr-sEPSM.
 
-        Predicts the SNRenv value for the combination of mixture and noise
-        alone.
+        The mr-sEPSM requires at least the mix and the noise alone to make a
+        prediction. The clean signal will also be processed if it is
+        available, but it is not used to make the prediction.
 
         Parameters
         ----------
-        clean, mixture, noise : ndarrays
-            Single-dimension arrays for the clean speech, the mixture of the
-            clean speech ans noise, and the noise alone.
+        clean : ndarray (optional)
+            Clean speech signal, optional.
+        mix : ndarray
+            Mixture of the processed speech and noise.
+        noise : ndarrays
 
         Returns
         -------
@@ -211,9 +214,12 @@ class MrSepsm(Sepsm):
 
 
         """
-        signals = np.vstack((clean, mixture, noise))
+        if clean is None:
+            signals = np.vstack((mix, noise))
+        else:
+            signals = np.vstack((clean, mix, noise))
 
-        bands_above_thres_idx = self._find_bands_above_thres(mixture)
+        bands_above_thres_idx = self._find_bands_above_thres(mix)
         channel_sigs = self._peripheral_filtering(signals)
         channel_envs = self._extract_env(channel_sigs)
         channel_envs = self._mod_sensitivity(channel_envs)
