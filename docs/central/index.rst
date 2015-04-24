@@ -3,8 +3,7 @@ Central auditory processing
 
 
 The :mod:`~pambox.central` regroups what is *not* considered to be part of
-the outer, middle, or inner ear. It's rather broad concept that can be
-refined in later versions.
+the outer, middle, or inner ear. It's a rather broad concept.
 
 It contains:
 

@@ -1,7 +1,7 @@
 pambox
 ======
 
-`pambox <https://github.com/achabotl/pambox>`_ is a Python toolbox to
+`pambox <https://github.com/achabotl/pambox>`_ is a Python package to
 facilitate the development of auditory models, with a focus on speech
 intelligibility prediction models.
 
@@ -9,7 +9,7 @@ The Grand Idea is for `pambox` to be a repository of published auditory models,
 as well as a simple and powerful tool for developing auditory models.
 Components should be reusable and easy to modify.
 `pambox` uses a standard interface for all speech intelligibility prediction
-models in the toolbox, which should simplify comparisons across models.
+models in the package, which should simplify comparisons across models.
 
 In case Python is not your thing and you prefer Matlab, the `Auditory Modeling
 Toolbox <http://amtoolbox.sourceforge.net>`_ is an excellent alternative.
@@ -58,6 +58,28 @@ experiments.
 The :mod:`~pambox.audio` module is a thin wrapper around `pyaudio
 <http://people.csail.mit.edu/hubert/pyaudio/>`_ that simplifies the playback of
 numpy arrays, which is often useful for debugging.
+
+Conventions
+-----------
+In the `spirit of Python <https://wiki.python.org/moin/TOOWTDI>`_, pambox has
+a few conventions about "the way to do things".
+
+* Single channels signals always have the shape ``(N, )``, where `N` is the
+  length of the signal.
+* Multi-channels signals always have the shape ``(M, N)``, where `M` is the
+  number of channels and `N` is the signals' length. This greatly simplifies
+  looping over channels.
+* Filterbanks are classes with names ending in ``Filterbank`` and must take
+  at least the sampling frequency and the center frequencies as
+  arguments, for example: ``GeneralFilterbank(fs, center_frequencies=(100,
+  200), *args, **kgwars)``. ``center_frequencies`` can have a default
+  value. Filtering is  done via a ``filter`` method that only takes the
+  signal to filter and return multi-channel signals, for example:
+  ``GeneralFilterbank(fs=44100).filter(x)`` returns a ``(M, N)`` array, where
+  ``M`` can be 1.
+* Speech intelligibility models are classes with a ``predict`` method. See
+  :ref:`speech-intelligibility-models` for more details.
+
 
 Contents
 --------

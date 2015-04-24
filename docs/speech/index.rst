@@ -9,22 +9,30 @@ and various other tools to facilitate the creation of speech intelligibility
 prediction "experiments".
 
 
+.. _speech-intelligibility-models:
+
 Speech Intelligibility Models
 -----------------------------
 
-Each model presents a standard ``predict`` function that takes the clean speech
-signal, the processed speech (or the mixture of the speech and noise),
-and the noise alone. The reference level is that a signal with an RMS value
+Speech intelligibility models are classes that take at least a ``fs``
+argument. All predictions are done via a ``predict`` method with the
+signature: ``predict(clean=None, mix=None, noise=None)``.
+This signature allows models to have a single input, say ``mix``, but to not
+need all three arguments. Models could require only the mixture (process
+signal and noise together): ``predict(mix=noisy_speech)``; or just the
+clean signal and the noise: ``predict(clean=speech, noise=noise)``.
+
+The reference level is that a signal with an RMS value
 of 1 corresponds to 0 dB SPL.
 
 ::
 
     >>> from pambox.speech import Sepsm
-    >>> s = Sepsm()
+    >>> s = Sepsm(fs=22050)
     >>> res = s.predict_spec(clean, mix, noise)
 
 
-For models that do take time signals as inputs,
+For models that do not take time signals as inputs,
 such as the :py:class:`~pambox.speech.Sii`, two other types of interfaces are
 defined:
 
@@ -33,7 +41,7 @@ defined:
   should be provided::
 
     >>> from pambox.speech import Sii
-    >>> s = Sii()
+    >>> s = Sii(fs=22050)
     >>> res = s.predict_spec(clean_spec, mix_spec, noise_spec)
 
 
@@ -42,7 +50,7 @@ defined:
   and the concatenated impulse responses to the maskers::
 
     >>> from pambox.speech import IrModel
-    >>> s = IrModel()
+    >>> s = IrModel(fs=22050)
     >>> res = s.predict_ir(clean_ir, noise_irs)
 
 Intelligibility models return a dictionary with **at least** the following key:
@@ -52,7 +60,7 @@ Intelligibility models return a dictionary with **at least** the following key:
   multiple return values. For example, the :py:class:`~pambox.speech.MrSepsm`
   returns two prediction values::
 
-    >>> s = MrSepsm()
+    >>> s = MrSepsm(fs=22050)
     >>> res = s.predict(clean, mix, noise)
     >>> res['p']
     {'lt_snr_env': 10.5, 'snr_env': 20.5}
@@ -61,8 +69,11 @@ It might seem a bit over-complicated, but it allows for an easier storing of
 the results of an experiment.
 
 Additionally, the models can add any other keys to the results dictionary. For
-example, a model can return some of its internal attributes,
-its internal representation, etc.
+example, a model can return some of its internal attributes, its internal
+representation, etc.
+
+
+.. _speech-materials:
 
 Speech Materials
 ----------------
@@ -139,6 +150,8 @@ can use the help function :func:`~pambox.speech.Material.average_level` to
 find the average leve, in dB, of all the sentences in the speech material:
 
     >>> average_level = sm.average_level()
+
+.. _speech-intelligibility-experiments:
 
 Speech Intelligibility Experiment
 ---------------------------------
