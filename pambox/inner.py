@@ -31,7 +31,7 @@ CENTER_F = np.asarray([63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
 FS = np.asarray([22050.])
 
 
-def erbbw(fc):
+def erb_bandwidth(fc):
     """Bandwith or an ERB.
 
     Parameters

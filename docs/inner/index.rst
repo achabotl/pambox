@@ -26,7 +26,8 @@ Envelope extraction
 Other functions
 ---------------
 
-* :func:`~pambox.inner.erbbw` give the ERB bandwith given center frequencies.
+* :func:`~pambox.inner.erb_bandwidth` gives the ERB bandwidth for a given center
+  frequencies.
 * :func:`~pambox.inner.noctave_filtering` performs bandpass filtering of a
   signal using rectangular filters.
 

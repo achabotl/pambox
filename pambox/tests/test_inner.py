@@ -23,7 +23,7 @@ def test_lowpass_filtering_of_envelope():
 
 
 def test_erb():
-    bw = inner.erbbw(1000)
+    bw = inner.erb_bandwidth(1000)
     assert_allclose(bw, 132.63, rtol=1e-4)
 
 
