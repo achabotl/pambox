@@ -12,6 +12,8 @@ The filterbank's parameters must be defined as part of the class.
 
 * :class:`~pambox.inner.GammatoneFilterbank` is a gammatone filterbank which
   uses the Malcom Slaney implementation.
+* :class:`~pambox.inner.RectangularFilterbank` performs bandpass filtering of a
+  signal using rectangular filters.
 
 
 Envelope extraction
@@ -26,11 +28,8 @@ Envelope extraction
 Other functions
 ---------------
 
-* :func:`~pambox.inner.erbbw` give the ERB bandwith given center frequencies.
-* :func:`~pambox.inner.noctave_filtering` performs bandpass filtering of a
-  signal using rectangular filters.
-
-
+* :func:`~pambox.inner.erb_bandwidth` gives the ERB bandwidth for a given center
+  frequencies.
 
 
 API

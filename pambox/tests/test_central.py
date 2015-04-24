@@ -44,7 +44,7 @@ def test_snr_env_to_pc(snrenv, central_parameters, data):
     c = central.IdealObs(k=0.81, q=0.5, sigma_s=0.6, m=8000.)
     snrenvs = np.asarray([2.6649636, 6.13623543, 13.1771355, 24.11754981,
                           38.35865445, 55.59566425])
-    pc = c.snrenv_to_pc(snrenvs)
+    pc = c.transform(snrenvs)
     target = np.asarray([1.62223958e-02, 4.52538073e-01, 1.02766152e+01,
                          5.89991555e+01, 9.57537063e+01, 9.99301187e+01])
     np.testing.assert_allclose(pc, target, atol=1e-4)
@@ -75,7 +75,7 @@ def test_mod_filtering_for_simple_signal():
     signal = np.asarray([1, 0, 1, 0, 1])
     fs = 2205
     modf = np.asarray([1., 2., 4., 8., 16., 32., 64.])
-    mfb = central.ModulationFilterbankEPSM(fs, modf)
+    mfb = central.EPSMModulationFilterbank(fs, modf)
     p, _ = mfb.filter(signal)
     target = np.asarray([6.69785298e-18, 6.06375859e-06, 2.42555385e-05,
                          9.70302212e-05, 3.88249957e-04, 1.55506496e-03,

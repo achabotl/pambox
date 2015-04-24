@@ -9,7 +9,7 @@ refined in later versions.
 It contains:
 
    - An implementation of the EPSM modulation filterbank
-     (:func:`~pambox.central.mod_filterbank`)
+     (:func:`~pambox.central.EPSMModulationFilterbank`)
    - An Ideal Observer (:class:`~pambox.central.IdealObs`), as used in the
      :class:`~pambox.speech.Sepsm` model.
 

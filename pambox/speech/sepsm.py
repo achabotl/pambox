@@ -76,9 +76,11 @@ class Sepsm(object):
         self.ht_diffuse = self._default_ht_diffuse
         self.name = 'Sepsm'
         self.mod_fb = \
-            central.ModulationFilterbankEPSM(self.fs / self.downsamp_factor,
+            central.EPSMModulationFilterbank(self.fs / self.downsamp_factor,
                                              self.modf)
         self.peripheral_filterbank = inner.GammatoneFilterbank(self.cf, self.fs)
+        self.noct_filterbank = inner.RectangularFilterbank(self.fs, self.cf,
+                                                           width=3)
 
     def _peripheral_filtering(self, signals):
         """Filters a time signal using a Gammatone filterbank.
@@ -213,8 +215,7 @@ class Sepsm(object):
             threshold.
 
         """
-        filtered_rms_mix = inner.noctave_filtering(mixture, self.cf,
-                                                   self.fs, width=3)
+        filtered_rms_mix = self.noct_filterbank.filter(mixture)
         return self._bands_above_thres(filtered_rms_mix)
 
     def _extract_env(self, channel_sigs):
@@ -304,13 +305,21 @@ class Sepsm(object):
                     self.mod_fb.filter(chan)
         return envs, powers
 
-    def predict(self, clean, mixture, noise):
-        """Predicts intelligibility
+    def predict(self, clean=None, mix=None, noise=None):
+        """Predicts intelligibility.
+
+        The sEPSM requires at least the mixture and the noise alone to make a
+        prediction. The clean signal will also be processed if it is
+        available, but it is not used to make the prediction.
         
         Parameters
         ----------
-        clean, mixture, noise : ndarrays
-            Clean, mixture, and noise signals.
+        clean : ndarray (optional)
+            Clean speech signal, optional.
+        mix : ndarray
+            Mixture of the processed speech and noise.
+        noise : ndarrays
+            Processed noise signal alone.
 
         Returns
         -------
@@ -327,10 +336,13 @@ class Sepsm(object):
             were above hearing threshold.
 
         """
-        signals = np.vstack((clean, mixture, noise))
+        if clean is None:
+            signals = np.vstack((mix, noise))
+        else:
+            signals = np.vstack((clean, mix, noise))
 
         # find bands above threshold
-        bands_above_thres_idx = self._find_bands_above_thres(mixture)
+        bands_above_thres_idx = self._find_bands_above_thres(mix)
 
         channel_sigs = self._peripheral_filtering(signals)
         channel_envs = self._extract_env(channel_sigs)
