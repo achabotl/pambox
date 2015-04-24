@@ -78,6 +78,7 @@ class Sepsm(object):
         self.mod_fb = \
             central.ModulationFilterbankEPSM(self.fs / self.downsamp_factor,
                                              self.modf)
+        self.peripheral_filterbank = inner.GammatoneFilterbank(self.cf, self.fs)
 
     def _peripheral_filtering(self, signals):
         """Filters a time signal using a Gammatone filterbank.
@@ -96,9 +97,8 @@ class Sepsm(object):
 
         """
         y = np.zeros((signals.shape[0], len(self.cf), signals.shape[-1]))
-        g = inner.GammatoneFilterbank(self.cf, self.fs)
         for i_sig, s in enumerate(signals):
-            y[i_sig] = g.filter(s)
+            y[i_sig] = self.peripheral_filterbank.filter(s)
         return y
 
     def _bands_above_thres(self, x):
