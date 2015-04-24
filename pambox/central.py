@@ -5,7 +5,7 @@ Classes
 -------
 
 - `IdealObs` -- An IdealObserver, as used by [jorgensen2011]_.
-- `ModulationFilterbankEPSM` -- EPSM modulation filterbank, as used by [jorgensen2011]_.
+- `EPSMModulationFilterbank` -- EPSM modulation filterbank, as used by [jorgensen2011]_.
 
 
 """
@@ -198,7 +198,7 @@ class IdealObs(object):
         return self._snrenv_to_pc(snrenv, self.k, self.q, self.sigma_s, self.m)
 
 
-class ModulationFilterbankEPSM(object):
+class EPSMModulationFilterbank(object):
     """Implementation of the EPSM modulation filterbank.
 
     The envelope power spectrum model (EPSM) filterbank was defined in

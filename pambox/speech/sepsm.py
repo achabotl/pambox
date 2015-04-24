@@ -76,7 +76,7 @@ class Sepsm(object):
         self.ht_diffuse = self._default_ht_diffuse
         self.name = 'Sepsm'
         self.mod_fb = \
-            central.ModulationFilterbankEPSM(self.fs / self.downsamp_factor,
+            central.EPSMModulationFilterbank(self.fs / self.downsamp_factor,
                                              self.modf)
 
     def _peripheral_filtering(self, signals):

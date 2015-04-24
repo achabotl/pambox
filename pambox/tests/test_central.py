@@ -75,7 +75,7 @@ def test_mod_filtering_for_simple_signal():
     signal = np.asarray([1, 0, 1, 0, 1])
     fs = 2205
     modf = np.asarray([1., 2., 4., 8., 16., 32., 64.])
-    mfb = central.ModulationFilterbankEPSM(fs, modf)
+    mfb = central.EPSMModulationFilterbank(fs, modf)
     p, _ = mfb.filter(signal)
     target = np.asarray([6.69785298e-18, 6.06375859e-06, 2.42555385e-05,
                          9.70302212e-05, 3.88249957e-04, 1.55506496e-03,
