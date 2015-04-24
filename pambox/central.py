@@ -48,20 +48,12 @@ class IdealObs(object):
     Examples
     --------
 
-    Converting SNRenv values to percent correct using the default parameters
+    Converting values to percent correct using the default parameters
     of the ideal observer:
 
     >>> from pambox import central
     >>> obs = central.IdealObs()
-    >>> obs.snrenv_to_pc((0, 1, 2, 3))
-
-    References
-    ----------
-
-    .. [JD11] Jørgensen, Søren, and Torsten Dau. "Predicting speech
-        intelligibility based on the signal-to-noise envelope power ratio
-        after modulation-frequency selective processing." The Journal of the
-        Acoustical Society of America 130.3 (2011): 1475-1487.
+    >>> obs.transform((0, 1, 2, 3))
 
     """
     def __init__(self, k=np.sqrt(1.2), q=0.5, sigma_s=0.6, m=8000.):
@@ -84,7 +76,7 @@ class IdealObs(object):
         """
         return {'k': self.k, 'q': self.q, 'sigma_s': self.sigma_s, 'm': self.m}
 
-    def fit_obs(self, snrenv, pcdata, sigma_s=None, m=None):
+    def fit_obs(self, values, pcdata, sigma_s=None, m=None):
         """Finds the parameters of the ideal observer.
 
         Finds the paramaters `k`, `q`, and `sigma_s`, that minimize the
@@ -98,12 +90,12 @@ class IdealObs(object):
 
         Parameters
         ----------
-        snrenv : ndarray
+        values : ndarray
             The linear SNRenv values that are to be converted to percent
             correct.
         pcdata : ndarray
             The data, in percentage between 0 and 1, of correctly understood
-            tokens. Must be the same shape as `snrenv`.
+            tokens. Must be the same shape as `values`.
         sigma_s : float, optional
              (Default value = None)
         m : float, optional
@@ -129,16 +121,16 @@ class IdealObs(object):
 
         # Reshape the array to have `N` predictions and define the cost
         # function to average over those predictions.
-        if snrenv.shape != pcdata.shape:
-            snrenv = snrenv.reshape((-1, len(pcdata)))
+        if values.shape != pcdata.shape:
+            values = values.reshape((-1, len(pcdata)))
 
             def errfc(p, fixed):
-                return np.mean(self._snrenv_to_pc(snrenv, *p, **fixed), axis=0
+                return np.mean(self._transform(values, *p, **fixed), axis=0
                                ) - pcdata
         # They have the same shape, the array should not be averaged
         else:
             def errfc(p, fixed):
-                return self._snrenv_to_pc(snrenv, *p, **fixed) - pcdata
+                return self._transform(values, *p, **fixed) - pcdata
 
         res = leastsq(errfc, p0, args=fixed_params)[0]
         if sigma_s:
@@ -149,12 +141,12 @@ class IdealObs(object):
         return self
 
     @staticmethod
-    def _snrenv_to_pc(snrenv, k=None, q=None, sigma_s=None, m=None):
+    def _transform(values, k=None, q=None, sigma_s=None, m=None):
         """Converts SNRenv values to percent correct using an ideal observer.
 
         Parameters
         ----------
-        snrenv : array_like
+        values : array_like
             linear values of SNRenv
         k : float
             k parameter (Default value = None)
@@ -170,32 +162,32 @@ class IdealObs(object):
         -------
         pc : ndarray
             Array of intelligibility percentage values, of the same shape as
-            `snrenv`.
+            `values`.
 
         """
         un = norm.ppf(1.0 - 1.0 / m)
         sn = 1.28255 / un
         un += 0.577 / un
-        dp = k * snrenv ** q
+        dp = k * values ** q
         return norm.cdf(dp, un, np.sqrt(sigma_s ** 2 + sn ** 2)) * 100
 
-    def snrenv_to_pc(self, snrenv):
-        """Converts SNRenv values to a percent correct.
+    def transform(self, values):
+        """Converts inputs values to a percent correct.
 
         Parameters
         ----------
-        snrenv : array_like
-            linear values of SNRenv
+        values : array_like
+            Linear values to transform.
 
         Returns
         -------
         pc : ndarray
             Array of intelligibility percentage values, of the same shape as
-            `snrenv`.
+            `values`.
 
         """
-        snrenv = np.asarray(snrenv)
-        return self._snrenv_to_pc(snrenv, self.k, self.q, self.sigma_s, self.m)
+        values = np.asarray(values)
+        return self._transform(values, self.k, self.q, self.sigma_s, self.m)
 
 
 class EPSMModulationFilterbank(object):

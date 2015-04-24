@@ -44,7 +44,7 @@ def test_snr_env_to_pc(snrenv, central_parameters, data):
     c = central.IdealObs(k=0.81, q=0.5, sigma_s=0.6, m=8000.)
     snrenvs = np.asarray([2.6649636, 6.13623543, 13.1771355, 24.11754981,
                           38.35865445, 55.59566425])
-    pc = c.snrenv_to_pc(snrenvs)
+    pc = c.transform(snrenvs)
     target = np.asarray([1.62223958e-02, 4.52538073e-01, 1.02766152e+01,
                          5.89991555e+01, 9.57537063e+01, 9.99301187e+01])
     np.testing.assert_allclose(pc, target, atol=1e-4)
