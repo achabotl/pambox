@@ -45,6 +45,10 @@ class IdealObs(object):
     m : int, optional
         Number of words in the vocabulary. (Default value = 8000)
 
+    Notes
+    -----
+    Implemented as described in [jorgensen2011]_.
+
     Examples
     --------
 
@@ -193,10 +197,6 @@ class IdealObs(object):
 class EPSMModulationFilterbank(object):
     """Implementation of the EPSM modulation filterbank.
 
-    The envelope power spectrum model (EPSM) filterbank was defined in
-    [ewert2000]_ and the implementation was validated against the Matlab
-    implementation of [jorgensen2011]_.
-
     Parameters
     ----------
     fs : int
@@ -212,6 +212,12 @@ class EPSMModulationFilterbank(object):
     -------
     filter(signal)
         Filters the signal using the modulation filterbank.
+
+    Notes
+    -----
+    The envelope power spectrum model (EPSM) filterbank was defined in
+    [ewert2000]_ and the implementation was validated against the Matlab
+    implementation of [jorgensen2011]_.
 
     References
     ----------
