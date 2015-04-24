@@ -98,7 +98,7 @@ class Sepsm(object):
 
         """
         y = np.zeros((signals.shape[0], len(self.cf), signals.shape[-1]))
-        g = inner.GammatoneFilterbank(self.cf, self.fs)
+        g = inner.GammatoneFilterbank(self.fs, self.cf)
         for i_sig, s in enumerate(signals):
             y[i_sig] = g.filter(s)
         return y
