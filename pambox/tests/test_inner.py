@@ -34,7 +34,7 @@ def test_GammatoneFilterbank_filtering():
     cf = [63, 1000]
     fs = [22050, 44100]
     for c, f in product(cf, fs):
-        g = inner.GammatoneFilterbank(c, f)
+        g = inner.GammatoneFilterbank(f, c)
         y = g.filter(mat['x'])
         target_file = 'y_%d_%d' % (f, c)
         np.testing.assert_allclose(y[0], mat[target_file])

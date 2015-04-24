@@ -96,7 +96,7 @@ class GammatoneFilterbank(object):
     """
 
 
-    def __init__(self, cf, fs, b=1.019, order=1, q=9.26449, min_bw=24.7):
+    def __init__(self, fs, cf, b=1.019, order=1, q=9.26449, min_bw=24.7):
 
         self.fs = fs
         try:

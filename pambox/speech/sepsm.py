@@ -78,7 +78,7 @@ class Sepsm(object):
         self.mod_fb = \
             central.EPSMModulationFilterbank(self.fs / self.downsamp_factor,
                                              self.modf)
-        self.peripheral_filterbank = inner.GammatoneFilterbank(self.cf, self.fs)
+        self.peripheral_filterbank = inner.GammatoneFilterbank(self.fs, self.cf)
         self.noct_filterbank = inner.RectangularFilterbank(self.fs, self.cf,
                                                            width=3)
 
