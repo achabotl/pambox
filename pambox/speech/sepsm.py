@@ -78,6 +78,8 @@ class Sepsm(object):
         self.mod_fb = \
             central.EPSMModulationFilterbank(self.fs / self.downsamp_factor,
                                              self.modf)
+        self.noct_filterbank = inner.RectangularFilterbank(self.fs, self.cf,
+                                                           width=3)
 
     def _peripheral_filtering(self, signals):
         """Filters a time signal using a Gammatone filterbank.
@@ -213,8 +215,7 @@ class Sepsm(object):
             threshold.
 
         """
-        filtered_rms_mix = inner.noctave_filtering(mixture, self.cf,
-                                                   self.fs, width=3)
+        filtered_rms_mix = self.noct_filterbank.filter(mixture)
         return self._bands_above_thres(filtered_rms_mix)
 
     def _extract_env(self, channel_sigs):

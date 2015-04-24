@@ -56,7 +56,8 @@ def test_third_octave_filtering_of_noise_():
     target = np.array([ 151.66437785,  688.6881118 ])
     center_f = [63, 125]
     fs = 22050
-    rms_out = inner.noctave_filtering(x, center_f, fs, width=3)
+    filterbank = inner.RectangularFilterbank(fs, center_f, width=3)
+    rms_out = filterbank.filter(x)
     assert_allclose(rms_out, target, rtol=1e-4)
 
 
