@@ -118,7 +118,6 @@ class GammatoneFilterbank(object):
         min_bw = self.min_bw
 
         erb = ((cf / q) ** order + min_bw ** order) ** (1 / order)
-        print(self.fs)
         t = 1 / self.fs
         b = b * 2 * pi * erb
         a0 = t
