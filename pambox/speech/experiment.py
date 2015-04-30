@@ -5,6 +5,7 @@ from itertools import product
 import logging
 import os
 import os.path
+from functools import partial
 
 from IPython import parallel as ipyparallel
 import numpy as np
@@ -336,7 +337,6 @@ class Experiment(object):
 
         Returns
         -------
-        df : pd.Dataframe
             Pandas dataframe with the experimental results.
         """
 
@@ -622,7 +622,8 @@ class Experiment(object):
             df.loc[:, out_name] = df.loc[:, col].map(fc)
         return df
 
-    def srts_from_df(self, df, col='Intelligibility', srt_at=50):
+    def srts_from_df(self, df, col='Intelligibility', srt_at=50,
+                     model_srts=None):
         """Get dataframe with SRTs
 
         Parameters
@@ -633,30 +634,50 @@ class Experiment(object):
         col : string (optional)
             Name of the column to use for the SRT calculation. The default
             value is the 'Intelligibility' column.
-        srt_at : float (optional)
-            Value corresponding to the SRT. The default is 50 (%). This
-            parameter can be used to calculate SRT directly from other
-            metric, such as the SII. Simply set `srt_at` to the SII criterion.
-
+        srt_at : float, tuple (optional)
+            Value corresponding to the SRT. The default is 50 (%).
+        model_srts : dict
+            Overrides default ``srt_at`` for particular models. The dictionary
+            must be a tuple of the model name and model output: ('Model',
+            'Output')
         Returns
         -------
         out : Data frame
             Data frame, with an SRT column.
         """
-        groups = self._get_groups(df)
-        grouped = df.groupby(groups).mean()
-        # Get name of all groups, which was now the index.
-        # Remove the SNR column because it should not be a group
-        # when calculating the SRTs.
-        grp_for_int = list(set(grouped.index.names) - {'SNR'})
-        # Get the SNR values for the tranformation in intelligibility.
         snrs = df['SNR'].unique()
-        fc_to_srt = lambda y: int2srt(snrs, y, srt_at=srt_at)
+        averaging_groups = self._get_groups(df)
+        # Average across sentence
+        mean_df = df.groupby(averaging_groups).mean().reset_index()
 
-        grouped = grouped.reset_index()
-        return grouped.groupby(grp_for_int)[col].agg(
-            {'SRT': fc_to_srt}).reset_index()
+        # Join both columns as tuple
+        mean_df['model_output_pair'] = list(zip(mean_df['Model'],
+                                                mean_df['Output']))
+        model_output_pairs = mean_df.model_output_pair.unique()
 
+        # Set default criterion for all models
+        transformations = {pair: partial(int2srt, snrs, srt_at=srt_at)
+                           for pair in model_output_pairs}
+        # Override for specified models
+        if model_srts is not None:
+            for (model, output), criterion in model_srts.iteritems():
+                transformations[(model, output)] = partial(int2srt, snrs,
+                                                           srt_at=criterion)
+
+        # Replace Model and Output column with a single column for grouping.
+        condition_groups = list(set(averaging_groups) - {'Model', 'Output'}
+                                | {'model_output_pair'})
+        agg_groups = list(set(condition_groups) - {'model_output_pair', 'SNR'})
+        srts = mean_df.set_index(condition_groups) \
+            .unstack('model_output_pair')[col].reset_index() \
+            .groupby(agg_groups).agg(transformations)
+        srts = pd.melt(srts.reset_index(),
+                       id_vars=agg_groups,
+                       var_name=['Model', 'Output'],
+                       value_name='SRT'
+        )
+        srts.sort('Model', inplace=True)
+        return srts, mean_df
 
 class AdaptiveExperiment(Experiment):
     """
