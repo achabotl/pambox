@@ -677,7 +677,7 @@ class Experiment(object):
                        value_name='SRT'
         )
         srts.sort('Model', inplace=True)
-        return srts, mean_df
+        return srts
 
 class AdaptiveExperiment(Experiment):
     """
