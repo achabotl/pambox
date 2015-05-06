@@ -66,6 +66,7 @@ class Sepsm(object):
                  , downsamp_factor=10
                  , noise_floor=0.01
                  , snr_env_limit=0.001
+                 , name='sEPSM'
                  ):
         self.fs = fs
         self.cf = cf
@@ -74,7 +75,7 @@ class Sepsm(object):
         self.noise_floor = noise_floor
         self.snr_env_limit = snr_env_limit
         self.ht_diffuse = self._default_ht_diffuse
-        self.name = 'Sepsm'
+        self.name = name
         self.mod_fb = \
             central.EPSMModulationFilterbank(self.fs / self.downsamp_factor,
                                              self.modf)
