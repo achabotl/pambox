@@ -294,14 +294,14 @@ class Experiment(object):
         else:
             rc = ipyparallel.Client()
         all_engines = rc[:]
-        lview = rc.load_balanced_view()
-        lview.block = False
-        rc[:].use_dill()
-        lview.apply(np.random.seed, args=(seed,))
+        all_engines.use_dill()
         with all_engines.sync_imports():
             import os
-            rc[:]['cwd'] = os.getcwd()
-            rc[:].execute("import os; os.chdir(cwd)")
+        all_engines.apply(os.chdir, os.getcwd())
+
+        lview = rc.load_balanced_view()
+        lview.block = True
+        lview.apply(np.random.seed, seed)
 
         try:
             iter(self.models)
