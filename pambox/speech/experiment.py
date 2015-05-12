@@ -390,9 +390,10 @@ class Experiment(object):
             True, we use IPython.parallel to run the experiment in parallel.
             We try to connect to the current profile.
         output_filename : string
-            Name of the output file where the results will be saved. If it is
-            `None`, the default is to use the current date and time. The
-            default is `None`.
+            Name of the output file where the results will be saved. If the
+            filename contains directories, they will be created in
+            self.output_path. If it is `None`, the default is to use the
+            current date and time. The default is `None`.
 
         Returns
         -------
@@ -427,7 +428,8 @@ class Experiment(object):
         Returns
         -------
         filepath : str
-            Path to the CSV file.
+            Path to the CSV file. Can contain directories, which will be
+            created if necessary.
 
         Raises
         ------
@@ -453,6 +455,10 @@ class Experiment(object):
                 log.error("Could not create directory %s", self.output_path)
                 log.error(e)
 
+        if '/' in filename:
+            dirs_of_filename = os.path.split(filename)[0]
+            os.makedirs(os.path.join(self.output_path, dirs_of_filename))
+
         output_file = os.path.join(self.output_path, filename)
         try:
             df.drop(self._key_full_pred, axis=1).to_csv(output_file)
@@ -461,9 +467,8 @@ class Experiment(object):
             try:
                 alternate_path = os.path.join(os.getcwd(), filename)
                 err_msg = 'Could not write CSV file to path: {}, tried to ' \
-                          'save to ' \
-                          '{} in order not to loose data.'.format(
-                    output_file, alternate_path)
+                          'save to {} in order not to loose data.'\
+                    .format(output_file, alternate_path)
                 log.error(err_msg)
                 raise
             finally:
