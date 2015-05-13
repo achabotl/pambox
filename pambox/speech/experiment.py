@@ -666,8 +666,9 @@ class Experiment(object):
         # Override for specified models
         if model_srts is not None:
             for (model, output), criterion in model_srts.iteritems():
-                transformations[(model, output)] = partial(int2srt, snrs,
-                                                           srt_at=criterion)
+                if (model, output) in model_output_pairs:
+                    transformations[(model, output)] = partial(int2srt, snrs,
+                                                               srt_at=criterion)
 
         # Replace Model and Output column with a single column for grouping.
         condition_groups = list(set(averaging_groups) - {'Model', 'Output'}
