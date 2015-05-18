@@ -14,73 +14,61 @@ from pambox.utils import fftfilt
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 
-def test_dbspl():
-    tests = (
-        (([0], True, 0, -1), -np.inf),
-        (([1], False, 0, -1), 0),
-        (([1], False, 100, -1), 100),
-        (([1], True, 0, -1), -np.inf),
-        (([10], False, 0, -1), 20),
-        (([10, 10], False, 0, -1), 20),
-        (([10, 10], False, 0, 1), [20, 20]),
-    )
-    for (x, ac, offset, axis), target in tests:
-        assert_allclose(utils.dbspl(x, ac=ac, offset=offset,
-                                               axis=axis), target)
+@pytest.mark.parametrize('x, ac, offset, axis, target', [
+    ([0], True, 0, -1, -np.inf),
+    ([1], False, 0, -1, 0),
+    ([1], False, 100, -1, 100),
+    ([1], True, 0, -1, -np.inf),
+    ([10], False, 0, -1, 20),
+    ([10, 10], False, 0, -1, 20),
+    ([10, 10], False, 0, 1, [20, 20]),
+])
+def test_dbspl(x, ac, offset, axis, target):
+    assert_allclose(utils.dbspl(x, ac=ac, offset=offset,
+                                axis=axis), target)
 
 
-def test_rms_do_ac():
-    # AC = True
-    assert utils.rms([0, 1, 2, 3, 4, 5, 6], ac=True) == 2
-    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6]], ac=True, axis=0),
-                    [0, 0, 0, 0, 0, 0, 0]
-    )
-    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6]], ac=True, axis=1), 2)
-    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6],
-                               [0, 1, 2, 3, 4, 5, 6]],
-                               ac=True),
-                    [2, 2])
-
-    # AC = False
-    assert_allclose(utils.rms([0, 1, 2, 3, 4, 5, 6], ac=False),
-                    3.60555128)
-    assert_allclose(utils.rms([[0, 1, 2, 3, 4, 5, 6],
-                               [0, 1, 2, 3, 4, 5, 6]],
-                              ac=False),
-                    [3.60555128, 3.60555128],
-                    rtol=1e-6)
+@pytest.mark.parametrize('x, ac, axis, target', [
+    ([0, 1, 2, 3, 4, 5, 6], True, -1, 2),
+    ([[0, 1, 2, 3, 4, 5, 6]], True, 0, [0, 0, 0, 0, 0, 0, 0]),
+    ([[0, 1, 2, 3, 4, 5, 6]], True, 1, 2),
+    ([[0, 1, 2, 3, 4, 5, 6], [0, 1, 2, 3, 4, 5, 6]], True, -1, [2, 2]),
+    ([0, 1, 2, 3, 4, 5, 6], False, -1, 3.60555128),
+    ([[0, 1, 2, 3, 4, 5, 6], [0, 1, 2, 3, 4, 5, 6]], False, -1,
+     [3.60555128, 3.60555128]),
+])
+def test_rms_do_ac(x, ac, axis, target):
+    out = utils.rms(x, ac=ac, axis=axis)
+    assert_allclose(out, target)
 
 
-def test_rms():
-    tests = (
-        (([0], True, -1), 0),
-        (([1], True, -1), 0),
-        (([1], False, -1), 1),
-        (([-1], False, -1), 1),
-        (([-1], True, -1), 0),
-        (([10, 10], False, -1), 10),
-        (([10, 10], True, -1), 0),
-        (([[0, 1], [0, 1]], True, -1), [0.5, 0.5]),
-        (([[0, 1], [0, 1]], False, -1), [0.70710678, 0.70710678]),
-        (([[0, 1], [0, 1]], True, 0), [0, 0]),
-        (([[0, 1], [0, 1]], False, 0), [0, 1]),
-        (([[0, 1], [0, 1]], True, 1), [0.5, 0.5]),
-        (([[0, 1], [0, 1]], False, 1), [0.70710678, 0.70710678]),
-    )
-    for (x, ac, axis), target in tests:
-        assert_allclose(utils.rms(x, ac=ac, axis=axis), target)
+@pytest.mark.parametrize('x, ac, axis, target', [
+    ([0], True, -1, 0),
+    ([1], True, -1, 0),
+    ([1], False, -1, 1),
+    ([-1], False, -1, 1),
+    ([-1], True, -1, 0),
+    ([10, 10], False, -1, 10),
+    ([10, 10], True, -1, 0),
+    ([[0, 1], [0, 1]], True, -1, [0.5, 0.5]),
+    ([[0, 1], [0, 1]], False, -1, [0.70710678, 0.70710678]),
+    ([[0, 1], [0, 1]], True, 0, [0, 0]),
+    ([[0, 1], [0, 1]], False, 0, [0, 1]),
+    ([[0, 1], [0, 1]], True, 1, [0.5, 0.5]),
+    ([[0, 1], [0, 1]], False, 1, [0.70710678, 0.70710678]),
+])
+def test_rms(x, ac, axis, target):
+    assert_allclose(utils.rms(x, ac=ac, axis=axis), target)
 
 
-def test_set_level():
-    tests = (
-        ((0, 1), 65, 100, (0., 0.02514867)),
-        ((0, 1), 65, 0, (0., 2514.86685937)),
-        ((0, 1), 100, 100, (0., 1.41421356)),
-    )
-
-    for x, level, offset, target in tests:
-        y = utils.setdbspl(x, level, offset=offset)
-        assert_allclose(y, target, atol=1e-4)
+@pytest.mark.parametrize("x, level, offset, target", [
+    ((0, 1), 65, 100, (0., 0.02514867)),
+    ((0, 1), 65, 0, (0., 2514.86685937)),
+    ((0, 1), 100, 100, (0., 1.41421356)),
+])
+def test_set_level(x, level, offset, target):
+    y = utils.setdbspl(x, level, offset=offset)
+    assert_allclose(y, target, atol=1e-4)
 
 
 # Can't be done programmatically, because the exact third-octave spacing is not
@@ -115,16 +103,14 @@ def test_find_srt_when_srt_at_index_zero():
     assert 0 == utils.int2srt(x, y, srt_at=50)
 
 
-def test_make_same_length_with_padding():
-    tests = (
-        (([1], [1, 1]), ([1, 0], [1, 1])),
-        (([1, 1], [1, 1]), ([1, 1], [1, 1])),
-        (([1, 1], [1]), ([1, 1], [1, 0])),
-        (([1], [1, 1], False), ([1], [1])),
-    )
-
-    for inputs, targets in tests:
-        assert_allclose(utils.make_same_length(*inputs), targets)
+@pytest.mark.parametrize("inputs, targets", [
+    (([1], [1, 1]), ([1, 0], [1, 1])),
+    (([1, 1], [1, 1]), ([1, 1], [1, 1])),
+    (([1, 1], [1]), ([1, 1], [1, 0])),
+    (([1], [1, 1], False), ([1], [1])),
+])
+def test_make_same_length_with_padding(inputs, targets):
+    assert_allclose(utils.make_same_length(*inputs), targets)
 
 
 def test_psy_fn():
@@ -183,7 +169,7 @@ class _TestFFTFilt():
 
     def test_rank2_x_longer_than_b(self):
         pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
-                            reason="Type %s is not supported by fftpack" % self.dt)
+                           reason="Type %s is not supported by fftpack" % self.dt)
         # dec.knownfailureif(
         #     self.dt in [np.longdouble, np.longcomplex],
         #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
@@ -194,14 +180,14 @@ class _TestFFTFilt():
         b = np.array([1, 1]).astype(self.dt)
 
         y_r2 = np.array([[0, 1, 3], [3, 7, 9], [6, 13, 15], [9, 19, 21]],
-                           dtype=self.dt)
+                        dtype=self.dt)
 
         y = fftfilt(b, x)
         assert_allclose(y, y_r2)
 
     def test_rank2_b_longer_than_x(self):
         pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
-                            reason="Type %s is not supported by fftpack" % self.dt)
+                           reason="Type %s is not supported by fftpack" % self.dt)
         # dec.knownfailureif(
         #     self.dt in [np.longdouble, np.longcomplex],
         #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
@@ -220,7 +206,7 @@ class _TestFFTFilt():
 
     def test_b_rank2(self):
         pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
-                            reason="Type %s is not supported by fftpack" % self.dt)
+                           reason="Type %s is not supported by fftpack" % self.dt)
         # dec.knownfailureif(
         #     self.dt in [np.longdouble, np.longcomplex],
         #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
@@ -245,7 +231,7 @@ class _TestFFTFilt():
 
     def test_b_and_x_of_same_dim(self):
         pytest.mark.skipif(self.dt in [np.longdouble, np.longcomplex],
-                            reason="Type %s is not supported by fftpack" % self.dt)
+                           reason="Type %s is not supported by fftpack" % self.dt)
         # dec.knownfailureif(
         #     self.dt in [np.longdouble, np.longcomplex],
         #     "Type %s is not supported by fftpack" % self.dt)(lambda:  None)()
