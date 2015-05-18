@@ -34,29 +34,26 @@ def test_select_bands_above_threshold():
     assert_array_equal(bands_above_thres, target)
 
 
-def test_snr_env():
-    tests = [[0.001, [[0.], [0.]]],
-             [0.001, [[0.0001], [0]]],
-             [0.001, [[0.01], [1]]],
-             [0.001, [[0, 0], [0, 0]]],
-             [0.001, [[[0, 0],
-                       [0, 0]],
-                      [[0, 0],
-                       [0, 0]]]],
-             [0.001, [[[0, 0],
-                       [0, 0]],
-                      [[0, 0],
-                       [0, 0]]]]
-    ]
-
-    c = sepsm.Sepsm()
-    for target, (p_mix, p_noise) in tests:
-
-        snrenv, _ = c._snr_env(p_mix, p_noise)
-        assert_allclose(snrenv, target)
+@pytest.fixture
+def model():
+    return sepsm.Sepsm()
 
 
-def test_sepsm_prediction_snr_min9_db():
+@pytest.mark.parametrize("target, p_mix, p_noise", [
+    (0.001, (0., ), (0., )),
+    (0.001, (0.0001,), (0,)),
+    (0.001, (0.01,), (1,)),
+    (0.001, (0, 0), (0, 0)),
+    (0.001, ((0, 0), (0, 0)), ((0, 0), (0, 0))),
+    (0.001, ((0, 0), (0, 0)), ((0, 0), (0, 0))),
+])
+def test_snr_env(model, target, p_mix, p_noise):
+    snrenv, _ = model._snr_env(p_mix, p_noise)
+    assert_allclose(snrenv, target)
+
+
+@pytest.fixture
+def mix_and_noise_snr_min9_db():
     with open(os.path.join(__DATA_ROOT__, 'test_full_sepsm.csv')) as csv_file:
         data_file = csv.reader(csv_file)
         temp = next(data_file)
@@ -67,22 +64,25 @@ def test_sepsm_prediction_snr_min9_db():
         for i, (m, n) in enumerate(data_file):
             mix[i] = np.asarray(m, dtype=np.float)
             noise[i] = np.asarray(n, dtype=np.float)
+    return mix, noise
+
+
+def test_sepsm_prediction_snr_min9_db(model, mix_and_noise_snr_min9_db):
+    mix, noise = mix_and_noise_snr_min9_db
 
     target_snr_env = 9.57297
 
-    c = sepsm.Sepsm()
-    res = c.predict(mix, mix, noise)
+    res = model.predict(mix, mix, noise)
     assert_allclose(target_snr_env, res['p']['snr_env'], rtol=1e-3)
 
 
 @pytest.mark.slow
-def test_sepsm_predictions_snr_0_kappa_0_8():
+def test_sepsm_predictions_snr_0_kappa_0_8(model):
     mat = sio.loadmat(__DATA_ROOT__ + '/test_sepsm_spec_sub_0dB_kappa_0_8.mat',
                       squeeze_me=True, struct_as_record=False)
-    c = sepsm.Sepsm()
     for ii in range(3):
         mix = mat['mixtures'][ii]
         noise = mat['noises'][ii]
         target = mat['results'][ii].SNRenv
-        res = c.predict(mix, mix, noise)
+        res = model.predict(mix, mix, noise)
         assert_allclose(target, res['p']['snr_env'], rtol=8e-2)
