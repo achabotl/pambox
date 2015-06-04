@@ -49,6 +49,24 @@ class Experiment(object):
         the form YYYYMMDD-HHMMSS.
 
     """
+    _key_full_pred = 'Full Prediction'
+    _key_value = 'Value'
+    _key_output = 'Output'
+    _key_dist_params = "Distortion params"
+    _key_models = 'Model'
+    _key_snr = 'SNR'
+    _key_material = 'Material'
+    _key_sent = 'Sentence number'
+    _all_keys = [
+        _key_full_pred,
+        _key_value,
+        _key_dist_params,
+        _key_models,
+        _key_snr,
+        _key_sent,
+        _key_material
+    ]
+
 
     def __init__(
             self,
@@ -77,23 +95,6 @@ class Experiment(object):
         self.write = write
         self.output_path = output_path
         self.adjust_levels_bef_proc = adjust_levels_bef_proc
-        self._key_full_pred = 'Full Prediction'
-        self._key_value = 'Value'
-        self._key_output = 'Output'
-        self._key_dist_params = "Distortion params"
-        self._key_models = 'Model'
-        self._key_snr = 'SNR'
-        self._key_material = 'Material'
-        self._key_sent = 'Sentence number'
-        self._all_keys = [
-            self._key_full_pred,
-            self._key_value,
-            self._key_dist_params,
-            self._key_models,
-            self._key_snr,
-            self._key_sent,
-            self._key_material
-        ]
 
 
     def preprocessing(self, target, masker, snr, params):
@@ -497,7 +498,8 @@ class Experiment(object):
         """
         return model.predict(target, mix, masker)
 
-    def _get_groups(self, df, var=None):
+    @classmethod
+    def _get_groups(cls, df, var=None):
         """Get of variables for plotting.
 
         Ignored variables should be:
@@ -511,23 +513,23 @@ class Experiment(object):
 
         # Use the single "Distortion params" column if available and not
         # None. Else, consider all "extra columns" as parameters.
-        if self._key_dist_params in df.columns:
+        if cls._key_dist_params in df.columns:
             # Use the distortion parameters only if it's not None.
-            if df[self._key_dist_params].unique().any():
-                params = [self._key_dist_params]
+            if df[cls._key_dist_params].unique().any():
+                params = [cls._key_dist_params]
             else:
                 params = []
         else:
-            params = list(set(df.columns) - set(self._all_keys)
+            params = list(set(df.columns) - set(cls._all_keys)
                           - {'Intelligibility'})
         # If var is defined, remove it from the groups
         if var:
             params = list(set(params) - set([var]))
         log.debug("Found the following parameter keys %s.", params)
         if len(np.unique(df[params])):
-            groups = params + [self._key_snr, self._key_models]
+            groups = params + [cls._key_snr, cls._key_models]
         else:
-            groups = [self._key_snr, self._key_models]
+            groups = [cls._key_snr, cls._key_models]
         log.debug("The plotting groups are: %s.", groups)
         return groups
 
@@ -567,8 +569,9 @@ class Experiment(object):
         plt.ylabel(ylabel)
         return ax
 
+    @classmethod
     def pred_to_pc(
-            self,
+            cls,
             df,
             fc,
             col='Value',
@@ -608,26 +611,27 @@ class Experiment(object):
         try:
             df[out_name]
         except KeyError:
-            df[out_name] = np.nan
+            df.loc[:, out_name] = np.nan
 
         if models:
             if isinstance(models, list):
                 for model in models:
-                    df.loc[df[self._key_models] == model, out_name] \
-                        = df.loc[df[self._key_models] == model, col].map(fc)
+                    df.loc[df[cls._key_models] == model, out_name] \
+                        = df.loc[df[cls._key_models] == model, col].map(fc)
             elif isinstance(models, dict):
                 for model, v in six.iteritems(models):
-                    key = (df[self._key_models] == model) & (
-                        df[self._key_output] == v)
+                    key = (df[cls._key_models] == model) & (
+                        df[cls._key_output] == v)
                     df.loc[key, out_name] = df.loc[key, col].map(fc)
             else:
-                df.loc[df[self._key_models] == models, out_name] = \
-                    df.loc[df[self._key_models] == models, col].map(fc)
+                df.loc[df[cls._key_models] == models, out_name] = \
+                    df.loc[df[cls._key_models] == models, col].map(fc)
         else:
             df.loc[:, out_name] = df.loc[:, col].map(fc)
         return df
 
-    def srts_from_df(self, df, col='Intelligibility', srt_at=50,
+    @classmethod
+    def srts_from_df(cls, df, col='Intelligibility', srt_at=50,
                      model_srts=None):
         """Get dataframe with SRTs
 
@@ -651,7 +655,7 @@ class Experiment(object):
             Data frame, with an SRT column.
         """
         snrs = df['SNR'].unique()
-        averaging_groups = self._get_groups(df)
+        averaging_groups = cls._get_groups(df)
         # Average across sentence
         mean_df = df.groupby(averaging_groups).mean().reset_index()
 
