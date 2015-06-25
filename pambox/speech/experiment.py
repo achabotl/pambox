@@ -611,7 +611,7 @@ class Experiment(object):
         try:
             df[out_name]
         except KeyError:
-            df.loc[:, out_name] = np.nan
+            df.loc[out_name] = pd.Series(np.zeros(len(df)))
 
         if models:
             if isinstance(models, list):
