@@ -27,7 +27,7 @@ class TestExperiment(object):
         assert_allclose(target, exp_target, atol=1e-6)
         assert_allclose(masker, exp_masker, atol=1e-6)
 
-
+    @classmethod
     def distort_passthrough(target, masker, *args, **kwargs):
         return target, masker
 
