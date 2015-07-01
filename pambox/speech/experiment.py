@@ -616,13 +616,14 @@ class Experiment(object):
         if models:
             if isinstance(models, list):
                 for model in models:
-                    df.loc[df[cls._key_models] == model, out_name] \
-                        = df.loc[df[cls._key_models] == model, col].map(fc)
+                    value = np.asarray(df.loc[df[cls._key_models] == model, col])
+                    df.loc[df[cls._key_models] == model, out_name]  = fc(value)
             elif isinstance(models, dict):
                 for model, v in six.iteritems(models):
                     key = (df[cls._key_models] == model) & (
                         df[cls._key_output] == v)
-                    df.loc[key, out_name] = df.loc[key, col].map(fc)
+                    value = np.asarray(df.loc[key, col])
+                    df.loc[key, out_name] = fc(value)
             else:
                 df.loc[df[cls._key_models] == models, out_name] = \
                     df.loc[df[cls._key_models] == models, col].map(fc)
