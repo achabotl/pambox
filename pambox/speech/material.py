@@ -88,9 +88,13 @@ class Material(object):
             return sent
 
     def files_list(self):
-        """Return a list of all the files in the corpus.
+        """Return a list of all the .wav files in the `path_to_sentences`
+        directory.
 
-        :return: list of str, list of all CRM files.
+        Returns
+        -------
+        files : list
+            List of all files.
         """
         path = os.path.join(self.path_to_sentences, '')
         log.info("Listing files from directory: %s", path)
