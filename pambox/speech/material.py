@@ -92,7 +92,7 @@ class Material(object):
 
         :return: list of str, list of all CRM files.
         """
-        path = os.path.join(self.path_to_sentences)
+        path = os.path.join(self.path_to_sentences, '')
         log.info("Listing files from directory: %s", path)
         return [os.path.basename(each) for each in glob.glob(path + '*' +
                 self._audio_ext)]
