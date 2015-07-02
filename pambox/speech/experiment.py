@@ -526,7 +526,7 @@ class Experiment(object):
         if var:
             params = list(set(params) - set([var]))
         log.debug("Found the following parameter keys %s.", params)
-        if np.unique(df[params]):
+        if len(np.unique(df[params])):
             groups = params + [cls._key_snr, cls._key_models]
         else:
             groups = [cls._key_snr, cls._key_models]
