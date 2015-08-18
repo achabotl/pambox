@@ -46,8 +46,12 @@ class MrSepsm(Sepsm):
 
     # Default center frequencies of the modulation filterbank.
     _default_modf = (1., 2., 4., 8., 16., 32., 64., 128., 256.)
+    _default_center_cf = (63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630,
+                          800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000,
+                          6300, 8000)
 
-    def __init__(self, fs=22050, cf=Sepsm._default_center_cf,
+
+    def __init__(self, fs=22050, cf=_default_center_cf,
                  modf=_default_modf,
                  downsamp_factor=10,
                  noise_floor=0.001,
@@ -57,8 +61,8 @@ class MrSepsm(Sepsm):
                  name='MrSepsm',
                  output_time_signals=False
                  ):
-        Sepsm.__init__(self, fs, cf, modf, downsamp_factor, noise_floor,
-                       snr_env_limit)
+        super(MrSepsm, self).__init__(fs, cf, modf, downsamp_factor,
+                                      noise_floor, snr_env_limit)
         self.min_win = min_win
         self.name = name
         self.snr_env_ceil = snr_env_ceil
