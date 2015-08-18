@@ -299,6 +299,7 @@ class Experiment(object):
         with all_engines.sync_imports():
             import os
         all_engines.apply(os.chdir, os.getcwd())
+	all_engines.execute("os.environ['MKL_NUM_THREADS']='1'")
 
         lview = rc.load_balanced_view()
         lview.block = True
