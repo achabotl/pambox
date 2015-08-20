@@ -250,9 +250,8 @@ class Experiment(object):
         """
         return model.predict(target, mix, masker)
 
-    def _predict(self, ii_and_target, snr, model, params):
-        i_target, target = ii_and_target
-        masker = self.next_masker(target, params)
+    def _predict(self, ii_target_params_masker, snr, model):
+        i_target, target, params, masker = ii_target_params_masker
 
         target, mix, masker = self.preprocessing(
             target,
@@ -313,13 +312,7 @@ class Experiment(object):
         # Initialize the dataframe in which the results are saved.
         df = pd.DataFrame()
 
-        targets = self.material.load_files(n)
-        conditions = product(
-            enumerate(targets),
-            self.snrs,
-            self.models,
-            self.dist_params
-        )
+        conditions = list(self._create_conditions_matrix(n))
         lview_res = all_engines.map(self._predict, *zip(*conditions))
 
         for each in lview_res:
@@ -344,18 +337,11 @@ class Experiment(object):
 
         np.random.seed(seed)
 
-        targets = self.material.load_files(n)
+        conditions = self._create_conditions_matrix(n)
         # Initialize the dataframe in which the results are saved.
         df = pd.DataFrame()
-        for ii, ((i_target, target), params, snr, model) \
-                in enumerate(product(
-                enumerate(targets),
-                self.dist_params,
-                self.snrs,
-                self.models
-        )):
+        for ii, ((i_target, target, params, masker), snr, model) in enumerate(conditions):
             log.debug("Running with parameters {}".format(params))
-            masker = self.next_masker(target, params)
 
             target, mix, masker = self.preprocessing(
                 target,
@@ -376,6 +362,16 @@ class Experiment(object):
                 params
             )
         return df
+
+    def _create_conditions_matrix(self, n):
+        targets = self.material.load_files(n)
+        t_p_m = []
+        for (i_target, target), p in product(enumerate(targets),
+                                             self.dist_params):
+            masker = self.next_masker(target, p)
+            t_p_m.append((i_target, target, p, masker))
+        conditions = (each for each in product(t_p_m, self.snrs, self.models))
+        return conditions
 
     def run(self, n=None, seed=0, parallel=False, profile=None,
             output_filename=None):
