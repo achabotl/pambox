@@ -294,6 +294,7 @@ class Experiment(object):
         else:
             rc = ipyparallel.Client()
         all_engines = rc[:]
+        log.info('Running parallel experiment on {} cores.'.format(len(all_engines)))
         all_engines.use_dill()
         with all_engines.sync_imports():
             import os
