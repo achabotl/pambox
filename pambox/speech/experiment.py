@@ -536,7 +536,8 @@ class Experiment(object):
                      var=None,
                      xlabel='SNR (dB)',
                      ylabel='% Intelligibility',
-                     ax=None
+                     ax=None,
+                     **kwargs
     ):
         df = df.convert_objects()
         # Drop the column with the full prediction results
@@ -557,7 +558,7 @@ class Experiment(object):
                 var = self._key_value
         log.debug("Plotting the variable `%s`.", var)
 
-        ax = grouped_cols.xs(var).plot(ax=ax)
+        ax = grouped_cols.xs(var).plot(ax=ax, **kwargs)
         if var == 'Intelligibility':
             log.debug("Setting the limits to intelligibility.")
             plt.ylim((0, 100))
