@@ -10,6 +10,7 @@ Classes
 
 """
 from __future__ import division, print_function, absolute_import
+import logging
 
 import numpy as np
 from numpy import pi
@@ -27,6 +28,9 @@ except AttributeError:
         from numpy.fft import rfft, irfft
 from scipy.optimize import leastsq
 from scipy.stats import norm
+
+
+log = logging.getLogger(__name__)
 
 
 class IdealObs(object):
@@ -80,7 +84,7 @@ class IdealObs(object):
         """
         return {'k': self.k, 'q': self.q, 'sigma_s': self.sigma_s, 'm': self.m}
 
-    def fit_obs(self, values, pcdata, sigma_s=None, m=None):
+    def fit_obs(self, values, pcdata, sigma_s=None, m=None, tries=10):
         """Finds the parameters of the ideal observer.
 
         Finds the paramaters `k`, `q`, and `sigma_s`, that minimize the
@@ -104,6 +108,9 @@ class IdealObs(object):
              (Default value = None)
         m : float, optional
              (Default value = None)
+        tries : int, optional
+            How many attempts to fit the observer if the start values do not
+            converge. The default is 10 times.
 
         Returns
         -------
@@ -111,7 +118,10 @@ class IdealObs(object):
 
         """
 
-        if not m:
+        values = np.asarray(values)
+        pcdata = np.asarray(pcdata)
+
+        if m is None:
             m = self.m
         else:
             self.m = m
@@ -119,7 +129,7 @@ class IdealObs(object):
         # Set default values for optimization
         p0 = [self.k, self.q, self.sigma_s]
         fixed_params = {'m': m}
-        if sigma_s:
+        if sigma_s is not None:
             p0 = p0[:2]
             fixed_params['sigma_s'] = sigma_s
 
@@ -136,12 +146,20 @@ class IdealObs(object):
             def errfc(p, fixed):
                 return self._transform(values, *p, **fixed) - pcdata
 
-        res = leastsq(errfc, p0, args=fixed_params)[0]
+        for try_id in range(tries):
+            (x, _, _, errmsg, ier) = leastsq(errfc, p0, args=fixed_params,
+                                             maxfev=10000, full_output=True)
+            if ier in [1, 2, 3, 4]:
+                break
+            else:
+                p0 = 2 * np.random.random_sample(len(p0))
+                log.error("Optimal parameters not found: " + errmsg)
+
         if sigma_s:
-            self.k, self.q = res
+            self.k, self.q = x
             self.sigma_s = sigma_s
         else:
-            self.k, self.q, self.sigma_s = res
+            self.k, self.q, self.sigma_s = x
         return self
 
     @staticmethod
