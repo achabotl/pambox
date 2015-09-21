@@ -111,6 +111,9 @@ class IdealObs(object):
 
         """
 
+        values = np.asarray(values)
+        pcdata = np.asarray(pcdata)
+
         if not m:
             m = self.m
         else:
