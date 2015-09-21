@@ -10,6 +10,7 @@ Classes
 
 """
 from __future__ import division, print_function, absolute_import
+import logging
 
 import numpy as np
 from numpy import pi
@@ -27,6 +28,9 @@ except AttributeError:
         from numpy.fft import rfft, irfft
 from scipy.optimize import leastsq
 from scipy.stats import norm
+
+
+log = logging.getLogger(__name__)
 
 
 class IdealObs(object):
@@ -149,6 +153,7 @@ class IdealObs(object):
                 break
             else:
                 p0 = 2 * np.random.random_sample(len(p0))
+                log.error("Optimal parameters not found: " + errmsg)
 
         if sigma_s:
             self.k, self.q = x
