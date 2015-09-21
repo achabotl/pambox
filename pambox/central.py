@@ -114,7 +114,7 @@ class IdealObs(object):
         values = np.asarray(values)
         pcdata = np.asarray(pcdata)
 
-        if not m:
+        if m is None:
             m = self.m
         else:
             self.m = m
@@ -122,7 +122,7 @@ class IdealObs(object):
         # Set default values for optimization
         p0 = [self.k, self.q, self.sigma_s]
         fixed_params = {'m': m}
-        if sigma_s:
+        if sigma_s is not None:
             p0 = p0[:2]
             fixed_params['sigma_s'] = sigma_s
 
