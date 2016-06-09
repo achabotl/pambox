@@ -32,7 +32,7 @@ FS = np.asarray([22050.])
 
 
 def erb_bandwidth(fc):
-    """Bandwith or an ERB.
+    """Bandwidth of an ERB.
 
     Parameters
     ----------
