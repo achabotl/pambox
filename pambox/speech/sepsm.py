@@ -9,10 +9,6 @@ from six.moves import zip
 
 from pambox import central
 from pambox import inner
-try:
-    import seaborn
-except ImportError:
-    pass
 
 
 class Sepsm(object):
