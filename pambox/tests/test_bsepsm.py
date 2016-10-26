@@ -9,6 +9,7 @@ import pytest
 
 from pambox.speech import BsEPSM
 
+
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')
 
 

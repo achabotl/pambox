@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
-import logging
 from collections import namedtuple
+import logging
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -8,7 +8,7 @@ from matplotlib.pyplot import plot, xlabel, ylabel, legend
 from scipy.signal import butter, filtfilt
 
 from pambox.central import EC
-from .mrsepsm import MrSepsm
+from pambox.speech import MrSepsm
 
 log = logging.getLogger(__name__)
 

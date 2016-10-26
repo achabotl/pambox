@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
-
 import logging
 
 import numpy as np
 from numpy import pi
-
 try:
     _ = np.use_fastnumpy  # Use Enthought MKL optimizations
     from numpy.fft import fft, ifft, rfft, irfft

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 from six.moves import zip
-from pambox.speech.sepsm import Sepsm
-from pambox import central
-from pambox import inner
+
+from pambox.speech import Sepsm
 
 
 class MrSepsm(Sepsm):

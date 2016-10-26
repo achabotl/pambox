@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 from datetime import datetime
+from functools import partial
 from itertools import product
 import logging
 import os
 import os.path
-from functools import partial
 
 from IPython import parallel as ipyparallel
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import six
 from six.moves import zip
 
-from ..utils import make_same_length, setdbspl, int2srt
-import six
+from pambox.utils import make_same_length, setdbspl, int2srt
 
 
 log = logging.getLogger(__name__)

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 import os.path
+
+import numpy as np
 from numpy.testing import assert_allclose
 import pytest
+
 from pambox import central
-import numpy as np
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')

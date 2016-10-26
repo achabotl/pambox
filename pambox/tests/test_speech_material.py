@@ -2,7 +2,6 @@
 from __future__ import absolute_import, division, print_function
 import os.path
 
-import pytest
 import numpy as np
 from numpy.testing import assert_allclose, dec, TestCase
 

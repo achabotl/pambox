@@ -13,7 +13,7 @@ import numpy as np
 import scipy.io.wavfile
 from six.moves import zip, range
 
-from .. import utils
+from pambox import utils
 
 log = logging.getLogger(__name__)
 

@@ -11,13 +11,13 @@ Classes
 """
 from __future__ import absolute_import, division, print_function
 
-from .decision_metrics import IdealObs
-from .ec import EC
-from .modulation_filterbanks import EPSMModulationFilterbank
-
 __all__ = (
     'EC',
     'EPSMModulationFilterbank'
     'IdealObs',
 )
+
+from .decision_metrics import IdealObs
+from .ec import EC
+from .modulation_filterbanks import EPSMModulationFilterbank
 

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
-import os.path
 import csv
-import pytest
-from scipy.io import wavfile
+import os.path
+
 import numpy as np
-import scipy.io as sio
-from pambox.speech import sepsm
 from numpy.testing import assert_allclose, assert_array_equal
+import scipy.io as sio
+import pytest
+
+from pambox.speech import sepsm
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')

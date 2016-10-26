@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 import os.path
-from pandas import read_csv
-from pambox.speech.sii import Sii
+
 import numpy as np
 from numpy.testing import assert_allclose
+from pandas import read_csv
+
+from pambox.speech.sii import Sii
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')

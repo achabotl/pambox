@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 import os.path
-import pytest
-from pambox.speech import MrSepsm
-import scipy.io as sio
+
 import numpy as np
 from numpy.testing import assert_allclose
+import scipy.io as sio
 from six.moves import zip
+import pytest
+
+from pambox.speech import MrSepsm
 
 
 __DATA_ROOT__ = os.path.join(os.path.dirname(__file__), 'data')

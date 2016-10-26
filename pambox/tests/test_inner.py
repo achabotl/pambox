@@ -2,11 +2,11 @@
 from __future__ import absolute_import, division, print_function
 import csv
 import os.path
-import pytest
 
 import numpy as np
 import scipy.io as sio
 from numpy.testing import assert_allclose
+import pytest
 
 from pambox import inner
 

@@ -5,18 +5,19 @@ around speech materials.
 """
 from __future__ import absolute_import, division, print_function
 
-from .bsepsm import BsEPSM
-from .sepsm import Sepsm
-from .mrsepsm import MrSepsm
-from .sii import Sii
-from .material import Material
-from .experiment import Experiment
-
 __all__ = [
-    'BsEPSM',
     'Sepsm',
     'MrSepsm',
+    'BsEPSM',
     'Sii',
     'Material',
     'Experiment'
 ]
+
+from .experiment import Experiment
+from .material import Material
+from .sepsm import Sepsm
+from .mrsepsm import MrSepsm
+from .sii import Sii
+from .bsepsm import BsEPSM
+
