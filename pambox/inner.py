@@ -2,7 +2,7 @@
 """
 :mod:`pambox.inner` regroups processes of the inner.
 """
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
 from numpy import exp, sin, cos, sqrt, abs, ones, pi

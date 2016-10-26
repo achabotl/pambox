@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function
+from __future__ import absolute_import, division, print_function
 import os.path
 from pandas import read_csv
 from pambox.speech.sii import Sii

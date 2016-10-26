@@ -3,7 +3,7 @@
 The :mod:`pambox.speech.material` module gathers classes to facilitate
 working with different speech materials.
 """
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 import glob
 import logging
 import os

@@ -3,7 +3,7 @@ The :mod:`pambox.speech` module gather speech intelligibility
 models, a framework to run intelligibility experiments, as well as a wrapper
 around speech materials.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from .bsepsm import BsEPSM
 from .sepsm import Sepsm
