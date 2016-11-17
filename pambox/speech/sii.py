@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
+from numbers import Number
 
 import numpy as np
 from numpy import log10, sum, asarray, zeros, ones
@@ -10,8 +11,8 @@ class SII(object):
 
     Parameters
     ----------
-    T : array_like, optional, (Default is 0)
-        Hearing threshold. 18 values in dB HL.
+    T : float or array_like, optional, (Default is 0)
+        Hearing threshold. 18 values in dB HL or a single value.
     I : int, optional, (Default is 0, normal speech)
         Band importance function selector. See Notes section below.
 
@@ -39,14 +40,16 @@ class SII(object):
         Index (1997).
     """
 
-    def __init__(self, T=zeros(18), I=0):
-        T = asarray(T)
+    def __init__(self, T=0., I=0):
+        T = np.atleast_1d(T)
 
+        if len(T) == 1:
+            T = np.ones(18) * T
         if len(T) != 18:
             raise ValueError("The length of T should be 18.")
         if I not in list(range(7)):
             raise ValueError("Band importance should be an integer between 0 \
-                             and 1.")
+                             and 6 inclusive.")
         self.T = asarray(T)
         self.I = int(I)
 
@@ -148,7 +151,7 @@ class SII(object):
 
         Parameters
         ----------
-        clean: array_like
+        clean: array_like or float
             Speech level in dB SPL. Equivalent to "E" in [aansi1997sii]_.
         mix : ignored
             This argument is present only to conform to the API.
@@ -157,10 +160,12 @@ class SII(object):
 
         Returns
         -------
-        ndarray
-            Predicted SII value.
+        res: dict
+            Dictionary with prediction values under res['p']['sii'].
         """
-        if isinstance(noise, int):
+        if isinstance(clean, Number):
+            clean = clean * ones(18)
+        if isinstance(noise, Number):
             noise = noise * ones(18)
 
         clean[np.isnan(clean)] = 0
