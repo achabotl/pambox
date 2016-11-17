@@ -9,7 +9,7 @@ __all__ = [
     'Sepsm',
     'MrSepsm',
     'BsEPSM',
-    'Sii',
+    'SII',
     'Material',
     'Experiment'
 ]
@@ -18,6 +18,6 @@ from .experiment import Experiment
 from .material import Material
 from .sepsm import Sepsm
 from .mrsepsm import MrSepsm
-from .sii import Sii
+from .sii import SII
 from .bsepsm import BsEPSM
 

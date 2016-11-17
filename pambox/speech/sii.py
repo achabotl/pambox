@@ -5,7 +5,7 @@ import numpy as np
 from numpy import log10, sum, asarray, zeros, ones
 
 
-class Sii(object):
+class SII(object):
     """Speech intelligibility index model.
 
     Parameters
