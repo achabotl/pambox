@@ -142,33 +142,35 @@ class Sii(object):
             raise ValueError("Vocal error string not recognized.")
         return self.Ei[:, efforts[vcl_effort]]
 
-    def predict_spec(self, E, N=-50):
+    def predict_spec(self, clean=None, mix=None, noise=-50):
         """Predicts intelligibility based on the spectra levels of the speech
         and the noise.
 
         Parameters
         ----------
-        E: array_like
-            Speech level in dB SPL.
-        N: array_like, optional, (Default is -50 dB SPL)
-            Noise level in dB SPL.
+        clean: array_like
+            Speech level in dB SPL. Equivalent to "E" in [aansi1997sii]_.
+        mix : ignored
+            This argument is present only to conform to the API.
+        noise: array_like, optional, (Default is -50 dB SPL)
+            Noise level in dB SPL. Equivalent to N in [aansi1997sii]_.
 
         Returns
         -------
         ndarray
             Predicted SII value.
         """
-        if isinstance(N, int):
-            N = N * ones(18)
+        if isinstance(noise, int):
+            noise = noise * ones(18)
 
-        E[np.isnan(E)] = 0
-        N[np.isnan(N)] = 0
+        clean[np.isnan(clean)] = 0
+        noise[np.isnan(noise)] = 0
 
         # Self-Speech Masking Spectrum (4.3.2.1 Eq. 5)
-        V = E - 24.
+        V = clean - 24.
 
         # 4.3.2.2
-        B = np.fmax(V, N)
+        B = np.fmax(V, noise)
 
         # Calculate slope parameter Ci (4.3.2.3 Eq. 7)
         C = 0.6 * (B + 10. * log10(self.f) - 6.353) - 80.
@@ -179,19 +181,19 @@ class Sii(object):
 
         # Calculate Equivalent Masking Spectrum Level (4.3.2.5 Eq. 9)
         for i in range(1, 18):
-            Z[i] = 10. * log10(10 ** (0.1 * N[i])
-                               + sum(10. ** (0.1 * (B[0:i] + 3.32 * C[0:i]
-                                                    * log10(0.89 * self.f[i]
-                                                            / self.f[0:i])))))
+            Z[i] = 10. * log10(10 ** (0.1 * noise[i])
+                               + sum(10. ** (0.1 * (B[0:i] + 3.32
+                                                    * C[0:i] * log10(0.89 * self.f[i]
+                                                                     / self.f[:i])))))
         # Disturbance Spectrum Level (4.5)
         D = np.fmax(Z, self.X)
 
         # Level Distortion Factor (4.6 Eq. 11)
-        L = 1. - (E - self._speech_spectrum('normal') - 10.) / 160.
+        L = 1. - (clean - self._speech_spectrum('normal') - 10.) / 160.
         L = np.fmin(1., L)
 
         # 4.7.1 Eq. 12
-        K = (E - D + 15.) / 30.
+        K = (clean - D + 15.) / 30.
         K = np.fmin(1., np.fmax(0., K))
 
         # Band Audibility Function (7.7.2 Eq. 13)
