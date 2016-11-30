@@ -1,7 +1,7 @@
 How to contribute
 =================
 
-The preferred way to contribute to pambox is to fork the 
+The preferred way to contribute to pambox is to fork the
 [main repository](http://github.com/achabotl/pambox/) on GitHub:
 
 
@@ -18,16 +18,12 @@ Getting started
 Making changes
 --------------
 
-* `pambox` uses [git-flow](http://nvie
-.com/posts/a-successful-git-branching-model/) as the git branching model.
-    * **No commits should be made directly to `master`** 
-    * [Install git-flow](https://github.com/nvie/gitflow) and create a `feature` branch like so: `$ git flow feature start <name of your feature>`
 * Make commits of logical units.
 * Check for unnecessary whitespace with `git diff --check` before committing.
-* Make sure you have added the necessary tests for your changes. 
+* Make sure you have added the necessary tests for your changes.
     * Aim for at least 80% coverage on your code
 * Run `python setup.py test` to make sure your tests pass
-* Run `coverage run --source=pambox setup.py test` if you have the `coverage` 
+* Run `coverage run --source=pambox setup.py test` if you have the `coverage`
 package installed to generate coverage data
 * Check your coverage by running `coverage report`
 
@@ -39,7 +35,7 @@ Finally, go to the web page of the your fork of the `pambox` repo,
 and click 'Pull request' to send your changes to the maintainers for
 review. This will send an email to the committers.
 
-(If any of the above seems like magic to you, then look up the 
+(If any of the above seems like magic to you, then look up the
 [Git documentation](http://git-scm.com/documentation) on the web.)
 
 It is recommended to check that your contribution complies with the
@@ -55,7 +51,7 @@ following rules before submitting a pull request:
 
 -  When adding additional functionality, provide at least one
    example script in the ``examples/`` folder. Have a look at other
-   examples for reference. 
+   examples for reference.
 
 You can also check for common programming errors with the following
 tools:
@@ -79,8 +75,18 @@ tools:
 
            $ pip install autopep8
            $ autopep8 path/to/pep8.py
-           
-           
+
+pambox follows [Pandas' conventions](https://github.com/pandas-dev/pandas/blob/7a2bcb6605bacea858ec14cfac424898deb568b3/.github/CONTRIBUTING.md#contributing-your-changes-to-pandas) for commit messages, with common prefixes. Here are their guidelines for when to use them:
+
+- ENH: Enhancement, new functionality
+- BUG: Bug fix
+- DOC: Additions/updates to documentation
+- TST: Additions/updates to tests
+- BLD: Updates to the build process/scripts
+- PERF: Performance improvement
+- CLN: Code cleanup
+
+
 Style
 -----
 
