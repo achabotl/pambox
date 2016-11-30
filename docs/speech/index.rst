@@ -23,13 +23,14 @@ clean signal and the noise: ``predict(clean=speech, noise=noise)``.
 
 The reference level is that a signal with an RMS value of 1 corresponds to 0 dB SPL.
 
-Here is a
+Here is a small example, assuming that we have access to two signals, ``mix`` which is a mixture of the clean speech
+and the noise, and ``noise``, which is the noise alone.
 
 ::
 
     >>> from pambox.speech import Sepsm
     >>> s = Sepsm(fs=22050)
-    >>> res = s.predict_spec(mix=mix, noise=noise)
+    >>> res = s.predict(mix=mix, noise=noise)
 
 
 For models that do not take time signals as inputs,
@@ -115,7 +116,7 @@ Or files can be loaded as an iterator::
 
 
 By default, the list of files is simply all the files found in
-the `path_to_sentences`. To overwrite this behavior, simply replace the
+the ``path_to_sentences``. To overwrite this behavior, simply replace the
 :py:func:`~pambox.speech.Material.files_list` function::
 
     >>> def new_files_list():
