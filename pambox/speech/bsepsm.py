@@ -241,7 +241,7 @@ class BsEPSM(MrSepsm):
         ba = self._better_ear(be, bu, be_indices, bu_indices)
         return ba
 
-    def predict(self, clean, mixture, noise):
+    def predict(self, clean=None, mixture=None, noise=None):
         """Predict intelligibility.
 
         Parameters
@@ -257,7 +257,7 @@ class BsEPSM(MrSepsm):
 
         """
         # Calculate the mr-sEPSM prediction for each ear in one call..
-        binaural_res = [super(BsEPSM, self).predict(c, m, n)
+        binaural_res = [super(BsEPSM, self).predict(clean=c, mix=m, noise=n)
                         for c, m, n in zip(clean, mixture, noise)]
         # ... and save them independently...
         ears_res = Ears(*binaural_res)
