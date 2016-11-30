@@ -3,7 +3,7 @@ Python Auditory Modeling Toolbox
 
 .. image:: https://travis-ci.org/achabotl/pambox.svg?branch=develop
     :target: https://travis-ci.org/achabotl/pambox
-.. image:: http://pambox.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pambox/badge/
     :target: http://pambox.readthedocs.org
 
 pambox is a Python toolbox to facilitate the development of auditory
