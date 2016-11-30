@@ -8,12 +8,20 @@ Filterbanks
 -----------
 
 All filterbanks provide a ``filter()`` method that takes only the input signal.
-The filterbank's parameters must be defined as part of the class.
+The filterbank's parameters must be defined when creating the filterbank. For example,
+here we create a Gammatone filterbank for a sampling frequency of 44.1 kHz and a sequence
+of octave-spaced center frequencies::
 
-* :class:`~pambox.inner.GammatoneFilterbank` is a gammatone filterbank which
-  uses the Malcom Slaney implementation.
-* :class:`~pambox.inner.RectangularFilterbank` performs bandpass filtering of a
-  signal using rectangular filters.
+   >>> import numpy as np
+   >>> from pambox.inner import GammatoneFilterbank
+   >>> g = GammatoneFilterbank(44100, [250, 500, 1000, 2000, 4000])
+   >>> x = np.random.randn(2 * 44100)
+   >>> y = g.filter(x)
+   >>> y.shape
+   (5, 88200)
+
+* :class:`~pambox.inner.GammatoneFilterbank` is a gammatone filterbank which uses Malcom Slaney's implementation.
+* :class:`~pambox.inner.RectangularFilterbank` performs bandpass filtering of a signal using rectangular filters.
 
 
 Envelope extraction

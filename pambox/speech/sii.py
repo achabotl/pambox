@@ -7,7 +7,7 @@ from numpy import log10, sum, asarray, zeros, ones
 
 
 class SII(object):
-    """Speech intelligibility index model.
+    """Speech intelligibility index model, [ansi1997sii]_.
 
     Parameters
     ----------
@@ -35,7 +35,7 @@ class SII(object):
 
     References
     ----------
-    .. [aansi1997sii] American National Standards Institute: American
+    .. [ansi1997sii] American National Standards Institute: American
         National Standard methods for calculation of the Speech Intelligibility
         Index (1997).
     """
@@ -152,11 +152,11 @@ class SII(object):
         Parameters
         ----------
         clean: array_like or float
-            Speech level in dB SPL. Equivalent to "E" in [aansi1997sii]_.
+            Speech level in dB SPL. Equivalent to "E" in [ansi1997sii]_.
         mix : ignored
             This argument is present only to conform to the API.
         noise: array_like, optional, (Default is -50 dB SPL)
-            Noise level in dB SPL. Equivalent to N in [aansi1997sii]_.
+            Noise level in dB SPL. Equivalent to N in [ansi1997sii]_.
 
         Returns
         -------

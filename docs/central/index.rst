@@ -2,19 +2,19 @@ Central auditory processing
 ===========================
 
 
-The :mod:`~pambox.central` regroups what is *not* considered to be part of
+The :mod:`~pambox.central` module regroups what is *not* considered to be part of
 the outer, middle, or inner ear. It's a rather broad concept.
 
 It contains:
 
-   - An implementation of the EPSM modulation filterbank
-     (:func:`~pambox.central.EPSMModulationFilterbank`)
-   - An Ideal Observer (:class:`~pambox.central.IdealObs`), as used in the
-     :class:`~pambox.speech.Sepsm` model.
+   - An Equalization--Cancellation (EC) stage, in :py:class:`~pambox.central.EC`.
+   - An implementation of the EPSM modulation filterbank in :py:class:`~.pambox.central.EPSMModulationFilterbank`.
+   - An Ideal Observer, :py:class:`~pambox.central.IdealObs`, as used in the
+     :py:class:`~pambox.speech.Sepsm` model.
 
 
 API
 ---
 
 .. automodule:: pambox.central
-   :members:
+    :members:

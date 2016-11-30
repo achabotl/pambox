@@ -5,7 +5,7 @@ Introduction
 ------------
 
 The :mod:`~pambox.speech` module groups together speech intelligibility models
-and various other tools to facilitate the creation of speech intelligibility
+and other tools to facilitate the creation of speech intelligibility
 prediction "experiments".
 
 
@@ -17,19 +17,19 @@ Speech Intelligibility Models
 Speech intelligibility models are classes that take at least a ``fs``
 argument. All predictions are done via a ``predict`` method with the
 signature: ``predict(clean=None, mix=None, noise=None)``.
-This signature allows models to have a single input, say ``mix``, but to not
-need all three arguments. Models could require only the mixture (process
-signal and noise together): ``predict(mix=noisy_speech)``; or just the
+This signature allows models to require only a subset of the inputs. For example,
+blind models might only require the mixture of processed speech and noise: ``predict(mix=noisy_speech)``; or just the
 clean signal and the noise: ``predict(clean=speech, noise=noise)``.
 
-The reference level is that a signal with an RMS value
-of 1 corresponds to 0 dB SPL.
+The reference level is that a signal with an RMS value of 1 corresponds to 0 dB SPL.
+
+Here is a
 
 ::
 
     >>> from pambox.speech import Sepsm
     >>> s = Sepsm(fs=22050)
-    >>> res = s.predict_spec(clean, mix, noise)
+    >>> res = s.predict_spec(mix=mix, noise=noise)
 
 
 For models that do not take time signals as inputs,
@@ -42,7 +42,7 @@ defined:
 
     >>> from pambox.speech import Sii
     >>> s = Sii(fs=22050)
-    >>> res = s.predict_spec(clean_spec, mix_spec, noise_spec)
+    >>> res = s.predict_spec(clean=clean_spec, noise=noise_spec)
 
 
 * ``predict_ir`` if the models takes impulse responses as its inputs. The
@@ -207,4 +207,4 @@ API
 ---
 
 .. automodule:: pambox.speech
-   :members:
+    :members:

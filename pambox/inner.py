@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:mod:`pambox.inner` regroups processes of the inner.
+:mod:`pambox.inner` regroups processes of the inner ear.
 """
 from __future__ import absolute_import, division, print_function
 
@@ -32,7 +32,7 @@ FS = np.asarray([22050.])
 
 
 def erb_bandwidth(fc):
-    """Bandwidth of an ERB.
+    """Bandwitdh of an Equivalent Rectangular Bandwidth (ERB).
 
     Parameters
     ----------
@@ -41,7 +41,7 @@ def erb_bandwidth(fc):
 
     Returns
     -------
-    ndarray
+    ndarray or float
         Equivalent rectangular bandwidth of the filter(s).
     """
     # In Hz, according to Glasberg and Moore (1990)
@@ -73,30 +73,29 @@ def lowpass_env_filtering(x, cutoff=150., n=1, fs=22050):
 
 
 class GammatoneFilterbank(object):
-    """Gammatone Filterbank
-
-    Parameters
-    ----------
-    cf : array_like
-        Center frequencies of the filterbank.
-    fs : float
-        Sampling frequency of the signals to filter.
-    b : float
-        beta of the gammatone filters. The default is `b` = 1.019.
-    order : int
-        Order. The default value is 1.
-    q : float
-        Q-value of the ERB. The default value is 9.26449.
-    min_bw : float
-        Minimum bandwidth of an ERB.
-
-    References
-    ----------
-
-    """
-
 
     def __init__(self, fs, cf, b=1.019, order=1, q=9.26449, min_bw=24.7):
+        """Gammatone Filterbank
+
+        Parameters
+        ----------
+        fs : float
+            Sampling frequency of the signals to filter.
+        cf : array_like
+            Center frequencies of the filterbank.
+        b : float
+            beta of the gammatone filters. The default is `b` = 1.019.
+        order : int
+            Order. The default value is 1.
+        q : float
+            Q-value of the ERB. The default value is 9.26449.
+        min_bw : float
+            Minimum bandwidth of an ERB.
+
+        References
+        ----------
+
+        """
 
         self.fs = fs
         try:
@@ -196,12 +195,10 @@ class RectangularFilterbank(object):
 
         Parameters
         ----------
-        x : array_like
-            Input signal
-        center_f : array_like
-            List of the center frequencies of the filterbank.
         fs : int
             Sampling frequency of the input signal.
+        center_f : array_like
+            List of the center frequencies of the filterbank.
         width : float
              Width of the filters, in fraction of octave. The default value is 3,
              therefore 1/3-octave.
@@ -226,9 +223,23 @@ class RectangularFilterbank(object):
         self.output_time = output_time
 
     def filter(self, x):
-        # Use numpy's FFT because SciPy's version of rfft (2 real results per
-        # frequency bin) behaves differently from numpy's (1 complex result per
-        # frequency bin)
+        """
+        Parameters
+        ----------
+        x : array_like
+            Input signal
+
+        Returns
+        -------
+
+        Notes
+        -----
+
+        This method uses Numpy's FFT because it returns 1 complex result per
+        frequency bin, instead of Scipy's rfft, which returns 2 real results
+        per frequency bin.
+        """
+
         center_f = np.asarray(self.center_f, dtype='float')
 
         n = len(x)
@@ -257,16 +268,14 @@ class RectangularFilterbank(object):
             return out_rms
 
 
-def hilbert_envelope(signal, axis=None):
+def hilbert_envelope(signal):
     """Calculates the Hilbert envelope of a signal.
 
     Parameters
     ----------
-    signal :
-        array_like, signal on which to calculate the hilbert
-        envelope. The calculation is done on the last axis (i.e. ``axis=-1``).
-    axis :
-         (Default value = None)
+    signal : array_like
+        Signal on which to calculate the hilbert envelope. The calculation
+        is done along the last axis (i.e. ``axis=-1``).
 
     Returns
     -------
@@ -278,5 +287,5 @@ def hilbert_envelope(signal, axis=None):
     # Next power of 2.
     N = next_pow_2(N_orig)
     y_h = hilbert(signal, N)
-    # Return signal with same dimensions as original
+    # Return signal with same shape as original
     return np.abs(y_h[..., :N_orig])

@@ -77,7 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pambox'
-copyright = u'2014, Alexandre Chabot-Leclerc'
+copyright = u'2014-2016, Alexandre Chabot-Leclerc'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Processes performed by the 'central' auditory system.
+""":mod:`~pambox.central` contains processes performed by the 'central' auditory system.
 
 Classes
 -------
 
-- ``IdealObs`` -- An IdealObserver, as used by [jorgensen2011]_.
-- ``EPSMModulationFilterbank`` -- EPSM modulation filterbank, as used by [jorgensen2011]_.
+- :py:class:`~EC` -- An Equalization--Cancellation stage, as used by [wan2014]_.
+- :py:class:`~EPSMModulationFilterbank` -- EPSM modulation filterbank, as used by [jorgensen2011]_.
+- :py:class:`~IdealObs` -- An IdealObserver, as used by [jorgensen2011]_.
 
 
 """
@@ -13,7 +14,7 @@ from __future__ import absolute_import, division, print_function
 
 __all__ = (
     'EC',
-    'EPSMModulationFilterbank'
+    'EPSMModulationFilterbank',
     'IdealObs',
 )
 

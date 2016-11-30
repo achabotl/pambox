@@ -40,9 +40,9 @@ class EC(object):
     References
     ----------
     .. [wan2014] Wan, R., Durlach, N. I., and Colburn, H. S. (2014).
-    "Application of a short-time version of the Equalization-Cancellation
-    model to speech intelligibility experiments with speech maskers",
-    The Journal of the Acoustical Society of America, 136(2), 768--776
+        "Application of a short-time version of the Equalization-Cancellation
+        model to speech intelligibility experiments with speech maskers",
+        The Journal of the Acoustical Society of America, 136(2), 768--776
 
     """
 
@@ -436,9 +436,8 @@ class EC(object):
         References
         ----------
         .. [durlach1963] Durlach, N. I. (1963). "Equalization and
-        Cancellation Theory of Binaural Masking-Level Differences", J. Acoust.
-        Soc. Am., 35(), 1206--1218
-
+            Cancellation Theory of Binaural Masking-Level Differences", J. Acoust.
+            Soc. Am., 35(), 1206--1218
 
         """
 

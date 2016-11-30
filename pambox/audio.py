@@ -18,12 +18,12 @@ def play(x, fs=44100, normalize=True):
     Parameters
     ----------
     x : array_like,
-       Signal to be player. The shape should be nChannels  x Length.
-    fs : int (optional
+       Signal to be played. The shape should be nChannels  x Length.
+    fs : int (optional)
         Sampling frequency. The default is 44100 Hz.
-    normalize : bool
+    normalize : bool (optional)
         Normalize the signal such that the maximum (absolute value) is 1 to
-        prevent clipping.
+        prevent clipping. The default is True.
 
     Examples
     --------

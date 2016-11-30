@@ -63,10 +63,10 @@ class IdealObs(object):
     def fit_obs(self, values, pcdata, sigma_s=None, m=None, tries=10):
         """Finds the parameters of the ideal observer.
 
-        Finds the paramaters `k`, `q`, and `sigma_s`, that minimize the
+        Finds the paramaters ``k``, ``q``, and ``sigma_s``, that minimize the
         least-square error between a data set and transformed SNRenv.
 
-        By default the `m` parameter is fixed and the property `m` is used.
+        By default the ``m`` parameter is fixed and the property ``m`` is used.
         It can also be defined as an optional parameter.
 
         It is also possible to fix the `sigma_s` parameter by passing it as

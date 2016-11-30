@@ -161,13 +161,7 @@ def hilbert(x, N=None, axis=-1):
     transformed signal can be obtained from ``np.imag(hilbert(x))``, and the
     original signal from ``np.real(hilbert(x))``.
 
-    References
-    ----------
-    .. [1] Wikipedia, "Analytic signal".
-           http://en.wikipedia.org/wiki/Analytic_signal
-
-    License
-    -------
+    License:
     This code was copied from Scipy. The following license applies for this
     function:
 
@@ -201,6 +195,12 @@ def hilbert(x, N=None, axis=-1):
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
     THE POSSIBILITY OF SUCH DAMAGE.
+
+    References
+    ----------
+    .. [1] Wikipedia, "Analytic signal".
+           http://en.wikipedia.org/wiki/Analytic_signal
+
     """
     x = np.asarray(x)
     if np.iscomplexobj(x):
